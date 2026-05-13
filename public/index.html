@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>App</title>
+
+<style>
+
+/* 🌈 الخلفية */
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #2b0a2f, #7a1c44);
+  color: white;
+  text-align: center;
+}
+
+/* 📄 الصفحات */
+.page { display: none; }
+.page.active { display: block; }
+
+.tab { display: none; }
+.tab.active { display: block; }
+
+/* 🧩 الكروت */
+.card {
+  background: rgba(255,255,255,0.05);
+  margin: 20px;
+  padding: 25px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  transition: 0.3s;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+/* 🔘 الأزرار */
+button {
+  width: 90%;
+  padding: 15px;
+  margin: 10px;
+  border: none;
+  border-radius: 15px;
+  font-size: 18px;
+  background: linear-gradient(135deg, #ff4b8b, #ff7a18);
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* 🧾 الإدخال */
+input {
+  width: 90%;
+  padding: 15px;
+  margin: 10px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+}
+
+/* 🔻 شريط التنقل */
+.nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+.nav button {
+  background: none;
+  font-size: 22px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- 🔐 تسجيل الدخول -->
+<div id="loginPage" class="page active">
+  <div class="card">
+    <h2>🔐 تسجيل دخول</h2>
+
+    <input id="email" placeholder="Email" autocomplete="email">
+
+    <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
+
+    <button onclick="login()">دخول</button>
+    <button onclick="showRegister()">إنشاء حساب</button>
+  </div>
+</div>
+
+<div id="registerPage" class="page">
+  <div class="card">
+    <h2>📝 تسجيل</h2>
+
+    <input id="reg_email" placeholder="Email" autocomplete="email">
+
+    <input id="reg_pass" type="password" placeholder="Password" autocomplete="new-password">
+
+    <input id="reg_first" placeholder="الاسم" autocomplete="given-name">
+
+    <input id="reg_last" placeholder="الكنية" autocomplete="family-name">
+
+    <input id="reg_phone" placeholder="رقم الهاتف" autocomplete="tel">
+
+    <input id="reg_country" placeholder="البلد" autocomplete="country">
+
+    <input id="reg_ref" placeholder="Referral Code">
+
+    <input id="reg_address" placeholder="العنوان" autocomplete="street-address">
+
+    <button onclick="register()">تسجيل</button>
+    <button onclick="showLogin()">عندي حساب</button>
+  </div>
+</div>
+
+<!-- 📱 التطبيق -->
+<div id="app" class="page">
+
+  <!-- 🏠 الرئيسية -->
+<div id="home" class="tab active">
+
+  <!-- 💰 الرصيد -->
+  <div class="card">
+
+    <h3 id="userinfo"></h3>
+
+    <h3>💰 الرصيد</h3>
+    <h1 id="bal">0</h1>
+  </div>
+
+  <!-- 📊 الأرباح -->
+  <div class="card">
+    <h3>📊 أرباحك</h3>
+    <canvas id="profitChart"></canvas>
+  </div>
+
+  <!-- ⏳ المهام اليومية -->
+  <div class="card">
+    <h3>⏳ المهام اليومية</h3>
+    <p>أنجزت: <span id="doneTasks">0</span> / 5</p>
+  </div>
+
+  <!-- 🎯 الهدف -->
+  <div class="card">
+    <h3>🎯 هدف اليوم</h3>
+    <p>اربح: 10$</p>
+    <p>تقدّمك: <span id="progress">0</span>%</p>
+  </div>
+
+  <!-- 🏆 الترتيب -->
+  <div class="card">
+    <h3>🏆 أفضل المستخدمين</h3>
+    <marquee id="leaderboard" direction="left"></marquee>
+  </div>
+
+</div>
+
+  <!-- 🧩 المهام -->
+  <div id="tasksPage" class="tab">
+    <div id="tasks"></div>
+  </div>
+
+  <!-- 👤 الحساب -->
+ <div id="profile" class="tab">
+  <div class="card">
+    <h3>👤 معلوماتي</h3>
+    <p>الاسم: <span id="p_name"></span></p>
+    <p>🎁: <span id="p_ref"></span></p>
+    <p>الكنية: <span id="p_last"></span></p>
+    <p>البريد: <span id="p_email"></span></p>
+    <p>الهاتف: <span id="p_phone"></span></p>
+    <p>البلد: <span id="p_country"></span></p>
+    <p>العنوان: <span id="p_address"></span></p>
+    <button onclick="logout()">🚪 خروج</button>
+  </div>
+</div>
+
+<div class="card">
+  <h3>👥 فريقي</h3>
+
+  <p>عدد الأعضاء: <span id="teamCount">0</span></p>
+
+  <div id="teamList"></div>
+</div>
+
+  <!-- 💸 السحب -->
+  <div id="withdrawPage" class="tab">
+    <div class="card">
+      <h3>💸 سحب TRC20</h3>
+      <input id="wallet" placeholder="عنوان المحفظة">
+      <input id="amount" placeholder="المبلغ">
+      <button onclick="withdraw()">سحب</button>
+      <button onclick="openSupport()">💬 خدمة العملاء</button>
+    </div>
+</div>
+
+<div id="chatBox" style="display:none">
+
+  <div class="card">
+    <h3>💬 الدعم</h3>
+
+    <textarea id="msg" placeholder="اكتب رسالتك"></textarea>
+    <button onclick="sendMsg()">إرسال</button>
+
+    <div id="myMessages"></div>
+  </div>
+
+</div>
+
+  <!-- 🔻 التنقل -->
+  <div class="nav">
+    <button onclick="showTab('home')">🏠</button>
+    <button onclick="showTab('tasksPage')">🧩</button>
+    <button onclick="showTab('profile')">👤</button>
+    <button onclick="showTab('withdrawPage')">💸</button>
+  </div>
+
+</div>
+
+<script>
+
+// 🔐 تسجيل دخول
+// 🔐 تسجيل دخول
+async function login(){
+
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: email.value,
+      password: pass.value
+    })
+  });
+
+  const data = await res.json();
+
+  if(data.error){
+    alert(data.error);
+    return;
+  }
+
+  // ✅ حفظ تسجيل الدخول
+  localStorage.setItem("userId", data._id);
+
+  // ✅ تخزين المهام
+  window.userTasks = data.tasks || [];
+
+  // ✅ تعبئة البيانات
+  document.getElementById("userinfo").innerText = data.firstName;
+
+  document.getElementById("bal").innerText = data.balance;
+
+  document.getElementById("p_name").innerText = data.firstName;
+  document.getElementById("p_last").innerText = data.lastName;
+  document.getElementById("p_email").innerText = data.email;
+  document.getElementById("p_phone").innerText = data.phone;
+  document.getElementById("p_country").innerText = data.country;
+  document.getElementById("p_address").innerText = data.address;
+  document.getElementById("p_ref").innerText = data.referralCode;
+  loadTeam(data.referralCode);
+
+  // ✅ فتح التطبيق
+  document.querySelectorAll(".page").forEach(p =>
+    p.classList.remove("active")
+  );
+
+  document.getElementById("app").classList.add("active");
+
+  // ✅ تحميل البيانات
+  loadTasks();
+  loadChart();
+  loadLeaderboard();
+
+  updateTasks();
+  updateProgress();
+}
+
+
+// 🧠 حفظ تسجيل الدخول
+window.onload = async function(){
+
+  const userId = localStorage.getItem("userId");
+
+  // ✅ إذا ما في userId وقف
+  if(!userId){
+    console.log("no userId");
+    return;
+  }
+
+  const res = await fetch(`/user?userId=${userId}`);
+  const data = await res.json();
+
+  console.log(data);
+
+  // ❌ إذا صار خطأ
+  if(data.error){
+    localStorage.removeItem("userId");
+    return;
+  }
+
+  // ✅ تخزين المهام
+  window.userTasks = data.tasks || [];
+
+  // ✅ فتح التطبيق
+  document.querySelectorAll(".page").forEach(p =>
+    p.classList.remove("active")
+  );
+
+  document.getElementById("app").classList.add("active");
+
+  // ✅ تعبئة البيانات
+  document.getElementById("userinfo").innerText = data.firstName;
+
+  document.getElementById("bal").innerText = data.balance;
+
+  document.getElementById("p_name").innerText = data.firstName;
+  document.getElementById("p_last").innerText = data.lastName;
+  document.getElementById("p_email").innerText = data.email;
+  document.getElementById("p_phone").innerText = data.phone;
+  document.getElementById("p_country").innerText = data.country;
+  document.getElementById("p_address").innerText = data.address;
+  document.getElementById("p_ref").innerText = data.referralCode;
+  loadTeam(data.referralCode);
+  // ✅ تحميل البيانات
+  loadTasks();
+  loadChart();
+  loadLeaderboard();
+
+  updateTasks();
+  updateProgress();
+}
+
+</script>
+
+<script>
+
+// 🔄 تبديل الصفحات
+function showTab(id){
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+
+
+// 🚪 خروج
+function logout(){
+  localStorage.removeItem("userId");
+  document.getElementById("app").classList.remove("active");
+  document.getElementById("loginPage").classList.add("active");
+}
+
+// 🧩 تحميل المهام
+async function loadTasks(){
+  const res = await fetch("/tasks");
+  const tasks = await res.json();
+
+  let html = "";
+
+  tasks.forEach(task => {
+    html += `
+      <div class="card">
+        <h3>${task.title}</h3>
+        <p>💰 ${task.cost}</p>
+        <p>🎁 ${task.reward}</p>
+        <button onclick="buyTask('${task._id}')">شراء</button>
+        <button onclick="completeTask('${task._id}')">تنفيذ</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("tasks").innerHTML = html;
+}
+
+// 👇 حطها هون
+async function loadLeaderboard(){
+  const res = await fetch("/leaderboard");
+  const users = await res.json();
+
+  let text = "";
+
+  users.forEach(u => {
+    text += `🏆 ${u.firstName} - $${u.balance} 🔥 | `;
+  });
+
+  document.getElementById("leaderboard").innerText = text;
+}
+
+// 🛒 شراء
+async function buyTask(taskId){
+  const userId = localStorage.getItem("userId");
+updateTasks();
+
+
+  const res = await fetch("/buy-task", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ userId, taskId })
+  });
+
+  const data = await res.json();
+
+  if(data.error){
+    alert(data.error);
+  } else {
+    document.getElementById("bal").innerText = data.balance;
+  }
+}
+
+// ✅ تنفيذ
+async function completeTask(taskId){
+  const userId = localStorage.getItem("userId");
+
+  const res = await fetch(`/complete-task?userId=${userId}&taskId=${taskId}`);
+  const data = await res.json();
+
+  if(data.error){
+    alert(data.error);
+  } else {
+    document.getElementById("bal").innerText = data.balance;
+  }
+}
+
+// 💸 سحب
+async function withdraw(){
+  const userId = localStorage.getItem("userId");
+  const wallet = document.getElementById("wallet").value;
+  const amount = Number(document.getElementById("amount").value);
+
+  const res = await fetch("/withdraw", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ userId, wallet, amount })
+  });
+
+  const data = await res.json();
+
+  if(data.error){
+    alert(data.error);
+    return;
+  }
+
+  document.getElementById("bal").innerText = data.balance;
+
+  alert("✅ تم إرسال طلب السحب");
+}
+
+function showRegister(){
+  document.getElementById("loginPage").classList.remove("active");
+  document.getElementById("registerPage").classList.add("active");
+}
+
+function showLogin(){
+  document.getElementById("registerPage").classList.remove("active");
+  document.getElementById("loginPage").classList.add("active");
+}
+
+async function register(){
+
+  const res = await fetch("/register", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      email: reg_email.value,
+      password: reg_pass.value,
+      firstName: reg_first.value,
+      lastName: reg_last.value,
+      phone: reg_phone.value,
+      country: reg_country.value,
+      address: reg_address.value
+    })
+  });
+
+  const data = await res.json();
+
+  console.log(data);
+
+  if(data.error){
+    alert(data.error);
+    return;
+  }
+
+  localStorage.setItem("userId", data.user._id);
+
+  window.userTasks = data.user.tasks || [];
+
+  document.getElementById("userinfo").innerText = data.user.firstName;
+
+  document.getElementById("bal").innerText = data.user.balance;
+
+  document.getElementById("p_name").innerText = data.user.firstName;
+  document.getElementById("p_last").innerText = data.user.lastName;
+  document.getElementById("p_email").innerText = data.user.email;
+  document.getElementById("p_phone").innerText = data.user.phone;
+  document.getElementById("p_country").innerText = data.user.country;
+  document.getElementById("p_address").innerText = data.user.address;
+  document.getElementById("p_ref").innerText = data.referralCode;
+
+  document.querySelectorAll(".page").forEach(p =>
+    p.classList.remove("active")
+  );
+
+  document.getElementById("app").classList.add("active");
+
+  loadTasks();
+  loadChart();
+  loadLeaderboard();
+  updateTasks();
+  updateProgress();
+}
+
+let myChart;
+
+function loadChart(){
+
+  const ctx = document.getElementById('profitChart');
+
+  if(myChart){
+    myChart.destroy();
+  }
+
+  myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Mon','Tue','Wed','Thu','Fri'],
+      datasets: [{
+        label: 'Profit',
+        data: [2, 5, 3, 8, 6],
+        borderWidth: 2
+      }]
+    }
+  });
+}
+
+function updateTasks(){
+  try {
+    const el = document.getElementById("doneTasks");
+    if(!el) return;
+
+    const tasks = window.userTasks || [];
+    el.innerText = tasks.length;
+
+  } catch(e){
+    console.log("updateTasks error:", e);
+  }
+}
+
+function updateProgress(){
+  try {
+    const bal = document.getElementById("bal");
+    const goal = document.getElementById("progress");
+
+    if(!bal || !goal) return;
+
+    let balance = Number(bal.innerText) || 0;
+    let percent = Math.min((balance / 10) * 100, 100);
+
+    goal.innerText = balance + "$ / 10$ (" + percent.toFixed(0) + "%)";
+
+  } catch(e){
+    console.log("updateProgress error:", e);
+  }
+}
+
+</script>
+
+<script>
+function openSupport(){
+  document.getElementById("chatBox").style.display = "block";
+  loadMyMessages();
+}
+
+async function sendMsg(){
+  const userId = localStorage.getItem("userId");
+  const userName = document.getElementById("userinfo").innerText;
+  const text = document.getElementById("msg").value;
+
+  await fetch("/send-message", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ userId, userName, text })
+  });
+
+  document.getElementById("msg").value = "";
+  loadMyMessages();
+}
+
+async function loadMyMessages(){
+  const userId = localStorage.getItem("userId");
+
+  const res = await fetch("/messages");
+  const data = await res.json();
+
+  let html = "";
+
+  data
+    .filter(m => m.userId === userId)
+    .forEach(m => {
+      html += `
+        <div style="margin:10px;padding:10px;border:1px solid #444">
+          🧑‍💻 ${m.text}<br>
+          🤖 ${m.reply || "⏳ بانتظار الرد..."}
+        </div>
+      `;
+    });
+
+  document.getElementById("myMessages").innerHTML = html;
+}
+
+async function loadTeam(refCode){
+
+  const res = await fetch(`/team?code=${refCode}`);
+  const users = await res.json();
+
+  document.getElementById("teamCount").innerText = users.length;
+
+  let html = "";
+
+  users.forEach(u => {
+    html += `
+      <div class="card">
+        👤 ${u.firstName} - ${u.country}
+      </div>
+    `;
+  });
+
+  document.getElementById("teamList").innerHTML = html;
+}
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+</html>
