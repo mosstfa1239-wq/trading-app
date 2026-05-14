@@ -23,10 +23,11 @@ const Task = mongoose.model("Task", {
 });
 
 // اختبار السيرفر
-app.get("/", (req, res) => {
-  res.send("Server is working ✅");
-});
+app.use(express.static("public"));
 
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/public/index.html");
+});
 // جلب المهام
 app.get("/tasks", async (req, res) => {
   res.json(await Task.find());
