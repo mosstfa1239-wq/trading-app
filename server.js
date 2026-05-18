@@ -152,7 +152,8 @@ app.post("/login", async (req, res) => {
     return res.json({ error: "verify your email first" });
   }
 
-  res.json(user);
+  console.log(user);
+res.json(user);
 });
 
 // 📋 عرض المهام
