@@ -246,6 +246,9 @@ async function login(){
 
   const data = await res.json();
 
+  console.log(data);
+  alert(JSON.stringify(data));
+
   if(data.error){
     alert(data.error);
     return;
