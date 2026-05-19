@@ -204,6 +204,19 @@ input {
       <button onclick="withdraw()">سحب</button>
       <button onclick="openSupport()">💬 خدمة العملاء</button>
     </div>
+
+<div class="card">
+
+  <h2>Deposit</h2>
+
+  <input id="depositAmount" placeholder="Amount">
+
+  <button onclick="deposit()">
+    Deposit Crypto
+  </button>
+
+</div>
+
 </div>
 
 <div id="chatBox" style="display:none">
@@ -638,6 +651,40 @@ async function loadTeam(refCode){
   });
 
   document.getElementById("teamList").innerHTML = html;
+}
+
+</script>
+
+
+<script>
+
+async function deposit(){
+
+  const amount =
+    document.getElementById("depositAmount").value;
+
+  const res = await fetch("/deposit", {
+
+    method: "POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body: JSON.stringify({
+      amount,
+      userId: localStorage.getItem("userId")
+    })
+
+  });
+
+  const data = await res.json();
+
+  if(data.invoice_url){
+    window.location.href = data.invoice_url;
+  } else {
+    alert("Deposit error");
+  }
 }
 
 </script>

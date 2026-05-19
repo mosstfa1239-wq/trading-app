@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const nodemailer = require("nodemailer");
+const axios = require("axios");
+const crypto = require("crypto");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -117,7 +119,7 @@ app.post("/register", async (req, res) => {
     referralCode: myRef,
     referredBy: referralCode || "",
     verifyCode: code,
-    verified: true, // مؤقت
+    verified: false
     balance: 0,
     tasks: []
   });
@@ -127,6 +129,33 @@ app.post("/register", async (req, res) => {
   user
 });
 
+});
+
+app.post("/verify", async (req, res) => {
+
+  const { email, code } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if(!user){
+    return res.json({ error: "user not found" });
+  }
+
+  if(user.verifyCode !== code){
+    return res.json({ error: "wrong code" });
+  }
+
+  user.verified = true;
+  await user.save();
+
+  await transporter.sendMail({
+  from: "mosstfa1239@gmail.com",
+  to: email,
+  subject: "Verification Code",
+  text: "Your code is: " + verifyCode
+});
+
+  res.json({ message: "verified" });
 });
 
 // 🔐 تسجيل دخول (حطه هون 👇
@@ -264,7 +293,6 @@ app.post("/withdraw", async (req, res) => {
   const { userId, wallet, amount } = req.body;
 
   const user = await User.findById(userId);
-
   if(!user){
     return res.json({ error: "user not found" });
   }
@@ -365,6 +393,44 @@ app.post("/verify", async (req, res) => {
   }
 });
 
+app.post("/deposit", async (req, res) => {
+
+  const { amount, userId } = req.body;
+
+  try {
+
+    const response = await axios.post(
+      "https://api.nowpayments.io/v1/invoice",
+
+      {
+        price_amount: amount,
+        price_currency: "usd",
+        order_id: userId,
+        ipn_callback_url: "https://trading-app-1-1xpc.onrender.com/payment-webhook"
+      },
+
+      {
+        headers: {
+          "x-api-key": "A1VW7PH-JWAMTKS-HYW0YEA-W01FGAD"
+        }
+      }
+    );
+
+    res.json({
+      invoice_url: response.data.invoice_url
+    });
+
+  } catch (err) {
+
+    console.log(err.response?.data || err);
+
+    res.json({
+      error: "payment failed"
+    });
+
+  }
+});
+
 // 👥 الفريق
 app.get("/team", async (req, res) => {
 
@@ -379,6 +445,41 @@ app.get("/team", async (req, res) => {
 
 app.get("/admin", (req, res) => {
   res.sendFile(__dirname + "/admin.html");
+});
+
+app.post("/payment-webhook", async (req, res) => {
+
+  try {
+
+    console.log("PAYMENT:", req.body);
+
+    const payment = req.body;
+
+    // ✅ الدفع ناجح
+    if(payment.payment_status === "finished") {
+
+      const userId = payment.order_id;
+
+      const user = await User.findById(userId);
+
+      if(user){
+
+        user.balance += Number(payment.price_amount);
+
+        await user.save();
+
+        console.log("BALANCE UPDATED");
+      }
+    }
+
+    res.sendStatus(200);
+
+  } catch(err){
+
+    console.log("WEBHOOK ERROR:", err);
+
+    res.sendStatus(500);
+  }
 });
 
 // 🚀 تشغ
