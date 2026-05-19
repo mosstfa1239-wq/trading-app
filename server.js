@@ -119,7 +119,7 @@ app.post("/register", async (req, res) => {
     referralCode: myRef,
     referredBy: referralCode || "",
     verifyCode: code,
-    verified: false
+    verified: false,
     balance: 0,
     tasks: []
   });
