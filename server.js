@@ -257,36 +257,25 @@ app.get("/complete-task", async (req, res) => {
 });
 
 app.get("/cards", (req, res) => {
+
   res.json([
     {
-      title: {
-        ar: "مهمة 1",
-        en: "Task 1",
-        ku: "ئەرک 1",
-        fr: "Tâche 1"
-      },
-      text: {
-        ar: "ربح 5%",
-        en: "Profit 5%",
-        ku: "قازانج 5%",
-        fr: "Gain 5%"
-      }
+      title: "Trade 10$",
+      cost: 10,
+      reward: 15
     },
     {
-      title: {
-        ar: "مهمة 2",
-        en: "Task 2",
-        ku: "ئەرک 2",
-        fr: "Tâche 2"
-      },
-      text: {
-        ar: "ربح 10%",
-        en: "Profit 10%",
-        ku: "قازانج 10%",
-        fr: "Gain 10%"
-      }
+      title: "Trade 50$",
+      cost: 50,
+      reward: 70
+    },
+    {
+      title: "Trade 100$",
+      cost: 100,
+      reward: 150
     }
   ]);
+
 });
 
 app.post("/withdraw", async (req, res) => {
