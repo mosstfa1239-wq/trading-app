@@ -95,12 +95,6 @@ input {
 
     <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
 
-<input id="verifyCode" placeholder="Verification Code">
-
-<button onclick="verifyEmail()">
-Verify Email
-</button>
-
     <button onclick="login()">دخول</button>
     <button onclick="showRegister()">إنشاء حساب</button>
   </div>
@@ -125,6 +119,12 @@ Verify Email
     <input id="reg_ref" placeholder="Referral Code">
 
     <input id="reg_address" placeholder="العنوان" autocomplete="street-address">
+
+<input id="verifyCode" placeholder="Ver>
+
+<button onclick="verifyEmail()">
+Verify Email
+</button>
 
     <button onclick="register()">تسجيل</button>
     <button onclick="showLogin()">عندي حساب</button>
@@ -441,16 +441,35 @@ updateTasks();
 
 // ✅ تنفيذ
 async function completeTask(taskId){
-  const userId = localStorage.getItem("userId");
 
-  const res = await fetch(`/complete-task?userId=${userId}&taskId=${taskId}`);
+  const res = await fetch("/complete-task", {
+
+    method: "POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body: JSON.stringify({
+
+      userId:
+      localStorage.getItem("userId"),
+
+      taskId
+    })
+  });
+
   const data = await res.json();
 
-  if(data.error){
-    alert(data.error);
-  } else {
-    document.getElementById("bal").innerText = data.balance;
+  alert(data.msg || data.error);
+
+  if(data.balance !== undefined){
+
+    document.getElementById("bal")
+      .innerText = data.balance;
   }
+
+  loadTasks();
 }
 
 // 💸 سحب
@@ -769,6 +788,51 @@ async function addBalance(){
   const data = await res.json();
 
   alert(data.msg || data.error);
+}
+</script>
+
+<script>
+
+async function loadTasks(){
+
+  const res = await fetch(
+
+    "/daily-tasks?userId=" +
+    localStorage.getItem("userId")
+
+  );
+
+  const tasks = await res.json();
+
+  let html = "";
+
+  tasks.forEach(task => {
+
+    html += `
+
+    <div class="card">
+
+      <img src="${task.image || ''}"
+      width="120">
+
+      <h3>${task.title}</h3>
+
+      <p>Price: $${task.price}</p>
+
+      <p>Profit: $${task.profit}</p>
+
+      <button onclick="completeTask('${task._id}')">
+
+        Complete
+
+      </button>
+
+    </div>
+    `;
+  });
+
+  document.getElementById("tasksBox")
+    .innerHTML = html;
 }
 
 </script>

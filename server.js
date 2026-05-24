@@ -52,10 +52,17 @@ const UserSchema = new mongoose.Schema({
 const User = mongoose.model("User", UserSchema);
 // 🧩 Task
 const TaskSchema = new mongoose.Schema({
+
   title: String,
-  cost: Number,
-  reward: Number
+
+  price: Number,
+
+  profit: Number,
+
+  image: String
+
 });
+
 const Task = mongoose.model("Task", TaskSchema);
 
 const WithdrawSchema = new mongoose.Schema({
@@ -122,7 +129,21 @@ app.post("/register", async (req, res) => {
     verifyCode: code,
     verified: false,
     balance: 0,
-    tasks: []
+
+tasks: [],
+
+dailyTasks: {
+  type: Number,
+  default: 30
+},
+
+vipLevel: {
+  type: Number,
+  default: 1
+},
+
+lastTaskReset: String,
+
   });
 
   res.json({
@@ -257,6 +278,77 @@ app.get("/tasks", async (req, res) => {
   res.json(tasks);
 });
 
+app.get("/generate-tasks", async (req, res) => {
+
+  await Task.deleteMany({});
+
+  const demoTasks = [
+
+    {
+      title: "Nike Shoes",
+      price: 10,
+      profit: 0.6,
+      image:
+      "https://i.imgur.com/GzQ9pza.png"
+    },
+
+    {
+      title: "iPhone Case",
+      price: 20,
+      profit: 1.2,
+      image:
+      "https://i.imgur.com/8Km9tLL.png"
+    },
+
+    {
+      title: "Gaming Mouse",
+      price: 35,
+      profit: 2
+    },
+
+    {
+      title: "Bluetooth Speaker",
+      price: 50,
+      profit: 3
+    }
+
+  ];
+
+  await Task.insertMany(demoTasks);
+
+  res.send("Tasks Generated");
+});
+
+app.get("/daily-tasks", async (req, res) => {
+
+  const { userId } = req.query;
+
+  const user = await User.findById(userId);
+
+  if(!user){
+    return res.json([]);
+  }
+
+  const today =
+    new Date().toDateString();
+
+  // ✅ تصفير يومي
+  if(user.lastTaskReset !== today){
+
+    user.dailyTasks =
+      user.vipLevel * 30;
+
+    user.lastTaskReset = today;
+
+    await user.save();
+  }
+
+  const tasks =
+    await Task.find().limit(user.dailyTasks);
+
+  res.json(tasks);
+});
+
 // 🛒 شراء مهمة
 app.post("/buy-task", async (req, res) => {
   const { userId, taskId } = req.body;
@@ -301,25 +393,55 @@ app.get("/user", async (req, res) => {
 });
 
 // ✅ تنفيذ المهمة
-app.get("/complete-task", async (req, res) => {
-  const { userId, taskId } = req.query;
+app.post("/complete-task", async (req, res) => {
+
+  const { userId, taskId } = req.body;
 
   const user = await User.findById(userId);
+
   const task = await Task.findById(taskId);
 
-  if (!user || !task)
-    return res.json({ error: "not found" });
+  if(!user || !task){
 
-  if (!user.tasks.includes(taskId))
-    return res.json({ error: "not owned" });
+    return res.json({
+      error: "invalid"
+    });
+  }
 
-    user.balance += task.reward;
+  if(user.dailyTasks <= 0){
 
-    user.tasks = user.tasks.filter(t => t !== taskId);
+    return res.json({
+      error: "no tasks left"
+    });
+  }
 
-    await user.save();
+  if(user.balance < task.price){
 
-  res.json({ msg: "done", balance: user.balance });
+    return res.json({
+      error: "low balance"
+    });
+  }
+
+  // خصم
+  user.balance -= task.price;
+
+  // ربح
+  user.balance +=
+    task.price + task.profit;
+
+  // إنقاص المهام
+  user.dailyTasks -= 1;
+
+  await user.save();
+
+  res.json({
+
+    msg: "task completed",
+
+    balance: user.balance,
+
+    dailyTasks: user.dailyTasks
+  });
 });
 
 app.get("/cards", (req, res) => {
