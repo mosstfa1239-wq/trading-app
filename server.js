@@ -675,24 +675,36 @@ app.post("/admin/add-task", async (req, res) => {
 
 app.post("/admin/add-balance", async (req, res) => {
 
-  const { email, balance } = req.body;
+  try {
 
-  const user =
-    await User.findOne({ email });
+    const { email, balance } = req.body;
 
-  if(!user){
-    return res.json({
-      error: "user not found"
+    const user =
+      await User.findOne({ email });
+
+    if(!user){
+
+      return res.json({
+        error: "user not found"
+      });
+    }
+
+    user.balance += Number(balance);
+
+    await user.save();
+
+    res.json({
+      msg: "balance updated"
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.json({
+      error: "server error"
     });
   }
-
-  user.balance += Number(balance);
-
-  await user.save();
-
-  res.json({
-    msg: "balance updated"
-  });
 });
 
 // 🚀 تشغ
