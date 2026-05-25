@@ -39,16 +39,24 @@ body {
 
 /* 🔘 الأزرار */
 button {
-  width: 90%;
-  padding: 15px;
-  margin: 10px;
+
+  width: 100%;
+  padding: 14px;
   border: none;
-  border-radius: 15px;
-  font-size: 18px;
-  background: linear-gradient(135deg, #ff4b8b, #ff7a18);
+  border-radius: 12px;
+
+  background:
+  linear-gradient(
+    90deg,
+    #ff3d77,
+    #ff7a18
+  );
+
   color: white;
-  cursor: pointer;
-  transition: 0.2s;
+  font-weight: bold;
+  font-size: 16px;
+
+  margin-top: 15px;
 }
 
 button:active {
@@ -171,6 +179,11 @@ Verify Email
     <marquee id="leaderboard" direction="left"></marquee>
   </div>
 
+</div>
+
+<div class="card">
+  <h2>📋 Daily Tasks</h2>
+  <h3 id="dailyLeft"></h3>
 </div>
 
   <!-- 🧩 المهام -->
@@ -406,18 +419,22 @@ async function loadTasks(){
 
 // 👇 حطها هون
 async function loadLeaderboard(){
+
   const res = await fetch("/leaderboard");
+
   const users = await res.json();
 
   let text = "";
 
   users.forEach(u => {
-    text += `🏆 ${u.firstName} - $${u.balance} 🔥 | `;
+
+    text +=
+    `🏆 ${u.firstName || "User"} - $${u.balance} 🔥 | `;
   });
 
-  document.getElementById("leaderboard").innerText = text;
+  document.getElementById("leaderboard")
+  .innerText = text;
 }
-
 // 🛒 شراء
 async function buyTask(taskId){
   const userId = localStorage.getItem("userId");
@@ -468,6 +485,11 @@ async function completeTask(taskId){
     document.getElementById("bal")
       .innerText = data.balance;
   }
+
+document.getElementById("dailyLeft")
+.innerText =
+"Remaining Tasks: " +
+data.dailyTasks;
 
   loadTasks();
 }
@@ -803,32 +825,55 @@ async function loadTasks(){
   );
 
   const tasks = await res.json();
+document.getElementById("dailyLeft")
+.innerText =
+"Remaining Tasks: " + tasks.length;
+
 
   let html = "";
 
   tasks.forEach(task => {
 
-    html += `
+   html += `
 
-    <div class="card">
+<div class="card">
 
-      <img src="${task.image || ''}"
-      width="120">
+  <img
+  src="${task.image || ''}"
+  style="
+    width:120px;
+    height:120px;
+    object-fit:cover;
+    border-radius:15px;
+    margin-bottom:10px;
+  ">
 
-      <h3>${task.title}</h3>
+  <h2>${task.title}</h2>
 
-      <p>Price: $${task.price}</p>
+  <p>
+  💰 Order Amount:
+  $${task.price}
+  </p>
 
-      <p>Profit: $${task.profit}</p>
+  <p>
+  📈 Commission:
+  $${task.profit}
+  </p>
 
-      <button onclick="completeTask('${task._id}')">
+  <p>
+  🔥 Expected Return:
+  $${task.price + task.profit}
+  </p>
 
-        Complete
+  <button
+  onclick="completeTask('${task._id}')">
 
-      </button>
+  Execute Order
 
-    </div>
-    `;
+  </button>
+
+</div>
+`;
   });
 
   document.getElementById("tasks")
