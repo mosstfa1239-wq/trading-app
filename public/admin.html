@@ -144,6 +144,101 @@ async function addBalance(){
   const data = await res.json();
 
   alert(data.msg || data.error);
+
+  location.reload();
+}
+</script>
+
+
+<div class="card">
+
+<h2>💬 Support Message</h2>
+
+<input
+id="supportEmail"
+placeholder="User Email">
+
+<input
+id="supportMsg"
+placeholder="Message">
+
+<button onclick="sendMessage()">
+Send Message
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>🔓 Reset Wallet</h2>
+
+<input
+id="resetWalletEmail"
+placeholder="User Email">
+
+<button onclick="resetWallet()">
+
+Reset Wallet
+
+</button>
+
+</div>
+
+<script>
+async function sendMessage(){
+
+  const res = await fetch(
+    "/admin/send-message",
+  {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+      email:
+      document.getElementById(
+      "supportEmail").value,
+
+      message:
+      document.getElementById(
+      "supportMsg").value
+
+    })
+  });
+
+  const data = await res.json();
+
+  alert(data.msg || data.error);
+}
+
+async function resetWallet(){
+
+  const res = await fetch(
+    "/admin/reset-wallet",
+  {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+      email:
+      document.getElementById(
+      "resetWalletEmail").value
+
+    })
+  });
+
+  const data = await res.json();
+
+  alert(data.msg || data.error);
 }
 
 </script>

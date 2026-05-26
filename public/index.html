@@ -251,6 +251,16 @@ Verify Email
 
 </div>
 
+<div class="card">
+
+<h2>📩 Support</h2>
+
+<p id="adminMsg">
+No messages
+</p>
+
+</div>
+
   <!-- 🔻 التنقل -->
   <div class="nav">
     <button onclick="showTab('home')">🏠</button>
@@ -304,6 +314,10 @@ async function login(){
   document.getElementById("p_country").innerText = data.country;
   document.getElementById("p_address").innerText = data.address;
   document.getElementById("p_ref").innerText = data.referralCode;
+document.getElementById("adminMsg")
+.innerText =
+data.adminMessage || "No messages";
+
   loadTeam(data.referralCode);
 
   // ✅ فتح التطبيق
@@ -367,6 +381,10 @@ window.onload = async function(){
   document.getElementById("p_country").innerText = data.country;
   document.getElementById("p_address").innerText = data.address;
   document.getElementById("p_ref").innerText = data.referralCode;
+document.getElementById("adminMsg")
+.innerText =
+data.adminMessage || "No messages";
+
   loadTeam(data.referralCode);
   // ✅ تحميل البيانات
   loadTasks();

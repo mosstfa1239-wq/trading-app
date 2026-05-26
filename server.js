@@ -33,9 +33,14 @@ const UserSchema = new mongoose.Schema({
   lastName: String,
   birthDate: String,
 
+  adminMessage: String,
+
   phone: String,
   country: String,
   address: String,
+
+walletAddress: String,
+walletLocked: Boolean,
 
   referralCode: String,
   referredBy: String,
@@ -703,6 +708,79 @@ app.post("/admin/add-balance", async (req, res) => {
 
     res.json({
       error: "server error"
+    });
+  }
+});
+
+app.post("/admin/send-message",
+
+async (req, res) => {
+
+  try{
+
+    const { email, message }
+    = req.body;
+
+    const user =
+    await User.findOne({ email });
+
+    if(!user){
+
+      return res.json({
+        error:"user not found"
+      });
+    }
+
+    user.adminMessage = message;
+
+    await user.save();
+
+    res.json({
+      msg:"message sent"
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.json({
+      error:"server error"
+    });
+  }
+});
+
+app.post("/admin/reset-wallet",
+
+async (req, res) => {
+
+  try{
+
+    const { email } = req.body;
+
+    const user =
+    await User.findOne({ email });
+
+    if(!user){
+
+      return res.json({
+        error:"user not found"
+      });
+    }
+
+    user.walletLocked = false;
+
+    await user.save();
+
+    res.json({
+      msg:"wallet unlocked"
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.json({
+      error:"server error"
     });
   }
 });
