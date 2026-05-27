@@ -192,18 +192,43 @@ Verify Email
   </div>
 
   <!-- 👤 الحساب -->
- <div id="profile" class="tab">
+ <!-- 👤 الحساب -->
+<div id="profile" class="tab">
+
   <div class="card">
+
     <h3>👤 معلوماتي</h3>
+
     <p>الاسم: <span id="p_name"></span></p>
+
     <p>🎁: <span id="p_ref"></span></p>
+
     <p>الكنية: <span id="p_last"></span></p>
+
     <p>البريد: <span id="p_email"></span></p>
+
     <p>الهاتف: <span id="p_phone"></span></p>
+
     <p>البلد: <span id="p_country"></span></p>
+
     <p>العنوان: <span id="p_address"></span></p>
-    <button onclick="logout()">🚪 خروج</button>
+
+    <button onclick="logout()">
+      🚪 خروج
+    </button>
+
   </div>
+
+  <div class="card">
+
+    <h2>📩 Support</h2>
+
+    <p id="adminMsg">
+      No messages
+    </p>
+
+  </div>
+
 </div>
 
 <div class="card">
@@ -248,16 +273,6 @@ Verify Email
 
     <div id="myMessages"></div>
   </div>
-
-</div>
-
-<div class="card">
-
-<h2>📩 Support</h2>
-
-<p id="adminMsg">
-No messages
-</p>
 
 </div>
 
@@ -383,7 +398,7 @@ window.onload = async function(){
   document.getElementById("p_ref").innerText = data.referralCode;
 document.getElementById("adminMsg")
 .innerText =
-data.adminMessage || "No messages";
+data.adminMessage || "<div id="app"No messages";
 
   loadTeam(data.referralCode);
   // ✅ تحميل البيانات
