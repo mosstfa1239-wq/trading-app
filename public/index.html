@@ -6,44 +6,187 @@
 
 <style>
 
-/* 🌈 الخلفية */
-body {
-  margin: 0;
-  font-family: Arial;
-  background: linear-gradient(135deg, #2b0a2f, #7a1c44);
-  color: white;
-  text-align: center;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+
+  font-family:Arial,sans-serif;
+
+  background:
+  linear-gradient(
+    135deg,
+    #14001f,
+    #3d0a46,
+    #7a1c44
+  );
+
+  min-height:100vh;
+
+  color:white;
+
+  text-align:center;
+
+  overflow-x:hidden;
 }
 
 /* 📄 الصفحات */
-.page { display: none; }
-.page.active { display: block; }
 
-.tab { display: none; }
-.tab.active { display: block; }
-
-/* 🧩 الكروت */
-.card {
-  background: rgba(255,255,255,0.05);
-  margin: 20px;
-  padding: 25px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  transition: 0.3s;
+.page{
+  display:none;
+  padding-bottom:100px;
 }
 
-.card:hover {
-  transform: scale(1.03);
+.page.active{
+  display:block;
+  animation:fade 0.4s;
+}
+
+.tab{
+  display:none;
+}
+
+.tab.active{
+  display:block;
+  animation:fade 0.4s;
+}
+
+/* ✨ الحركة */
+
+@keyframes fade{
+
+  from{
+    opacity:0;
+    transform:
+    translateY(15px);
+  }
+
+  to{
+    opacity:1;
+    transform:
+    translateY(0);
+  }
+}
+
+/* 🧩 الكروت */
+
+.card{
+
+  width:92%;
+
+  max-width:460px;
+
+  margin:20px auto;
+
+  padding:25px;
+
+  border-radius:24px;
+
+  background:
+  rgba(255,255,255,0.08);
+
+  backdrop-filter:blur(14px);
+
+  border:
+  1px solid
+  rgba(255,255,255,0.08);
+
+  box-shadow:
+  0 0 25px
+  rgba(0,0,0,0.4);
+
+  transition:0.3s;
+}
+
+.card:hover{
+
+  transform:
+  translateY(-3px);
+}
+
+/* 📝 العناوين */
+
+h1,h2,h3{
+
+  margin-bottom:18px;
+
+  font-weight:bold;
+}
+
+/* 🧾 الإدخال */
+
+input{
+
+  width:100%;
+
+  padding:15px;
+
+  margin-top:14px;
+
+  border:none;
+
+  border-radius:14px;
+
+  outline:none;
+
+  font-size:15px;
+
+  background:
+  rgba(255,255,255,0.12);
+
+  color:white;
+
+  transition:0.3s;
+}
+
+/* ✨ عند الكتابة */
+
+input:focus{
+
+  border:
+  1px solid #ff7a18;
+
+  background:
+  rgba(255,255,255,0.18);
+
+  box-shadow:
+  0 0 15px
+  rgba(255,122,24,0.5);
+}
+
+/* 🪄 placeholder */
+
+input::placeholder{
+
+  color:#ddd;
 }
 
 /* 🔘 الأزرار */
-button {
 
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
+button{
+
+  width:100%;
+
+  padding:15px;
+
+  margin-top:16px;
+
+  border:none;
+
+  border-radius:14px;
+
+  font-size:16px;
+
+  font-weight:bold;
+
+  color:white;
+
+  cursor:pointer;
+
+  transition:0.25s;
 
   background:
   linear-gradient(
@@ -52,52 +195,171 @@ button {
     #ff7a18
   );
 
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-
-  margin-top: 15px;
+  box-shadow:
+  0 0 18px
+  rgba(255,61,119,0.35);
 }
 
-button:active {
-  transform: scale(0.95);
+/* ✨ hover */
+
+button:hover{
+
+  transform:
+  translateY(-2px);
+
+  opacity:0.92;
 }
 
-/* 🧾 الإدخال */
-input {
-  width: 90%;
-  padding: 15px;
-  margin: 10px;
-  border-radius: 12px;
-  border: none;
-  font-size: 16px;
+/* 👆 ضغط */
+
+button:active{
+
+  transform:scale(0.97);
 }
 
-/* 🔻 شريط التنقل */
-.nav {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  justify-content: space-around;
-  padding: 10px;
+/* 🔄 زر disabled */
+
+button:disabled{
+
+  opacity:0.6;
+
+  cursor:not-allowed;
+
+  background:
+  linear-gradient(
+    90deg,
+    #666,
+    #444
+  );
 }
 
-.nav button {
-  background: none;
-  font-size: 22px;
-}
+/* 📊 الرصيد */
 
-#loginStatus{
+#bal{
 
-  margin-top:15px;
+  color:#00ff99;
 
-  color:#ffcc70;
+  font-size:28px;
 
   font-weight:bold;
 
+  text-shadow:
+  0 0 10px
+  rgba(0,255,153,0.5);
+}
+
+/* 📩 الحالات */
+
+#loginStatus,
+#verifyStatus{
+
+  margin-top:15px;
+
   font-size:15px;
+
+  font-weight:bold;
+
+  color:#ffcc70;
+}
+
+/* 🧭 شريط التنقل */
+
+.nav{
+
+  position:fixed;
+
+  bottom:0;
+
+  left:0;
+
+  width:100%;
+
+  display:flex;
+
+  justify-content:space-around;
+
+  align-items:center;
+
+  padding:12px;
+
+  background:
+  rgba(0,0,0,0.5);
+
+  backdrop-filter:blur(12px);
+
+  border-top:
+  1px solid
+  rgba(255,255,255,0.08);
+}
+
+/* 🔘 أزرار الناف */
+
+.nav button{
+
+  width:auto;
+
+  background:none;
+
+  box-shadow:none;
+
+  margin:0;
+
+  padding:10px;
+
+  font-size:24px;
+
+  border-radius:16px;
+}
+
+/* ✨ hover nav */
+
+.nav button:hover{
+
+  background:
+  rgba(255,255,255,0.08);
+
+  transform:
+  translateY(-2px);
+}
+
+/* 📜 النصوص */
+
+p{
+
+  margin-top:10px;
+
+  line-height:1.5;
+}
+
+/* 💬 الدعم */
+
+#adminMsg{
+
+  color:#ffddaa;
+
+  margin-top:12px;
+}
+
+/* 📱 موبايل */
+
+@media(max-width:500px){
+
+  .card{
+
+    width:95%;
+
+    padding:20px;
+  }
+
+  button{
+
+    font-size:15px;
+  }
+
+  input{
+
+    font-size:15px;
+  }
 }
 
 </style>
@@ -347,145 +609,292 @@ Verify Email
 <script>
 
 // 🔐 تسجيل دخول
-// 🔐 تسجيل دخول
+
 async function login(){
 
-document.getElementById("loginStatus")
-.innerText =
-"Logging in...";
+  document.getElementById(
+  "loginStatus"
+  ).innerText =
+  "Logging in...";
 
-document.querySelector(
-'button[onclick="login()"]'
-).disabled = true;
+  document.querySelector(
+  'button[onclick="login()"]'
+  ).disabled = true;
 
-  const res = await fetch("/login", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      email: email.value,
-      password: pass.value
-    })
-  });
+  try{
 
-  const data = await res.json();
+    const res = await fetch(
+    "/login", {
 
-  console.log(data);
-  alert(JSON.stringify(data));
+      method: "POST",
 
-  if(data.error){
+      headers: {
+        "Content-Type":
+        "application/json"
+      },
+
+      body: JSON.stringify({
+
+        email: email.value,
+
+        password: pass.value
+      })
+    });
+
+    const data =
+    await res.json();
+
+    if(data.error){
+
+      document.getElementById(
+      "loginStatus"
+      ).innerText =
+      data.error;
+
+      document.querySelector(
+      'button[onclick="login()"]'
+      ).disabled = false;
+
+      return;
+    }
+
+    // ✅ حفظ تسجيل الدخول
+    localStorage.setItem(
+    "userId",
+    data._id
+    );
+
+    // ✅ المهام
+    window.userTasks =
+    data.tasks || [];
+
+    // ✅ البيانات
     document.getElementById(
-"loginStatus"
-).innerText =
-data.error;
+    "userinfo"
+    ).innerText =
+    data.firstName;
 
-document.querySelector(
-'button[onclick="login()"]'
-).disabled = false;
-    return;
+    document.getElementById(
+    "bal"
+    ).innerText =
+    data.balance;
+
+    document.getElementById(
+    "p_name"
+    ).innerText =
+    data.firstName;
+
+    document.getElementById(
+    "p_last"
+    ).innerText =
+    data.lastName;
+
+    document.getElementById(
+    "p_email"
+    ).innerText =
+    data.email;
+
+    document.getElementById(
+    "p_phone"
+    ).innerText =
+    data.phone;
+
+    document.getElementById(
+    "p_country"
+    ).innerText =
+    data.country;
+
+    document.getElementById(
+    "p_address"
+    ).innerText =
+    data.address;
+
+    document.getElementById(
+    "p_ref"
+    ).innerText =
+    data.referralCode;
+
+    document.getElementById(
+    "adminMsg"
+    ).innerText =
+    data.adminMessage ||
+    "No messages";
+
+    loadTeam(
+    data.referralCode
+    );
+
+    document.getElementById(
+    "loginStatus"
+    ).innerText =
+    "Login successful";
+
+    // ✅ فتح التطبيق
+    document.querySelectorAll(
+    ".page"
+    ).forEach(p =>
+      p.classList.remove(
+      "active")
+    );
+
+    document.getElementById(
+    "app"
+    ).classList.add("active");
+
+    // ✅ تحميل
+    loadTasks();
+
+    loadChart();
+
+    loadLeaderboard();
+
+    updateTasks();
+
+    updateProgress();
+
+  } catch(err){
+
+    console.log(err);
+
+    document.getElementById(
+    "loginStatus"
+    ).innerText =
+    "Server error";
+
+    document.querySelector(
+    'button[onclick="login()"]'
+    ).disabled = false;
   }
-
-  // ✅ حفظ تسجيل الدخول
-  localStorage.setItem("userId", data._id);
-
-  // ✅ تخزين المهام
-  window.userTasks = data.tasks || [];
-
-  // ✅ تعبئة البيانات
-  document.getElementById("userinfo").innerText = data.firstName;
-
-  document.getElementById("bal").innerText = data.balance;
-
-  document.getElementById("p_name").innerText = data.firstName;
-  document.getElementById("p_last").innerText = data.lastName;
-  document.getElementById("p_email").innerText = data.email;
-  document.getElementById("p_phone").innerText = data.phone;
-  document.getElementById("p_country").innerText = data.country;
-  document.getElementById("p_address").innerText = data.address;
-  document.getElementById("p_ref").innerText = data.referralCode;
-document.getElementById("adminMsg")
-.innerText =
-data.adminMessage || "No messages";
-
-  loadTeam(data.referralCode);
-
-document.getElementById(
-"loginStatus"
-).innerText =
-"Login successful";
-
-  // ✅ فتح التطبيق
-  document.querySelectorAll(".page").forEach(p =>
-    p.classList.remove("active")
-  );
-
-  document.getElementById("app").classList.add("active");
-
-  // ✅ تحميل البيانات
-  loadTasks();
-  loadChart();
-  loadLeaderboard();
-
-  updateTasks();
-  updateProgress();
 }
 
 
 // 🧠 حفظ تسجيل الدخول
-window.onload = async function(){
+window.onload =
+async function(){
 
-  const userId = localStorage.getItem("userId");
-
-  // ✅ إذا ما في userId وقف
-  if(!userId){
-    console.log("no userId");
-    return;
-  }
-
-  const res = await fetch(`/user?userId=${userId}`);
-  const data = await res.json();
-
-  console.log(data);
-
-  // ❌ إذا صار خطأ
-  if(data.error){
-    localStorage.removeItem("userId");
-    return;
-  }
-
-  // ✅ تخزين المهام
-  window.userTasks = data.tasks || [];
-
-  // ✅ فتح التطبيق
-  document.querySelectorAll(".page").forEach(p =>
-    p.classList.remove("active")
+  const userId =
+  localStorage.getItem(
+  "userId"
   );
 
-  document.getElementById("app").classList.add("active");
+  if(!userId){
 
-  // ✅ تعبئة البيانات
-  document.getElementById("userinfo").innerText = data.firstName;
+    console.log(
+    "no userId"
+    );
 
-  document.getElementById("bal").innerText = data.balance;
+    return;
+  }
 
-  document.getElementById("p_name").innerText = data.firstName;
-  document.getElementById("p_last").innerText = data.lastName;
-  document.getElementById("p_email").innerText = data.email;
-  document.getElementById("p_phone").innerText = data.phone;
-  document.getElementById("p_country").innerText = data.country;
-  document.getElementById("p_address").innerText = data.address;
-  document.getElementById("p_ref").innerText = data.referralCode;
-document.getElementById("adminMsg")
-.innerText =
-data.adminMessage || "<div id="app"No messages";
+  try{
 
-  loadTeam(data.referralCode);
-  // ✅ تحميل البيانات
-  loadTasks();
-  loadChart();
-  loadLeaderboard();
+    const res = await fetch(
+    `/user?userId=${userId}`
+    );
 
-  updateTasks();
-  updateProgress();
+    const data =
+    await res.json();
+
+    if(data.error){
+
+      localStorage.removeItem(
+      "userId"
+      );
+
+      return;
+    }
+
+    // ✅ المهام
+    window.userTasks =
+    data.tasks || [];
+
+    // ✅ فتح التطبيق
+    document.querySelectorAll(
+    ".page"
+    ).forEach(p =>
+      p.classList.remove(
+      "active")
+    );
+
+    document.getElementById(
+    "app"
+    ).classList.add("active");
+
+    // ✅ البيانات
+    document.getElementById(
+    "userinfo"
+    ).innerText =
+    data.firstName;
+
+    document.getElementById(
+    "bal"
+    ).innerText =
+    data.balance;
+
+    document.getElementById(
+    "p_name"
+    ).innerText =
+    data.firstName;
+
+    document.getElementById(
+    "p_last"
+    ).innerText =
+    data.lastName;
+
+    document.getElementById(
+    "p_email"
+    ).innerText =
+    data.email;
+
+    document.getElementById(
+    "p_phone"
+    ).innerText =
+    data.phone;
+
+    document.getElementById(
+    "p_country"
+    ).innerText =
+    data.country;
+
+    document.getElementById(
+    "p_address"
+    ).innerText =
+    data.address;
+
+    document.getElementById(
+    "p_ref"
+    ).innerText =
+    data.referralCode;
+
+    document.getElementById(
+    "adminMsg"
+    ).innerText =
+    data.adminMessage ||
+    "No messages";
+
+    loadTeam(
+    data.referralCode
+    );
+
+    // ✅ تحميل
+    loadTasks();
+
+    loadChart();
+
+    loadLeaderboard();
+
+    updateTasks();
+
+    updateProgress();
+
+  } catch(err){
+
+    console.log(err);
+
+    localStorage.removeItem(
+    "userId"
+    );
+  }
 }
 
 </script>
