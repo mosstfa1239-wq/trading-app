@@ -151,6 +151,38 @@ Verify Email
   </div>
 </div>
 
+<div id="verifyPage" class="page">
+
+  <div class="card">
+
+    <h2>📧 Verify Email</h2>
+
+    <p>
+      Enter the 6-digit code
+    </p>
+
+    <input
+    id="verifyInput"
+    placeholder="6-digit code">
+
+    <button onclick="verifyEmail()">
+
+      Verify
+
+    </button>
+
+    <button onclick="resendCode()">
+
+      Resend Code
+
+    </button>
+
+    <p id="verifyStatus"></p>
+
+  </div>
+
+</div>
+
 <!-- 📱 التطبيق -->
 <div id="app" class="page">
 
@@ -240,6 +272,21 @@ Verify Email
     </p>
 
   </div>
+<div class="card">
+
+  <h2>💬 Contact Admin</h2>
+
+  <input
+  id="userMessage"
+  placeholder="Write message">
+
+  <button onclick="sendToAdmin()">
+
+    Send
+
+  </button>
+
+</div>
 
 </div>
 
@@ -258,7 +305,6 @@ Verify Email
       <input id="wallet" placeholder="عنوان المحفظة">
       <input id="amount" placeholder="المبلغ">
       <button onclick="withdraw()">سحب</button>
-      <button onclick="openSupport()">💬 خدمة العملاء</button>
     </div>
 
 <div class="card">
@@ -618,7 +664,19 @@ async function register(){
     return;
   }
 
-  localStorage.setItem("userId", data.user._id);
+  localStorage.setItem(
+"verifyEmail",
+email.value
+);
+
+document.querySelectorAll(".page")
+.forEach(p =>
+  p.classList.remove("active")
+);
+
+document.getElementById(
+"verifyPage"
+).classList.add("active");
 
   window.userTasks = data.user.tasks || [];
 
@@ -801,26 +859,44 @@ async function deposit(){
 
 async function verifyEmail(){
 
-  const res = await fetch("/verify", {
+  document.getElementById(
+  "verifyStatus"
+  ).innerText =
+  "Checking code...";
 
-    method: "POST",
+  const res = await fetch(
+    "/verify-email",
+  {
+
+    method:"POST",
 
     headers:{
       "Content-Type":"application/json"
     },
 
-    body: JSON.stringify({
+    body:JSON.stringify({
 
-      email: email.value,
+      email:
+      localStorage.getItem(
+      "verifyEmail"),
 
       code:
-        document.getElementById("verifyCode").value
+      document.getElementById(
+      "verifyInput").value
     })
   });
 
   const data = await res.json();
 
-  alert(data.msg || data.error);
+  document.getElementById(
+  "verifyStatus"
+  ).innerText =
+  data.msg || data.error;
+
+  if(data.msg){
+
+    showLogin();
+  }
 }
 
 async function addTask(){
@@ -943,6 +1019,68 @@ document.getElementById("dailyLeft")
 
   document.getElementById("tasks")
     .innerHTML = html;
+}
+
+</script>
+
+<script>
+
+async function sendToAdmin(){
+
+  const res = await fetch(
+    "/send-to-admin",
+  {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+      userId:
+      localStorage.getItem(
+      "userId"),
+
+      message:
+      document.getElementById(
+      "userMessage").value
+
+    })
+  });
+
+  const data = await res.json();
+
+  alert(data.msg || data.error);
+}
+
+async function resendCode(){
+
+  const res = await fetch(
+    "/resend-code",
+  {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+      email:
+      localStorage.getItem(
+      "verifyEmail")
+    })
+  });
+
+  const data = await res.json();
+
+  document.getElementById(
+  "verifyStatus"
+  ).innerText =
+  data.msg || data.error;
 }
 
 </script>

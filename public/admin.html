@@ -80,6 +80,8 @@ Add Balance
 
 </div>
 
+
+
 <script>
 
 async function addTask(){
@@ -170,6 +172,20 @@ Send Message
 
 <div class="card">
 
+<h2>📨 User Messages</h2>
+
+<button onclick="loadMessages()">
+
+Load Messages
+
+</button>
+
+<div id="messagesBox"></div>
+
+</div>
+
+<div class="card">
+
 <h2>🔓 Reset Wallet</h2>
 
 <input
@@ -239,6 +255,45 @@ async function resetWallet(){
   const data = await res.json();
 
   alert(data.msg || data.error);
+}
+
+</script>
+<script>
+
+async function loadMessages(){
+
+  const res =
+  await fetch("/admin/messages");
+
+  const users =
+  await res.json();
+
+  let html = "";
+
+  users.forEach(u => {
+
+    html += `
+
+    <div style="
+      background:#333;
+      padding:10px;
+      margin:10px;
+      border-radius:10px;
+    ">
+
+    <h3>${u.email}</h3>
+
+    <p>
+    ${u.userMessage || ""}
+    </p>
+
+    </div>
+    `;
+  });
+
+  document.getElementById(
+    "messagesBox"
+  ).innerHTML = html;
 }
 
 </script>

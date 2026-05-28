@@ -44,6 +44,7 @@ walletLocked: Boolean,
 
   referralCode: String,
   referredBy: String,
+  userMessage: String,
 
   verifyCode: Number,
   verified: Boolean,
@@ -783,6 +784,144 @@ async (req, res) => {
       error:"server error"
     });
   }
+});
+
+app.post("/send-to-admin",
+
+async (req, res) => {
+
+  try{
+
+    const { userId, message }
+    = req.body;
+
+    const user =
+    await User.findById(userId);
+
+    if(!user){
+
+      return res.json({
+        error:"user not found"
+      });
+    }
+
+    user.userMessage = message;
+
+    await user.save();
+
+    res.json({
+      msg:"message sent"
+    });
+
+  } catch(err){
+
+    console.log(err);
+
+    res.json({
+      error:"server error"
+    });
+  }
+});
+
+app.post("/verify-email",
+
+async (req, res) => {
+
+  const { email, code }
+  = req.body;
+
+  const user =
+  await User.findOne({ email });
+
+  if(!user){
+
+    return res.json({
+      error:"user not found"
+    });
+  }
+
+  if(user.verifyCode != code){
+
+    return res.json({
+      error:"wrong code"
+    });
+  }
+
+  user.verified = true;
+
+  await user.save();
+
+  res.json({
+    msg:"verified successfully"
+  });
+});
+
+app.post("/resend-code",
+
+async (req, res) => {
+
+  const { email }
+  = req.body;
+
+  const user =
+  await User.findOne({ email });
+
+  if(!user){
+
+    return res.json({
+      error:"user not found"
+    });
+  }
+
+  const code =
+  Math.floor(
+    100000 +
+    Math.random() * 900000
+  ).toString();
+
+  user.verifyCode = code;
+
+  await user.save();
+
+  try{
+
+    await transporter.sendMail({
+
+      from:
+      "mosstfa1239@gmail.com",
+
+      to:email,
+
+      subject:"Verification Code",
+
+      text:
+      "Your new code is: " + code
+    });
+
+  } catch(err){
+
+    console.log(err);
+  }
+
+  res.json({
+    msg:"code resent"
+  });
+});
+
+app.get("/admin/messages",
+
+async (req, res) => {
+
+  const users =
+  await User.find({
+
+    userMessage:{
+      $ne:null
+    }
+
+  });
+
+  res.json(users);
 });
 
 // 🚀 تشغ
