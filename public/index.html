@@ -89,6 +89,17 @@ input {
   font-size: 22px;
 }
 
+#loginStatus{
+
+  margin-top:15px;
+
+  color:#ffcc70;
+
+  font-weight:bold;
+
+  font-size:15px;
+}
+
 </style>
 </head>
 
@@ -104,6 +115,7 @@ input {
     <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
 
     <button onclick="login()">دخول</button>
+<p id="loginStatus"></p>
     <button onclick="showRegister()">إنشاء حساب</button>
   </div>
 </div>
@@ -292,6 +304,14 @@ Verify Email
 // 🔐 تسجيل دخول
 async function login(){
 
+document.getElementById("loginStatus")
+.innerText =
+"Logging in...";
+
+document.querySelector(
+'button[onclick="login()"]'
+).disabled = true;
+
   const res = await fetch("/login", {
     method: "POST",
     headers: {"Content-Type": "application/json"},
@@ -307,7 +327,14 @@ async function login(){
   alert(JSON.stringify(data));
 
   if(data.error){
-    alert(data.error);
+    document.getElementById(
+"loginStatus"
+).innerText =
+data.error;
+
+document.querySelector(
+'button[onclick="login()"]'
+).disabled = false;
     return;
   }
 
@@ -334,6 +361,11 @@ document.getElementById("adminMsg")
 data.adminMessage || "No messages";
 
   loadTeam(data.referralCode);
+
+document.getElementById(
+"loginStatus"
+).innerText =
+"Login successful";
 
   // ✅ فتح التطبيق
   document.querySelectorAll(".page").forEach(p =>
