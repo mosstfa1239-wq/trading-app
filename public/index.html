@@ -1075,7 +1075,7 @@ async function register(){
 
   localStorage.setItem(
 "verifyEmail",
-email.value
+reg_email.value
 );
 
 document.querySelectorAll(".page")
@@ -1087,32 +1087,6 @@ document.getElementById(
 "verifyPage"
 ).classList.add("active");
 
-  window.userTasks = data.user.tasks || [];
-
-  document.getElementById("userinfo").innerText = data.user.firstName;
-
-  document.getElementById("bal").innerText = data.user.balance;
-
-  document.getElementById("p_name").innerText = data.user.firstName;
-  document.getElementById("p_last").innerText = data.user.lastName;
-  document.getElementById("p_email").innerText = data.user.email;
-  document.getElementById("p_phone").innerText = data.user.phone;
-  document.getElementById("p_country").innerText = data.user.country;
-  document.getElementById("p_address").innerText = data.user.address;
-  document.getElementById("p_ref").innerText = data.referralCode;
-
-  document.querySelectorAll(".page").forEach(p =>
-    p.classList.remove("active")
-  );
-
-  document.getElementById("app").classList.add("active");
-
-  loadTasks();
-  loadChart();
-  loadLeaderboard();
-  updateTasks();
-  updateProgress();
-}
 
 let myChart;
 

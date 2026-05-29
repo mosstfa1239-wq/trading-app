@@ -159,7 +159,7 @@ lastTaskReset: String,
 
 });
 
-app.post("/verify", async (req, res) => {
+app.post("/verify-email", async (req, res) => {
 
   const { email, code } = req.body;
 
@@ -175,13 +175,6 @@ app.post("/verify", async (req, res) => {
 
   user.verified = true;
   await user.save();
-
-  await transporter.sendMail({
-  from: "mosstfa1239@gmail.com",
-  to: email,
-  subject: "Verification Code",
-  text: "Your code is: " + verifyCode
-});
 
   res.json({ message: "verified" });
 });
