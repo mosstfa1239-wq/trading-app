@@ -111,12 +111,16 @@ Math.floor(
 Math.random() * 900000
 ).toString();
 
+console.log("VERIFY CODE:", code);
+
   const myRef =
     Math.floor(10000 + Math.random() * 90000) +
     String.fromCharCode(65 + Math.floor(Math.random()*26));
 
   try {
     await transporter.sendMail({
+    console.log("EMAIL SENT");
+
       from: "mosstfa1239@gmail.com",
       to: email,
       subject: "Verify your account",
