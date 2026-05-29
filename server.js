@@ -119,13 +119,13 @@ console.log("VERIFY CODE:", code);
 
   try {
     await transporter.sendMail({
-    console.log("EMAIL SENT");
-
       from: "mosstfa1239@gmail.com",
       to: email,
       subject: "Verify your account",
       text: "Your code is: " + code
     });
+   console.log("EMAIL SENT");
+
   } catch(err){
     console.log("MAIL ERROR:", err);
   }
