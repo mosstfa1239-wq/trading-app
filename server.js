@@ -46,7 +46,7 @@ walletLocked: Boolean,
   referredBy: String,
   userMessage: String,
 
-  verifyCode: Number,
+  verifyCode: String,
   verified: Boolean,
   resetCode: String,
 
@@ -105,7 +105,11 @@ app.post("/register", async (req, res) => {
 
   const hashed = await bcrypt.hash(password, 10);
 
-  const code = Math.floor(100000 + Math.random() * 900000);
+  const code =
+Math.floor(
+100000 +
+Math.random() * 900000
+).toString();
 
   const myRef =
     Math.floor(10000 + Math.random() * 90000) +
