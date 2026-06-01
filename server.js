@@ -700,7 +700,7 @@ app.post("/admin/add-balance", async (req, res) => {
 
   } catch(err){
 
-    console.log(err);
+    console.log("MAIL ERROR:", err);
 
     res.json({
       error: "server error"
