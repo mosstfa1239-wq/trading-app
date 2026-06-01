@@ -7,11 +7,42 @@ const axios = require("axios");
 const crypto = require("crypto");
 
 const transporter = nodemailer.createTransport({
+
   service: "gmail",
+
   auth: {
+
     user: "mosstfa1239@gmail.com",
-    pass: "gzpw ndwn zlmh csaw",
+
+    pass: "gzpw ndwn zlmh csaw"
+
+  },
+
+  connectionTimeout: 10000,
+
+  greetingTimeout: 10000,
+
+  socketTimeout: 10000
+
+});
+
+transporter.verify(function(err, success){
+
+  if(err){
+
+    console.log(
+      "SMTP ERROR:",
+      err
+    );
+
+  }else{
+
+    console.log(
+      "SMTP READY"
+    );
+
   }
+
 });
 
 const refCode =
