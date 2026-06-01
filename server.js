@@ -146,17 +146,11 @@ console.log("VERIFY CODE:", code);
 
 tasks: [],
 
-dailyTasks: {
-  type: Number,
-  default: 30
-},
+ dailyTasks: 30,
 
-vipLevel: {
-  type: Number,
-  default: 1
-},
+vipLevel: 1,
 
-lastTaskReset: String,
+lastTaskReset: "",
 
   });
 
