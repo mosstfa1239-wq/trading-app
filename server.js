@@ -117,18 +117,33 @@ console.log("VERIFY CODE:", code);
     Math.floor(10000 + Math.random() * 90000) +
     String.fromCharCode(65 + Math.floor(Math.random()*26));
 
-  try {
-    await transporter.sendMail({
-      from: "mosstfa1239@gmail.com",
-      to: email,
-      subject: "Verify your account",
-      text: "Your code is: " + code
-    });
-   console.log("EMAIL SENT");
+console.log("BEFORE SENDMAIL");
 
-  } catch(err){
-    console.log("MAIL ERROR:", err);
-  }
+try {
+
+  const result = await transporter.sendMail({
+
+    from: "mosstfa1239@gmail.com",
+
+    to: email,
+
+    subject: "Verify your account",
+
+    text: "Your code is: " + code
+
+  });
+
+  console.log("EMAIL SENT");
+  console.log(result);
+
+} catch(err){
+
+  console.log("MAIL ERROR:");
+  console.log(err);
+
+}
+
+console.log("AFTER SENDMAIL");
 
   const user = await User.create({
     email,
