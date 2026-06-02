@@ -143,7 +143,7 @@ console.log("VERIFY CODE:", code);
 
   const myRef =
     Math.floor(10000 + Math.random() * 90000) +
-    String.fromCharCode(65 + Math.floor(Math.random()*26));
+    String.fromCharCode(65 + Math.floor(Math.random()*26))
 
 console.log("BEFORE SENDMAIL");
 
@@ -172,37 +172,6 @@ try {
 }
 
 console.log("AFTER SENDMAIL");
-
-  const user = await User.create({
-    email,
-    password: hashed,
-    firstName,
-    lastName,
-    phone,
-    country,
-    address,
-    referralCode: myRef,
-    referredBy: referralCode || "",
-    verifyCode: code,
-    verified: false,
-    balance: 0,
-
-tasks: [],
-
- dailyTasks: 30,
-
-vipLevel: 1,
-
-lastTaskReset: "",
-
-  });
-
-  res.json({
-  msg: "registered",
-  user
-});
-
-});
 
 app.post("/verify-email", async (req, res) => {
 
