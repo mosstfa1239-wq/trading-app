@@ -8,38 +8,31 @@ const crypto = require("crypto");
 
 const transporter = nodemailer.createTransport({
 
-  service: "gmail",
+  host: "smtp-relay.brevo.com",
+
+  port: 587,
+
+  secure: false,
 
   auth: {
 
-    user: "mosstfa1239@gmail.com",
+    user: "ad2773001@smtp-brevo.com",
 
-    pass: "gzpw ndwn zlmh csaw"
+    pass: "nPJXEDScHNvZ6f3O"
 
-  },
-
-  connectionTimeout: 10000,
-
-  greetingTimeout: 10000,
-
-  socketTimeout: 10000
+  }
 
 });
 
-transporter.verify(function(err, success){
+transporter.verify(function(err){
 
   if(err){
 
-    console.log(
-      "SMTP ERROR:",
-      err
-    );
+    console.log("SMTP ERROR:", err);
 
   }else{
 
-    console.log(
-      "SMTP READY"
-    );
+    console.log("SMTP READY");
 
   }
 
