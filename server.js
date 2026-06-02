@@ -24,9 +24,13 @@ const transporter = nodemailer.createTransport({
 
 });
 
+console.log("START SMTP VERIFY");
+
 transporter.verify(function(err){
 
   if(err){
+
+console.log("END SMTP VERIFY BLOCK");
 
     console.log("SMTP ERROR:", err);
 
