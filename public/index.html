@@ -402,7 +402,6 @@ p{
 
     <input id="reg_address" placeholder="العنوان" autocomplete="street-address">
 
-<input id="verifyCode" placeholder="Ver>
 
 <button onclick="verifyEmail()">
 Verify Email
@@ -1050,42 +1049,53 @@ function showLogin(){
 
 async function register(){
 
-  const res = await fetch("/register", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      email: reg_email.value,
-      password: reg_pass.value,
-      firstName: reg_first.value,
-      lastName: reg_last.value,
-      phone: reg_phone.value,
-      country: reg_country.value,
-      address: reg_address.value
-    })
-  });
+  try{
 
-  const data = await res.json();
+    console.log("REGISTER START");
 
-  console.log(data);
+    const res = await fetch("/register", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        email: reg_email.value,
+        password: reg_pass.value,
+        firstName: reg_first.value,
+        lastName: reg_last.value,
+        phone: reg_phone.value,
+        country: reg_country.value,
+        address: reg_address.value,
+        referralCode: reg_ref.value
+      })
+    });
 
-  if(data.error){
-    alert(data.error);
-    return;
+    console.log("RESPONSE RECEIVED");
+
+    const data = await res.json();
+
+    console.log(data);
+
+    if(data.error){
+      alert(data.error);
+      return;
+    }
+
+    localStorage.setItem(
+      "verifyEmail",
+      reg_email.value
+    );
+
+    document.querySelectorAll(".page")
+    .forEach(p => p.classList.remove("active"));
+
+    document.getElementById("verifyPage")
+    .classList.add("active");
+
+  }catch(err){
+
+    console.log(err);
+    alert(err.message);
+
   }
-
-  localStorage.setItem(
-"verifyEmail",
-reg_email.value
-);
-
-document.querySelectorAll(".page")
-.forEach(p =>
-  p.classList.remove("active")
-);
-
-document.getElementById(
-"verifyPage"
-).classList.add("active");
 
 }
 
