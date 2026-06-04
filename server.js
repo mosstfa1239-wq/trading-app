@@ -75,7 +75,7 @@ walletLocked: Boolean,
   userMessage: String,
 
   verifyCode: String,
-  verified: Boolean,
+  verified: true,
   resetCode: String,
 
   balance: { type: Number, default: 0 },  // 👈 لازم فاصلة هون
@@ -183,8 +183,8 @@ const user = await User.create({
   address,
   referralCode: myRef,
   referredBy: referralCode || "",
-  verifyCode: code,
-  verified: false,
+  verifyCode: ,
+  verified: true,
   balance: 0,
 
   tasks: [],
@@ -204,25 +204,6 @@ res.json({
 
 });
 
-app.post("/verify-email", async (req, res) => {
-
-  const { email, code } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if(!user){
-    return res.json({ error: "user not found" });
-  }
-
-  if(user.verifyCode !== code){
-    return res.json({ error: "wrong code" });
-  }
-
-  user.verified = true;
-  await user.save();
-
-  res.json({ message: "verified" });
-});
 
 app.post("/forgot-password", async (req, res) => {
 
@@ -308,14 +289,9 @@ app.post("/login", async (req, res) => {
   }
 
   // ❗ تأكد من التفعيل (إذا مفعل النظام)
-  if(!user.verified){
-    return res.json({ error: "verify your email first" });
-  }
 
-  console.log(user);
-res.json(user);
-});
 
+  
 // 📋 عرض المهام
 app.get("/tasks", async (req, res) => {
   const tasks = await Task.find();
@@ -894,57 +870,7 @@ async (req, res) => {
   });
 });
 
-app.post("/resend-code",
 
-async (req, res) => {
-
-  const { email }
-  = req.body;
-
-  const user =
-  await User.findOne({ email });
-
-  if(!user){
-
-    return res.json({
-      error:"user not found"
-    });
-  }
-
-  const code =
-  Math.floor(
-    100000 +
-    Math.random() * 900000
-  ).toString();
-
-  user.verifyCode = code;
-
-  await user.save();
-
-  try{
-
-    await transporter.sendMail({
-
-      from:
-      "mosstfa1239@gmail.com",
-
-      to:email,
-
-      subject:"Verification Code",
-
-      text:
-      "Your new code is: " + code
-    });
-
-  } catch(err){
-
-    console.log(err);
-  }
-
-  res.json({
-    msg:"code resent"
-  });
-});
 
 app.get("/admin/messages",
 
