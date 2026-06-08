@@ -75,7 +75,7 @@ walletLocked: Boolean,
   userMessage: String,
 
   verifyCode: String,
-  verified: true,
+verified: { type: Boolean, default: true },
   resetCode: String,
 
   balance: { type: Number, default: 0 },  // 👈 لازم فاصلة هون
@@ -185,7 +185,8 @@ const user = await User.create({
   referredBy: referralCode || "",
   verifyCode: "",
   verified: true,
-  balance: 0,
+  resetCode: "",
+   balance: 0,
 
   tasks: [],
 
@@ -259,6 +260,7 @@ app.post("/reset-password", async (req, res) => {
   }
 
   const hashed =
+
     await bcrypt.hash(newPassword, 10);
 
   user.password = hashed;
@@ -288,10 +290,10 @@ app.post("/login", async (req, res) => {
     return res.json({ error: "wrong password" });
   }
 
-  // ❗ تأكد من التفعيل (إذا مفعل النظام)
+ res.json(user);
 
+});
 
-  
 // 📋 عرض المهام
 app.get("/tasks", async (req, res) => {
   const tasks = await Task.find();
@@ -902,4 +904,3 @@ mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/tra
 
 })
 .catch(err => console.log(err));
-
