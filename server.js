@@ -283,8 +283,14 @@ app.post("/login", async (req, res) => {
     return res.json({ error: "email not found" });
   }
 
+console.log("EMAIL:", email);
+console.log("PASSWORD FROM LOGIN:", password);
+console.log("HASH IN DB:", user.password);
+
   // 🔐 مقارنة الباسورد
   const match = await bcrypt.compare(password, user.password);
+
+  console.log("MATCH:", match);
 
   if(!match){
     return res.json({ error: "wrong password" });
