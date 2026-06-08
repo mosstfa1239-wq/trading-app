@@ -183,7 +183,7 @@ const user = await User.create({
   address,
   referralCode: myRef,
   referredBy: referralCode || "",
-  verifyCode: ,
+  verifyCode: "",
   verified: true,
   balance: 0,
 
