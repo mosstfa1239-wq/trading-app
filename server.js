@@ -212,6 +212,8 @@ app.post("/forgot-password", async (req, res) => {
 
   const user = await User.findOne({ email });
 
+  console.log("USER PASSWORD =", user.password);
+
   if(!user){
     return res.json({
       error: "email not found"
