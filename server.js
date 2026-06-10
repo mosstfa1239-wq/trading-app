@@ -173,6 +173,8 @@ try {
 
 console.log("AFTER SENDMAIL");
 
+  //انشاء مستخدم
+
 const user = await User.create({
   email,
   password: hashed,
@@ -197,6 +199,8 @@ const user = await User.create({
   lastTaskReset: ""
 
 });
+
+console.log("SAVED PASSWORD:", user.password);
 
 res.json({
   msg: "registered",
