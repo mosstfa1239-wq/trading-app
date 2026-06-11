@@ -487,13 +487,22 @@ user.tasks.push(taskId);
 
   await user.save();
 
-await History.create({
-  userId,
-  type: "profit",
-  amount: task.profit,
-  text: "Task Profit"
-});
+try {
 
+  await History.create({
+    userId,
+    type: "profit",
+    amount: task.profit,
+    text: "Task Profit"
+  });
+
+  console.log("HISTORY SAVED:", userId);
+
+} catch(err){
+
+  console.log("HISTORY ERROR:", err);
+
+}
   res.json({
 
     msg: "task completed",
