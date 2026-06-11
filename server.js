@@ -467,6 +467,12 @@ app.post("/complete-task", async (req, res) => {
     });
   }
 
+if(user.tasks.includes(taskId)){
+  return res.json({
+    error: "task already completed"
+  });
+}
+
   // خصم
   user.balance -= task.price;
 
@@ -476,6 +482,8 @@ app.post("/complete-task", async (req, res) => {
 
   // إنقاص المهام
   user.dailyTasks -= 1;
+
+user.tasks.push(taskId);
 
   await user.save();
 

@@ -572,12 +572,27 @@ Verify Email
 
 </div>
 
+<div id="historyPage" class="page">
+
+  <div class="card">
+
+    <h2>📜 سجل العمليات</h2>
+
+    <div id="historyBox">
+      لا يوجد بيانات
+    </div>
+
+  </div>
+
+</div>
+
   <!-- 🔻 التنقل -->
   <div class="nav">
     <button onclick="showTab('home')">🏠</button>
     <button onclick="showTab('tasksPage')">🧩</button>
     <button onclick="showTab('profile')">👤</button>
     <button onclick="showTab('withdrawPage')">💸</button>
+    <button onclick="showPage('historyPage')">📜</button>
   </div>
 
 </div>
@@ -725,6 +740,8 @@ async function login(){
     loadChart();
 
     loadLeaderboard();
+
+   loadHistory();
 
     updateTasks();
 
@@ -1217,6 +1234,67 @@ async function loadHistory(){
   document.getElementById(
   "historyBox"
   ).innerHTML = html;
+}
+
+async function loadHistory(){
+
+  const userId =
+  localStorage.getItem("userId");
+
+  const res =
+  await fetch(
+  "/history?userId=" + userId
+  );
+
+  const data =
+  await res.json();
+
+  let html = "";
+
+  data.forEach(item => {
+
+    html += `
+    <div class="card">
+
+      <b>${item.text}</b>
+
+      <br>
+
+      ${item.amount}$
+
+      <br>
+
+      ${new Date(item.date)
+      .toLocaleString()}
+
+    </div>
+    `;
+
+  });
+
+  document.getElementById(
+  "historyBox"
+  ).innerHTML =
+  html || "لا يوجد عمليات";
+
+}
+
+function showPage(id){
+
+  document
+  .querySelectorAll(".page")
+  .forEach(p =>
+    p.classList.remove("active")
+  );
+
+  document
+  .getElementById(id)
+  .classList.add("active");
+
+  if(id === "historyPage"){
+    loadHistory();
+  }
+
 }
 
 </script>
