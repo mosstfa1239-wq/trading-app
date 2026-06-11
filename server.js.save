@@ -479,13 +479,6 @@ app.post("/complete-task", async (req, res) => {
 
   await user.save();
 
-await History.create({
-  userId,
-  type: "profit",
-  amount: task.profit,
-  text: "Task Profit"
-});
-
   res.json({
 
     msg: "task completed",
@@ -540,13 +533,6 @@ app.post("/withdraw", async (req, res) => {
     wallet,
     amount
   });
-
-await History.create({
-  userId,
-  type: "withdraw",
-  amount: amount,
-  text: "Withdraw Request"
-});
 
   res.json({ msg: "withdraw request sent", balance: user.balance });
 });
@@ -703,13 +689,6 @@ app.post("/payment-webhook", async (req, res) => {
         user.balance += Number(payment.price_amount);
 
         await user.save();
-
-await History.create({
-  userId,
-  type: "deposit",
-  amount: Number(payment.price_amount),
-  text: "Deposit"
-});
 
         console.log("BALANCE UPDATED");
       }
@@ -932,18 +911,6 @@ async (req, res) => {
   });
 
   res.json(users);
-});
-
-app.get("/history", async (req,res)=>{
-
-  const { userId } = req.query;
-
-  const data = await History.find({
-    userId
-  }).sort({ date:-1 });
-
-  res.json(data);
-
 });
 
 // 🚀 تشغ

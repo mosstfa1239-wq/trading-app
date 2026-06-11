@@ -465,6 +465,14 @@ Verify Email
     <div id="tasks"></div>
   </div>
 
+<div id="historyPage" class="page">
+
+<h2>History</h2>
+
+<div id="historyBox"></div>
+
+</div>
+
   <!-- 👤 الحساب -->
  <!-- 👤 الحساب -->
 <div id="profile" class="tab">
@@ -711,6 +719,8 @@ async function login(){
 
     // ✅ تحميل
     loadTasks();
+
+    loadHistory();
 
     loadChart();
 
@@ -1176,6 +1186,37 @@ async function loadTeam(refCode){
   });
 
   document.getElementById("teamList").innerHTML = html;
+}
+
+async function loadHistory(){
+
+  const userId =
+  localStorage.getItem("userId");
+
+  const res =
+  await fetch(
+  "/history?userId="+userId);
+
+  const data =
+  await res.json();
+
+  let html = "";
+
+  data.forEach(item=>{
+
+    html += `
+    <div class="card">
+      ${item.text}
+      <br>
+      $${item.amount}
+    </div>
+    `;
+
+  });
+
+  document.getElementById(
+  "historyBox"
+  ).innerHTML = html;
 }
 
 </script>
