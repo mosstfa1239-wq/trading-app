@@ -580,10 +580,10 @@ Verify Email
 
   <!-- 🔻 التنقل -->
   <div class="nav">
-    <button onclick="showTab('home')">🏠</button>
-    <button onclick="showTab('tasksPage')">🧩</button>
-    <button onclick="showTab('profile')">👤</button>
-    <button onclick="showTab('withdrawPage')">💸</button>
+    <button onclick="showPage('home')">🏠</button>
+    <button onclick="showPage('tasksPage')">🧩</button>
+    <button onclick="showPage('profile')">👤</button>
+    <button onclick="showPage('withdrawPage')">💸</button>
     <button onclick="showPage('historyPage')">📜</button>
   </div>
 
@@ -890,8 +890,14 @@ async function(){
 
 // 🔄 تبديل الصفحات
 function showTab(id){
-  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll(".page")
+  .forEach(p =>
+    p.classList.remove("active")
+  );
+
+  document.getElementById(id)
+  .classList.add("active");
 }
 
 
@@ -902,27 +908,6 @@ function logout(){
   document.getElementById("loginPage").classList.add("active");
 }
 
-// 🧩 تحميل المهام
-async function loadTasks(){
-  const res = await fetch("/tasks");
-  const tasks = await res.json();
-
-  let html = "";
-
-  tasks.forEach(task => {
-    html += `
-      <div class="card">
-        <h3>${task.title}</h3>
-        <p>💰 ${task.cost}</p>
-        <p>🎁 ${task.reward}</p>
-        <button onclick="buyTask('${task._id}')">شراء</button>
-        <button onclick="completeTask('${task._id}')">تنفيذ</button>
-      </div>
-    `;
-  });
-
-  document.getElementById("tasks").innerHTML = html;
-}
 
 // 👇 حطها هون
 async function loadLeaderboard(){
