@@ -398,8 +398,14 @@ app.get("/daily-tasks", async (req, res) => {
 app.post("/buy-task", async (req, res) => {
   const { userId, taskId } = req.body;
 
+console.log("COMPLETE TASK START");
+console.log("USER ID:", userId);
+console.log("TASK ID:", taskId);
+
   const user = await User.findById(userId);
   const task = await Task.findById(taskId);
+
+
 
   if (!user || !task)
     return res.json({ error: "not found" });
@@ -442,9 +448,16 @@ app.post("/complete-task", async (req, res) => {
 
   const { userId, taskId } = req.body;
 
+console.log("COMPLETE TASK START");
+console.log("USER ID:", userId);
+console.log("TASK ID:", taskId);
+
   const user = await User.findById(userId);
 
   const task = await Task.findById(taskId);
+
+console.log("USER FOUND:", !!user);
+console.log("TASK FOUND:", !!task);
 
   if(!user || !task){
 
@@ -485,7 +498,11 @@ if(user.tasks.includes(taskId)){
 
 user.tasks.push(taskId);
 
+console.log("BEFORE SAVE");
+
   await user.save();
+
+console.log("AFTER SAVE");
 
 try {
 
@@ -495,6 +512,8 @@ try {
     amount: task.profit,
     text: "Task Profit"
   });
+
+console.log("HISTORY SAVED");
 
   console.log("HISTORY SAVED:", userId);
 
