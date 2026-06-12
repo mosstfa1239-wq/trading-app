@@ -461,13 +461,13 @@ Verify Email
 </div>
 
   <!-- 🧩 المهام -->
-  <div id="tasksPage" class="tab">
+  <div id="tasksPage" class="page">
     <div id="tasks"></div>
   </div>
 
   <!-- 👤 الحساب -->
  <!-- 👤 الحساب -->
-<div id="profile" class="tab">
+<div id="profile" class="page">
 
   <div class="card">
 
@@ -529,7 +529,7 @@ Verify Email
 </div>
 
   <!-- 💸 السحب -->
-  <div id="withdrawPage" class="tab">
+  <div id="withdrawPage" class="page">
     <div class="card">
       <h3>💸 سحب TRC20</h3>
       <input id="wallet" placeholder="عنوان المحفظة">
@@ -1195,37 +1195,6 @@ async function loadTeam(refCode){
   });
 
   document.getElementById("teamList").innerHTML = html;
-}
-
-async function loadHistory(){
-
-  const userId =
-  localStorage.getItem("userId");
-
-  const res =
-  await fetch(
-  "/history?userId="+userId);
-
-  const data =
-  await res.json();
-
-  let html = "";
-
-  data.forEach(item=>{
-
-    html += `
-    <div class="card">
-      ${item.text}
-      <br>
-      $${item.amount}
-    </div>
-    `;
-
-  });
-
-  document.getElementById(
-  "historyBox"
-  ).innerHTML = html;
 }
 
 async function loadHistory(){
