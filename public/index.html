@@ -840,15 +840,12 @@ async function(){
 <script>
 
 // 🔄 تبديل الصفحات
-function showTab(id){
+function showTab(id) {
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.classList.remove("active");
+  });
 
-  document.querySelectorAll(".page")
-  .forEach(p =>
-    p.classList.remove("active")
-  );
-
-  document.getElementById(id)
-  .classList.add("active");
+  document.getElementById(id).classList.add("active");
 }
 
 
