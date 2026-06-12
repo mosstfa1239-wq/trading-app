@@ -373,92 +373,74 @@ p{
     <h2>🔐 تسجيل دخول</h2>
 
     <input id="email" placeholder="Email" autocomplete="email">
-
     <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
 
     <button onclick="login()">دخول</button>
-<p id="loginStatus"></p>
+    <p id="loginStatus"></p>
+
     <button onclick="showRegister()">إنشاء حساب</button>
   </div>
 </div>
 
-<div id="registerPage" class="Tab">
+<!-- 📝 التسجيل -->
+<div id="registerPage" class="page">
   <div class="card">
     <h2>📝 تسجيل</h2>
 
     <input id="reg_email" placeholder="Email" autocomplete="email">
-
     <input id="reg_pass" type="password" placeholder="Password" autocomplete="new-password">
-
-    <input id="reg_first" placeholder="الاسم" autocomplete="given-name">
-
-    <input id="reg_last" placeholder="الكنية" autocomplete="family-name">
-
-    <input id="reg_phone" placeholder="رقم الهاتف" autocomplete="tel">
-
-    <input id="reg_country" placeholder="البلد" autocomplete="country">
-
+    <input id="reg_first" placeholder="الاسم">
+    <input id="reg_last" placeholder="الكنية">
+    <input id="reg_phone" placeholder="رقم الهاتف">
+    <input id="reg_country" placeholder="البلد">
     <input id="reg_ref" placeholder="Referral Code">
+    <input id="reg_address" placeholder="العنوان">
 
-    <input id="reg_address" placeholder="العنوان" autocomplete="street-address">
-
-
-<button onclick="verifyEmail()">
-Verify Email
-</button>
-
+    <button onclick="verifyEmail()">Verify Email</button>
     <button onclick="register()">تسجيل</button>
     <button onclick="showLogin()">عندي حساب</button>
   </div>
 </div>
 
-
 <!-- 📱 التطبيق -->
-<div id="app" class="page">
+<div id="app" style="display:none;">
 
   <!-- 🏠 الرئيسية -->
-<div id="home" class="tab active">
+  <div id="home" class="tab active">
 
-  <!-- 💰 الرصيد -->
-  <div class="card">
+    <div class="card">
+      <h3 id="userinfo"></h3>
+      <h3>💰 الرصيد</h3>
+      <h1 id="bal">0</h1>
+    </div>
 
-    <h3 id="userinfo"></h3>
+    <div class="card">
+      <h3>📊 أرباحك</h3>
+      <canvas id="profitChart"></canvas>
+    </div>
 
-    <h3>💰 الرصيد</h3>
-    <h1 id="bal">0</h1>
+    <div class="card">
+      <h3>⏳ المهام اليومية</h3>
+      <p>أنجزت: <span id="doneTasks">0</span> / 5</p>
+    </div>
+
+    <div class="card">
+      <h3>🎯 هدف اليوم</h3>
+      <p>اربح: 10$</p>
+      <p>تقدّمك: <span id="progress">0</span>%</p>
+    </div>
+
+    <div class="card">
+      <h3>🏆 أفضل المستخدمين</h3>
+      <marquee id="leaderboard"></marquee>
+    </div>
+
+    <div class="card">
+      <h2>📋 Daily Tasks</h2>
+      <h3 id="dailyLeft"></h3>
+    </div>
+
   </div>
-
-  <!-- 📊 الأرباح -->
-  <div class="card">
-    <h3>📊 أرباحك</h3>
-    <canvas id="profitChart"></canvas>
-  </div>
-
-  <!-- ⏳ المهام اليومية -->
-  <div class="card">
-    <h3>⏳ المهام اليومية</h3>
-    <p>أنجزت: <span id="doneTasks">0</span> / 5</p>
-  </div>
-
-  <!-- 🎯 الهدف -->
-  <div class="card">
-    <h3>🎯 هدف اليوم</h3>
-    <p>اربح: 10$</p>
-    <p>تقدّمك: <span id="progress">0</span>%</p>
-  </div>
-
-  <!-- 🏆 الترتيب -->
-  <div class="card">
-    <h3>🏆 أفضل المستخدمين</h3>
-    <marquee id="leaderboard" direction="left"></marquee>
-  </div>
-
-</div>
-
-<div class="card">
-  <h2>📋 Daily Tasks</h2>
-  <h3 id="dailyLeft"></h3>
-</div>
 
   <!-- 🧩 المهام -->
   <div id="tasksPage" class="tab">
@@ -466,70 +448,44 @@ Verify Email
   </div>
 
   <!-- 👤 الحساب -->
- <!-- 👤 الحساب -->
-<div id="profile" class="tab">
+  <div id="profile" class="tab">
 
-  <div class="card">
+    <div class="card">
+      <h3>👤 معلوماتي</h3>
 
-    <h3>👤 معلوماتي</h3>
+      <p>الاسم: <span id="p_name"></span></p>
+      <p>🎁: <span id="p_ref"></span></p>
+      <p>الكنية: <span id="p_last"></span></p>
+      <p>البريد: <span id="p_email"></span></p>
+      <p>الهاتف: <span id="p_phone"></span></p>
+      <p>البلد: <span id="p_country"></span></p>
+      <p>العنوان: <span id="p_address"></span></p>
 
-    <p>الاسم: <span id="p_name"></span></p>
+      <button onclick="logout()">🚪 خروج</button>
+    </div>
 
-    <p>🎁: <span id="p_ref"></span></p>
+    <div class="card">
+      <h3>👥 فريقي</h3>
+      <p>عدد الأعضاء: <span id="teamCount">0</span></p>
+      <div id="teamList"></div>
+    </div>
 
-    <p>الكنية: <span id="p_last"></span></p>
+    <div class="card">
+      <h2>📩 رسائل الإدارة</h2>
+      <p id="adminMsg">No messages</p>
+    </div>
 
-    <p>البريد: <span id="p_email"></span></p>
-
-    <p>الهاتف: <span id="p_phone"></span></p>
-
-    <p>البلد: <span id="p_country"></span></p>
-
-    <p>العنوان: <span id="p_address"></span></p>
-
-    <button onclick="logout()">
-      🚪 خروج
-    </button>
-
-  </div>
-
-  <div class="card">
-
-    <h2>📩 Support</h2>
-
-    <p id="adminMsg">
-      No messages
-    </p>
+    <div class="card">
+      <h2>💬 Contact Admin</h2>
+      <input id="userMessage" placeholder="Write message">
+      <button onclick="sendToAdmin()">Send</button>
+    </div>
 
   </div>
-<div class="card">
-
-  <h2>💬 Contact Admin</h2>
-
-  <input
-  id="userMessage"
-  placeholder="Write message">
-
-  <button onclick="sendToAdmin()">
-
-    Send
-
-  </button>
-
-</div>
-
-</div>
-
-<div class="card">
-  <h3>👥 فريقي</h3>
-
-  <p>عدد الأعضاء: <span id="teamCount">0</span></p>
-
-  <div id="teamList"></div>
-</div>
 
   <!-- 💸 السحب -->
   <div id="withdrawPage" class="tab">
+
     <div class="card">
       <h3>💸 سحب TRC20</h3>
       <input id="wallet" placeholder="عنوان المحفظة">
@@ -537,46 +493,40 @@ Verify Email
       <button onclick="withdraw()">سحب</button>
     </div>
 
-<div class="card">
-
-  <h2>Deposit</h2>
-
-  <input id="depositAmount" placeholder="Amount">
-
-  <button onclick="deposit()">
-    Deposit Crypto
-  </button>
-
-</div>
-
-</div>
-
-<div id="chatBox" style="display:none">
-
-  <div class="card">
-    <h3>💬 الدعم</h3>
-
-    <textarea id="msg" placeholder="اكتب رسالتك"></textarea>
-    <button onclick="sendMsg()">إرسال</button>
-
-    <div id="myMessages"></div>
-  </div>
-
-</div>
-
-<div id="historyPage" class="tab">
-
-  <div class="card">
-
-    <h2>📜 سجل العمليات</h2>
-
-    <div id="historyBox">
-      لا يوجد بيانات
+    <div class="card">
+      <h2>Deposit</h2>
+      <input id="depositAmount" placeholder="Amount">
+      <button onclick="deposit()">Deposit Crypto</button>
     </div>
 
   </div>
 
-</div>
+  <!-- 📜 السجل -->
+  <div id="historyPage" class="tab">
+
+    <div class="card">
+      <h2>📜 سجل العمليات</h2>
+      <div id="historyBox">
+        لا يوجد بيانات
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 💬 الدعم -->
+  <div id="chatBox" class="tab">
+
+    <div class="card">
+      <h3>💬 الدعم</h3>
+
+      <textarea id="msg" placeholder="اكتب رسالتك"></textarea>
+
+      <button onclick="sendMsg()">إرسال</button>
+
+      <div id="myMessages"></div>
+    </div>
+
+  </div>
 
   <!-- 🔻 التنقل -->
   <div class="nav">
@@ -588,6 +538,7 @@ Verify Email
   </div>
 
 </div>
+ 
 
 <script>
 
