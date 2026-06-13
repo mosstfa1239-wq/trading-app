@@ -200,6 +200,39 @@ Reset Wallet
 
 </div>
 
+<div class="card">
+
+  <h2>👥 Users</h2>
+
+  <p>
+    Total Users:
+    <span id="userCount">0</span>
+  </p>
+
+  <button onclick="loadUsers()">
+    Load Users
+  </button>
+
+  <div id="usersBox"></div>
+
+</div>
+
+<div class="card">
+
+  <h2>🔍 Search By Referral Code</h2>
+
+  <input
+  id="searchCode"
+  placeholder="Referral Code">
+
+  <button onclick="searchUser()">
+    Search
+  </button>
+
+  <div id="userInfo"></div>
+
+</div>
+
 <script>
 async function sendMessage(){
 
@@ -294,6 +327,114 @@ async function loadMessages(){
   document.getElementById(
     "messagesBox"
   ).innerHTML = html;
+}
+
+async function loadUsers(){
+
+  const res =
+  await fetch("/admin/users");
+
+  const users =
+  await res.json();
+
+  document.getElementById(
+    "userCount"
+  ).innerText =
+  users.length;
+
+  let html = "";
+
+  users.forEach(u=>{
+
+    html += `
+      <div class="card">
+
+        👤 ${u.firstName}
+        ${u.lastName}
+
+        <br>
+
+        💰 ${u.balance}$
+
+        <br>
+
+        📧 ${u.email}
+
+      </div>
+    `;
+
+  });
+
+  document.getElementById(
+    "usersBox"
+  ).innerHTML = html;
+
+}
+
+async function searchUser(){
+
+  const code =
+  document.getElementById(
+    "searchCode"
+  ).value;
+
+  const res =
+  await fetch(
+    "/admin/user/" + code
+  );
+
+  const user =
+  await res.json();
+
+  if(user.error){
+
+    document.getElementById(
+      "userInfo"
+    ).innerHTML =
+    user.error;
+
+    return;
+  }
+
+  document.getElementById(
+    "userInfo"
+  ).innerHTML = `
+
+    <div class="card">
+
+      <h3>
+      ${user.firstName}
+      ${user.lastName}
+      </h3>
+
+      <p>
+      📧 ${user.email}
+      </p>
+
+      <p>
+      📞 ${user.phone}
+      </p>
+
+      <p>
+      🌍 ${user.country}
+      </p>
+
+      <p>
+      🏠 ${user.address}
+      </p>
+
+      <p>
+      🎁 ${user.referralCode}
+      </p>
+
+      <p>
+      💰 ${user.balance}
+      </p>
+
+    </div>
+
+  `;
+
 }
 
 </script>

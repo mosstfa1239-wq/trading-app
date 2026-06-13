@@ -982,6 +982,35 @@ app.get("/history", async (req,res)=>{
 
 });
 
+// جلب جميع المستخدمين
+app.get("/admin/users", async (req, res) => {
+
+  const users = await User.find(
+    {},
+    "firstName lastName email referralCode balance country"
+  );
+
+  res.json(users);
+
+});
+
+// البحث بمستخدم حسب الكود
+app.get("/admin/user/:code", async (req, res) => {
+
+  const user = await User.findOne({
+    referralCode: req.params.code
+  });
+
+  if(!user){
+    return res.json({
+      error: "User not found"
+    });
+  }
+
+  res.json(user);
+
+});
+
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
 .then(() => {
