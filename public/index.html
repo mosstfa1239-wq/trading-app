@@ -836,12 +836,17 @@ async function(){
 <script>
 
 // 🔄 تبديل الصفحات
-function showTab(id) {
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.classList.remove("active");
-  });
+function showTab(id){
 
-  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".tab")
+    .forEach(t => t.classList.remove("active"));
+
+  document.getElementById(id)
+    .classList.add("active");
+
+  if(id === "historyPage"){
+    loadHistory();
+  }
 }
 
 
