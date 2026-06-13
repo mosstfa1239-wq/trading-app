@@ -671,9 +671,7 @@ async function login(){
       "active")
     );
 
-    document.getElementById(
-    "app"
-    ).classList.add("active");
+    document.getElementById("app").style.display = "block";
 
     // ✅ تحميل
     loadTasks();
@@ -754,9 +752,7 @@ async function(){
       "active")
     );
 
-    document.getElementById(
-    "app"
-    ).classList.add("active");
+   document.getElementById("app").style.display = "block";
 
     // ✅ البيانات
     document.getElementById(
@@ -852,7 +848,7 @@ function showTab(id) {
 // 🚪 خروج
 function logout(){
   localStorage.removeItem("userId");
-  document.getElementById("app").classList.remove("active");
+  document.getElementById("app").style.display = "none";
   document.getElementById("loginPage").classList.add("active");
 }
 
