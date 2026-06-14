@@ -127,6 +127,18 @@ const History = mongoose.model("History", {
   }
 });
 
+app.delete("/admin/task/:id", async (req,res)=>{
+
+  await Task.findByIdAndDelete(
+    req.params.id
+  );
+
+  res.json({
+    msg:"Task Deleted"
+  });
+
+});
+
 
 // 📥 تسجيل
 app.post("/register", async (req, res) => {

@@ -44,6 +44,14 @@ button{
 
 <div class="card">
 
+  <h2>🧩 Tasks Manager</h2>
+
+  <div id="tasksAdmin"></div>
+
+</div>
+
+<div class="card">
+
 <h1>⚙️ Admin Panel</h1>
 
 <input
@@ -80,7 +88,17 @@ Add Balance
 
 </div>
 
+<div class="card">
 
+  <h2>💸 Withdraw Requests</h2>
+
+  <button onclick="loadWithdraws()">
+    Load Requests
+  </button>
+
+  <div id="withdrawBox"></div>
+
+</div>
 
 <script>
 
@@ -434,6 +452,186 @@ async function searchUser(){
     </div>
 
   `;
+
+}
+
+</script>
+<script>
+async function loadWithdraws(){
+
+  const res =
+  await fetch("/admin/withdraws");
+
+  const data =
+  await res.json();
+
+  let html = "";
+
+  data.forEach(w=>{
+
+    html += `
+
+    <div class="card">
+
+      👤 ${w.email}
+
+      <br>
+
+      💰 ${w.amount}$
+
+      <br>
+
+      📍 ${w.wallet}
+
+      <br><br>
+
+      <button
+      onclick="approveWithdraw('${w._id}')">
+
+      ✅ Approve
+
+      </button>
+
+      <button
+      onclick="rejectWithdraw('${w._id}')">
+
+      ❌ Reject
+
+      </button>
+
+    </div>
+
+    `;
+
+  });
+
+  document.getElementById(
+  "withdrawBox"
+  ).innerHTML = html;
+
+}
+
+async function approveWithdraw(id){
+
+  const res =
+  await fetch(
+  "/admin/approve-withdraw",
+  {
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({id})
+  });
+
+  const data =
+  await res.json();
+
+  alert(data.msg);
+
+  loadWithdraws();
+
+}
+
+async function rejectWithdraw(id){
+
+  const res =
+  await fetch(
+  "/admin/reject-withdraw",
+  {
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({id})
+  });
+
+  const data =
+  await res.json();
+
+  alert(data.msg);
+
+  loadWithdraws();
+
+}
+
+async function loadAdminTasks(){
+
+  const res =
+  await fetch("/tasks");
+
+  const tasks =
+  await res.json();
+
+  let html = "";
+
+  tasks.forEach(task=>{
+
+    html += `
+
+    <div class="card">
+
+      <h3>${task.title}</h3>
+
+      <p>
+      Price:
+      ${task.price}
+      </p>
+
+      <p>
+      Profit:
+      ${task.profit}
+      </p>
+
+      <button
+      onclick="deleteTask(
+      '${task._id}')">
+
+      Delete
+
+      </button>
+
+    </div>
+
+    `;
+
+  });
+
+  document.getElementById(
+  "tasksAdmin"
+  ).innerHTML = html;
+
+}
+
+async function deleteTask(id){
+
+  if(
+    !confirm(
+    "Delete Task?"
+    )
+  ) return;
+
+  const res =
+  await fetch(
+
+    "/admin/task/" + id,
+
+    {
+      method:"DELETE"
+    }
+
+  );
+
+  const data =
+  await res.json();
+
+  alert(data.msg);
+
+  loadAdminTasks();
 
 }
 
