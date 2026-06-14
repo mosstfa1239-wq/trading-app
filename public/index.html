@@ -412,6 +412,9 @@ p{
       <h3 id="userinfo"></h3>
       <h3>💰 الرصيد</h3>
       <h1 id="bal">0</h1>
+       <h3 id="vipLevel">
+       VIP 0
+       </h3>
     </div>
 
     <div class="card">
@@ -550,6 +553,11 @@ async function login(){
   "loginStatus"
   ).innerText =
   "Logging in...";
+
+  document.getElementById(
+"vipLevel"
+).innerText =
+"VIP " + (data.vip || 0);
 
   document.querySelector(
   'button[onclick="login()"]'

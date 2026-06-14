@@ -80,7 +80,14 @@ verified: { type: Boolean, default: true },
 
   balance: { type: Number, default: 0 },  // 👈 لازم فاصلة هون
 
+
   tasks: { type: [String], default: [] }   // 👈 تمام
+
+vip: {
+  type: Number,
+  default: 0
+},
+
 });
 
 const User = mongoose.model("User", UserSchema);
@@ -326,6 +333,8 @@ console.log("HASH IN DB:", user.password);
   }
 
  res.json(user);
+
+vip: user.vip,
 
 });
 
