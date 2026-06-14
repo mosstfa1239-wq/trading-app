@@ -1423,35 +1423,7 @@ async function sendToAdmin(){
   alert(data.msg || data.error);
 }
 
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<div id="adminPage" class="page">
-
-  <div class="card">
-
-    <h2>⚙️ Admin Panel</h2>
-
-    <input id="taskTitle" placeholder="Task title">
-
-    <input id="taskReward" placeholder="Reward">
-
-    <button onclick="addTask()">
-      Add Task
-    </button>
-
-    <br><br>
-
-    <input id="userEmail" placeholder="User email">
-
-    <input id="userBalance" placeholder="Balance">
-
-    <button onclick="addBalance()">
-      Add Balance
-    </button>
-
-  </div>
 
 async function upgradeVip(vip){
 
@@ -1497,6 +1469,36 @@ async function upgradeVip(vip){
   }
 
 }
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<div id="adminPage" class="page">
+
+  <div class="card">
+
+    <h2>⚙️ Admin Panel</h2>
+
+    <input id="taskTitle" placeholder="Task title">
+
+    <input id="taskReward" placeholder="Reward">
+
+    <button onclick="addTask()">
+      Add Task
+    </button>
+
+    <br><br>
+
+    <input id="userEmail" placeholder="User email">
+
+    <input id="userBalance" placeholder="Balance">
+
+    <button onclick="addBalance()">
+      Add Balance
+    </button>
+
+  </div>
 
 </div>
 </body>
