@@ -415,6 +415,28 @@ p{
        <h3 id="vipLevel">
        VIP 0
        </h3>
+       <p>
+⭐ VIP:
+<span id="vipLevel">0</span>
+</p>
+
+<button onclick="upgradeVip(1)">
+VIP1 - $50
+</button>
+
+<button onclick="upgradeVip(2)">
+VIP2 - $200
+</button>
+
+<button onclick="upgradeVip(3)">
+VIP3 - $500
+</button>
+
+<button onclick="upgradeVip(4)">
+VIP4 - $1000
+</button>
+
+
     </div>
 
     <div class="card">
@@ -621,6 +643,9 @@ async function login(){
     ).innerText =
     data.balance;
 
+document.getElementById("vipLevel").innerText =
+data.vip || 0;
+
     document.getElementById(
     "p_name"
     ).innerText =
@@ -776,6 +801,10 @@ async function(){
     "bal"
     ).innerText =
     data.balance;
+
+document.getElementById("vipLevel")
+.innerText =
+data.vip || 0;
 
     document.getElementById(
     "p_name"
@@ -1423,6 +1452,51 @@ async function sendToAdmin(){
     </button>
 
   </div>
+
+async function upgradeVip(vip){
+
+  const res =
+  await fetch("/upgrade-vip",{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+      userId:
+      localStorage.getItem("userId"),
+
+      vip
+
+    })
+
+  });
+
+  const data =
+  await res.json();
+
+  alert(data.msg || data.error);
+
+  if(data.balance !== undefined){
+
+    document.getElementById("bal")
+    .innerText =
+    data.balance;
+
+  }
+
+  if(data.vip !== undefined){
+
+    document.getElementById("vipLevel")
+    .innerText =
+    data.vip;
+
+  }
+
+}
 
 </div>
 </body>

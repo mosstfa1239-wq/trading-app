@@ -88,6 +88,16 @@ vip: {
   default: 0
 },
 
+dailyTasks: {
+  type: Number,
+  default: 5
+},
+
+lastTaskReset: {
+  type: String,
+  default: ""
+}
+
 });
 
 const User = mongoose.model("User", UserSchema);
@@ -343,6 +353,8 @@ app.get("/tasks", async (req, res) => {
   res.json(tasks);
 });
 
+
+
 app.get("/generate-tasks", async (req, res) => {
 
   await Task.deleteMany({});
@@ -384,6 +396,21 @@ app.get("/generate-tasks", async (req, res) => {
   res.send("Tasks Generated");
 });
 
+function getVipTasks(vip){
+
+  if(vip === 0) return 5;
+
+  if(vip === 1) return 10;
+
+  if(vip === 2) return 20;
+
+  if(vip === 3) return 35;
+
+  if(vip === 4) return 50;
+
+  return 5;
+}
+
 app.get("/daily-tasks", async (req, res) => {
 
   const { userId } = req.query;
@@ -400,8 +427,8 @@ app.get("/daily-tasks", async (req, res) => {
   // ✅ تصفير يومي
   if(user.lastTaskReset !== today){
 
-    user.dailyTasks =
-      user.vipLevel * 30;
+   user.dailyTasks =
+  getVipTasks(user.vip);
 
     user.lastTaskReset = today;
 
@@ -1064,6 +1091,45 @@ app.get("/admin/stats", async (req,res)=>{
 
     totalBalance
 
+  });
+
+});
+
+
+app.post("/upgrade-vip", async (req,res)=>{
+
+  const { userId, vip } = req.body;
+
+  const user = await User.findById(userId);
+
+  if(!user){
+    return res.json({
+      error:"User not found"
+    });
+  }
+
+  let price = 0;
+
+  if(vip === 1) price = 50;
+  if(vip === 2) price = 200;
+  if(vip === 3) price = 500;
+  if(vip === 4) price = 1000;
+
+  if(user.balance < price){
+    return res.json({
+      error:"Insufficient balance"
+    });
+  }
+
+  user.balance -= price;
+  user.vip = vip;
+
+  await user.save();
+
+  res.json({
+    msg:"VIP upgraded",
+    balance:user.balance,
+    vip:user.vip
   });
 
 });
