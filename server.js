@@ -1023,6 +1023,43 @@ app.get("/admin/user/:code", async (req, res) => {
 
 });
 
+app.get("/admin/stats", async (req,res)=>{
+
+  const users =
+  await User.countDocuments();
+
+  const tasks =
+  await Task.countDocuments();
+
+  const pendingWithdraws =
+  await Withdraw.countDocuments({
+    status:"pending"
+  });
+
+  const balances =
+  await User.find();
+
+  let totalBalance = 0;
+
+  balances.forEach(u=>{
+    totalBalance +=
+    u.balance || 0;
+  });
+
+  res.json({
+
+    users,
+
+    tasks,
+
+    pendingWithdraws,
+
+    totalBalance
+
+  });
+
+});
+
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
 .then(() => {
