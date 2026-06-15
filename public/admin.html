@@ -347,15 +347,6 @@ async function resetWallet(){
 
 <script>
 
-loadAdminTasks();
-
-loadStats();
-
-loadFinance();
-
-</script>
-<script>
-
 async function loadMessages(){
 
   const res =
@@ -730,6 +721,11 @@ async function loadFinance(){
   data.totalWithdraws || 0;
 
 }
+loadAdminTasks();
+
+loadStats();
+
+loadFinance();
 
 
 </script>
