@@ -101,6 +101,26 @@ lastTaskReset: {
 });
 
 const User = mongoose.model("User", UserSchema);
+
+const Setting = mongoose.model("Setting", {
+
+  totalVipSales:{
+    type:Number,
+    default:0
+  },
+
+  totalDeposits:{
+    type:Number,
+    default:0
+  },
+
+  totalWithdraws:{
+    type:Number,
+    default:0
+  }
+
+});
+
 // 🧩 Task
 const TaskSchema = new mongoose.Schema({
 
@@ -1115,7 +1135,7 @@ app.post("/upgrade-vip", async (req,res)=>{
   if(vip === 3) price = 500;
   if(vip === 4) price = 1000;
 
-  if(user.balance < price){
+  if(user.balance < price){ //خصم الرصيد
     return res.json({
       error:"Insufficient balance"
     });
@@ -1133,11 +1153,35 @@ await History.create({
   text:"VIP Upgrade"
 });
 
+let setting = await Setting.findOne();
+
+if(!setting){
+
+  setting = await Setting.create({});
+}
+
+setting.totalVipSales += price;
+
+await setting.save();
+
   res.json({
     msg:"VIP upgraded",
     balance:user.balance,
     vip:user.vip
   });
+
+});
+
+app.get("/admin/finance", async (req,res)=>{
+
+  let setting = await Setting.findOne();
+
+  if(!setting){
+
+    setting = await Setting.create({});
+  }
+
+  res.json(setting);
 
 });
 

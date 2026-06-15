@@ -66,6 +66,27 @@ button{
 
 <div class="card">
 
+<h2>💰 Platform Finance</h2>
+
+<p>
+VIP Sales:
+<span id="vipSales">0</span>
+</p>
+
+<p>
+Deposits:
+<span id="deposits">0</span>
+</p>
+
+<p>
+Withdraws:
+<span id="withdraws">0</span>
+</p>
+
+</div>
+
+<div class="card">
+
 <h1>⚙️ Admin Panel</h1>
 
 <input
@@ -674,6 +695,32 @@ async function loadStats(){
   data.tasks;
 
 }
+
+async function loadFinance(){
+
+  const res =
+  await fetch("/admin/finance");
+
+  const data =
+  await res.json();
+
+  document.getElementById(
+  "vipSales"
+  ).innerText =
+  data.totalVipSales || 0;
+
+  document.getElementById(
+  "deposits"
+  ).innerText =
+  data.totalDeposits || 0;
+
+  document.getElementById(
+  "withdraws"
+  ).innerText =
+  data.totalWithdraws || 0;
+
+}
+
 
 </script>
 
