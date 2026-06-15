@@ -1126,6 +1126,13 @@ app.post("/upgrade-vip", async (req,res)=>{
 
   await user.save();
 
+await History.create({
+  userId:user._id,
+  type:"vip",
+  amount:price,
+  text:"VIP Upgrade"
+});
+
   res.json({
     msg:"VIP upgraded",
     balance:user.balance,
