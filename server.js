@@ -291,16 +291,16 @@ app.post("/forgot-password", async (req, res) => {
 
   await user.save();
 
-  await transporter.sendMail({
+//  await transporter.sendMail({
 
-    from: "mosstfa1239@gmail.com",
+//    from: "mosstfa1239@gmail.com",
 
-    to: email,
+//    to: email,
 
-    subject: "Reset Password",
-
-    text: "Your reset code is: " + resetCode
-  });
+//    subject: "Reset Password",
+//
+//    text: "Your reset code is: " + resetCode
+//  });
 
   res.json({
     msg: "code sent"
