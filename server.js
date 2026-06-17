@@ -362,6 +362,8 @@ console.log("HASH IN DB:", user.password);
     return res.json({ error: "wrong password" });
   }
 
+console.log("LOGIN SUCCESS:", user.email);
+
  res.json(user);
 
 
