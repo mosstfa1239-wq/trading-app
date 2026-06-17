@@ -933,6 +933,10 @@ updateTasks();
 
   const data = await res.json();
 
+console.log("LOGIN DATA:", data);
+
+alert("LOGIN OK");
+
   if(data.error){
     alert(data.error);
   } else {
