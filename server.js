@@ -1,46 +1,11 @@
-const express = require("express");
+/const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
+
 const axios = require("axios");
 const crypto = require("crypto");
 
-const transporter = nodemailer.createTransport({
-
-  host: "smtp-relay.brevo.com",
-
-  port: 587,
-
-  secure: false,
-
-  auth: {
-
-    user: "ad2773001@smtp-brevo.com",
-
-    pass: "nPJXEDScHNvZ6f3O"
-
-  }
-
-});
-
-console.log("START SMTP VERIFY");
-
-transporter.verify(function(err){
-
-  if(err){
-
-console.log("END SMTP VERIFY BLOCK");
-
-    console.log("SMTP ERROR:", err);
-
-  }else{
-
-    console.log("SMTP READY");
-
-  }
-
-});
 
 const refCode =
   Math.floor(10000 + Math.random() * 90000) +
@@ -209,17 +174,17 @@ console.log("BEFORE SENDMAIL");
 
 try {
 
-  const result = await transporter.sendMail({
+  const result = await resend.emails.send({
 
-    from: "mosstfa1239@gmail.com",
+  from: "onboarding@resend.dev",
 
-    to: email,
+  to: email,
 
-    subject: "Verify your account",
+  subject: "Reset Password",
 
-    text: "Your code is: " + code
+  text: "Your reset code is: " + resetCode
 
-  });
+});
 
   console.log("EMAIL SENT");
   console.log(result);
