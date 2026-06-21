@@ -400,7 +400,6 @@ Forgot Password
     <input id="reg_ref" placeholder="Referral Code">
     <input id="reg_address" placeholder="العنوان">
 
-    <button onclick="verifyEmail()">Verify Email</button>
     <button onclick="register()">تسجيل</button>
     <button onclick="showLogin()">عندي حساب</button>
   </div>
@@ -1108,16 +1107,15 @@ alert("Account created successfully");
 
 localStorage.setItem(
   "verifyEmail",
-  email
+  reg_email.value
 );
 
-document
-.getElementById("registerPage")
+document.getElementById("registerPage")
 .classList.remove("active");
 
-document
-.getElementById("verifyPage")
+document.getElementById("verifyPage")
 .classList.add("active");
+
 
   }catch(err){
 
