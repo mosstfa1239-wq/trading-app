@@ -201,6 +201,14 @@ try {
 
 console.log("AFTER SENDMAIL");
 
+const exists = await User.findOne({ email });
+
+if(exists){
+  return res.json({
+    error:"Email already exists"
+  });
+}
+
   //انشاء مستخدم
 
 const user = await User.create({
@@ -316,6 +324,14 @@ app.post("/login", async (req, res) => {
   if(!user){
     return res.json({ error: "email not found" });
   }
+
+if(!user.verified){
+
+  return res.json({
+    error:"Please verify your email first"
+  });
+
+}
 
 console.log("EMAIL:", email);
 console.log("PASSWORD FROM LOGIN:", password);
@@ -1152,6 +1168,138 @@ app.get("/admin/finance", async (req,res)=>{
   }
 
   res.json(setting);
+
+});
+
+app.post("/verify-email", async(req,res)=>{
+
+  const { email, code } = req.body;
+
+  const user =
+  await User.findOne({ email });
+
+  if(!user){
+
+    return res.json({
+      error:"User not found"
+    });
+  }
+
+  if(user.verifyCode != code){
+
+    return res.json({
+      error:"Wrong code"
+    });
+  }
+
+  user.verified = true;
+  user.verifyCode = "";
+
+  await user.save();
+
+  res.json({
+    msg:"Verified"
+  });
+
+});
+
+app.post("/forgot-password",
+
+async(req,res)=>{
+
+  const { email } = req.body;
+
+  const user =
+  await User.findOne({ email });
+
+  if(!user){
+
+    return res.json({
+      error:"User not found"
+    });
+
+  }
+
+  const resetCode =
+  Math.floor(
+  100000 +
+  Math.random()*900000
+  ).toString();
+
+  user.resetCode =
+  resetCode;
+
+  await user.save();
+
+  await resend.emails.send({
+
+    from:
+    "onboarding@resend.dev",
+
+    to: email,
+
+    subject:
+    "Reset Password",
+
+    text:
+    "Your reset code is: " +
+    resetCode
+
+  });
+
+  res.json({
+    msg:"Code Sent"
+  });
+
+});
+
+app.post("/reset-password",
+
+async(req,res)=>{
+
+  const {
+
+    email,
+    code,
+    password
+
+  } = req.body;
+
+  const user =
+  await User.findOne({ email });
+
+  if(!user){
+
+    return res.json({
+      error:"User not found"
+    });
+
+  }
+
+  if(user.resetCode != code){
+
+    return res.json({
+      error:"Wrong Code"
+    });
+
+  }
+
+  const hashed =
+  await bcrypt.hash(
+    password,
+    10
+  );
+
+  user.password =
+  hashed;
+
+  user.resetCode = "";
+
+  await user.save();
+
+  res.json({
+    msg:"Password Changed"
+  });
 
 });
 

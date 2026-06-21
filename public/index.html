@@ -378,6 +378,10 @@ p{
     <button onclick="login()">دخول</button>
     <p id="loginStatus"></p>
 
+<button onclick="showForgotPage()">
+Forgot Password
+</button>
+
     <button onclick="showRegister()">إنشاء حساب</button>
   </div>
 </div>
@@ -400,6 +404,59 @@ p{
     <button onclick="register()">تسجيل</button>
     <button onclick="showLogin()">عندي حساب</button>
   </div>
+</div>
+
+<div id="verifyPage" class="page">
+
+  <div class="card">
+
+    <h2>📧 Verify Email</h2>
+
+    <input
+      id="verifyCode"
+      placeholder="Enter verification code">
+
+    <button onclick="verifyAccount()">
+      Verify
+    </button>
+
+  </div>
+
+</div>
+
+<div id="forgotPage" class="page">
+
+  <div class="card">
+
+    <input
+    id="resetEmail"
+    placeholder="Email">
+
+    <button
+    onclick="sendResetCode()">
+
+    Send Code
+
+    </button>
+
+    <input
+    id="resetCode"
+    placeholder="Code">
+
+    <input
+    id="newPassword"
+    type="password"
+    placeholder="New Password">
+
+    <button
+    onclick="resetPassword()">
+
+    Reset Password
+
+    </button>
+
+  </div>
+
 </div>
 
 <!-- 📱 التطبيق -->
@@ -1049,7 +1106,18 @@ async function register(){
     }
 alert("Account created successfully");
 
-showLogin();
+localStorage.setItem(
+  "verifyEmail",
+  email
+);
+
+document
+.getElementById("registerPage")
+.classList.remove("active");
+
+document
+.getElementById("verifyPage")
+.classList.add("active");
 
   }catch(err){
 
@@ -1473,6 +1541,118 @@ async function upgradeVip(vip){
     data.vip;
 
   }
+
+}
+</script>
+<script>
+
+async function verifyAccount(){
+
+  const email =
+    localStorage.getItem("verifyEmail");
+
+  const code =
+    document.getElementById("verifyCode").value;
+
+  const res = await fetch("/verify-email",{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+      email,
+      code
+    })
+
+  });
+
+  const data = await res.json();
+
+  if(data.msg){
+
+    alert("Email Verified");
+
+    showLogin();
+
+  }else{
+
+    alert(data.error);
+
+  }
+}
+
+function showForgotPage(){
+
+  document
+  .querySelectorAll(".page")
+  .forEach(p=>p.classList.remove("active"));
+
+  document
+  .getElementById("forgotPage")
+  .classList.add("active");
+
+}
+
+async function sendResetCode(){
+
+  const email =
+  document.getElementById("resetEmail").value;
+
+  await fetch("/forgot-password",{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({email})
+
+  });
+
+  alert("Code Sent");
+
+}
+
+async function resetPassword(){
+
+  const email =
+  document.getElementById("resetEmail").value;
+
+  const code =
+  document.getElementById("resetCode").value;
+
+  const password =
+  document.getElementById("newPassword").value;
+
+  const res =
+  await fetch("/reset-password",{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+
+      email,
+      code,
+      password
+
+    })
+
+  });
+
+  const data =
+  await res.json();
+
+  alert(
+    data.msg || data.error
+  );
 
 }
 
