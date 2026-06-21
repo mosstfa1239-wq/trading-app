@@ -185,7 +185,7 @@ try {
 
   subject: "Reset Password",
 
-  text: "Your reset code is: " + resetCode
+  text: "Your verification code is: " + verifyCode
 
 });
 
