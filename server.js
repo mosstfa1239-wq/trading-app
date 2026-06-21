@@ -2,10 +2,13 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-
 const axios = require("axios");
 const crypto = require("crypto");
+const { Resend } = require("resend");
 
+const resend = new Resend(
+  process.env.RESEND_API_KEY
+);
 
 const refCode =
   Math.floor(10000 + Math.random() * 90000) +
