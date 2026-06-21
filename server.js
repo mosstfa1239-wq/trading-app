@@ -185,7 +185,7 @@ try {
 
   subject: "Reset Password",
 
-  text: "Your verification code is: " + Code
+  text: "Your verification code is: " + code
 
 });
 
@@ -213,7 +213,7 @@ const user = await User.create({
   address,
   referralCode: myRef,
   referredBy: referralCode || "",
-  verifyCode: "code",
+  verifyCode: code,
   verified: false,
   resetCode: "",
    balance: 0,
