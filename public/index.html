@@ -632,10 +632,6 @@ async function login(){
   ).innerText =
   "Logging in...";
 
-  document.getElementById(
-"vipLevel"
-).innerText =
-"VIP " + (data.vip || 0);
 
   document.querySelector(
   'button[onclick="login()"]'
@@ -678,6 +674,12 @@ async function login(){
       return;
     }
 
+document.getElementById(
+"vipLevel"
+).innerText =
+"VIP " + (data.vip || 0);
+
+
     // ✅ حفظ تسجيل الدخول
     localStorage.setItem(
     "userId",
@@ -699,8 +701,9 @@ async function login(){
     ).innerText =
     data.balance;
 
-document.getElementById("vipLevel").innerText =
-data.vip || 0;
+document.getElementById("vipLevel")
+.innerText =
+"VIP " + (data.vip || 0);
 
     document.getElementById(
     "p_name"
@@ -762,7 +765,7 @@ data.vip || 0;
 
     document.getElementById("app").style.display = "block";
 
-    // ✅ تحميل
+   // ✅ تحميل
     loadTasks();
 
     loadHistory();
@@ -849,6 +852,8 @@ async function(){
 
    document.getElementById("app").style.display = "block";
 
+console.log("OPEN APP");
+
     // ✅ البيانات
     document.getElementById(
     "userinfo"
@@ -862,7 +867,7 @@ async function(){
 
 document.getElementById("vipLevel")
 .innerText =
-data.vip || 0;
+"VIP " + (data.vip || 0);
 
     document.getElementById(
     "p_name"
@@ -910,12 +915,13 @@ data.vip || 0;
     );
 
     // ✅ تحميل
+console.log("TASKS");
     loadTasks();
-
+console.log("CHART");
     loadChart();
-
+console.log("LEADER");
     loadLeaderboard();
-
+console.log("DONE");
     updateTasks();
 
     updateProgress();
@@ -1361,7 +1367,7 @@ async function addTask(){
     })
   });
 
-  const data = await res.json();
+  constdata = await res.json();
 
   alert(data.msg || data.error);
 }
