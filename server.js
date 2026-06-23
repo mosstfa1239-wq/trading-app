@@ -1265,14 +1265,6 @@ app.get("/admin/finance", async (req,res)=>{
 
 });
 
-  if(!setting){
-
-    setting = await Setting.create({});
-  }
-
-  res.json(setting);
-
-});
 
 app.post("/verify-email", async(req,res)=>{
 
