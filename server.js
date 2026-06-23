@@ -20,6 +20,64 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static("public"));
 
+const Withdraw = mongoose.model("Withdraw", {
+
+  userId:String,
+
+  amount:Number,
+
+  wallet:String,
+
+  status:{
+    type:String,
+    default:"pending"
+  },
+
+  date:{
+    type:Date,
+    default:Date.now
+  }
+
+});
+
+const Finance = mongoose.model("Finance",{
+
+  platformProfit:{
+    type:Number,
+    default:0
+  }
+
+});
+
+const Deposit = mongoose.model("Deposit",{
+
+  userId:String,
+
+  amount:Number,
+
+  transactionId:String,
+
+  status:{
+    type:String,
+    default:"pending"
+  },
+
+  date:{
+    type:Date,
+    default:Date.now
+  }
+
+});
+
+const Payment = mongoose.model("Payment",{
+
+  paymentId:String,
+
+  userId:String,
+
+  amount:Number
+
+});
 // 👤 User
 const UserSchema = new mongoose.Schema({
   email: String,
@@ -787,6 +845,17 @@ app.post("/payment-webhook", async (req, res) => {
 
       const user = await User.findById(userId);
 
+const exists =
+await Payment.findOne({
+  paymentId: payment.payment_id
+});
+
+if(exists){
+
+  return res.sendStatus(200);
+
+}
+
       if(user){
 
         user.balance += Number(payment.price_amount);
@@ -800,9 +869,23 @@ await History.create({
   text: "Deposit"
 });
 
+
+await Payment.create({
+
+  paymentId:
+  payment.payment_id,
+
+  userId,
+
+  amount:
+  Number(payment.price_amount)
+
+});
+
         console.log("BALANCE UPDATED");
       }
     }
+
 
     res.sendStatus(200);
 
@@ -1132,6 +1215,29 @@ app.post("/upgrade-vip", async (req,res)=>{
 
   await user.save();
 
+const parent =
+await User.findOne({
+
+  referralCode:
+  user.referredBy
+
+});
+
+if(parent){
+
+  parent.balance +=
+  price * 0.05;
+
+  await parent.save();
+
+}
+
+const finance = await Finance.findOne();
+
+finance.platformProfit += price;
+
+await finance.save();
+
 await History.create({
   userId:user._id,
   type:"vip",
@@ -1161,6 +1267,14 @@ await setting.save();
 app.get("/admin/finance", async (req,res)=>{
 
   let setting = await Setting.findOne();
+
+
+  const finance =
+  await Finance.findOne();
+
+  res.json(finance);
+
+});
 
   if(!setting){
 
@@ -1302,7 +1416,6 @@ async(req,res)=>{
   });
 
 });
-
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
 .then(() => {
