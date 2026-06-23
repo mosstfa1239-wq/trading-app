@@ -78,6 +78,7 @@ const Payment = mongoose.model("Payment",{
   amount:Number
 
 });
+
 // 👤 User
 const UserSchema = new mongoose.Schema({
   email: String,
@@ -292,74 +293,6 @@ res.json({
 
 });
 
-
-app.post("/forgot-password", async (req, res) => {
-
-  const { email } = req.body;
-
-  const user = await User.findOne({ email });
-
-  console.log("USER PASSWORD =", user.password);
-
-  if(!user){
-    return res.json({
-      error: "email not found"
-    });
-  }
-
-  const resetCode =
-    Math.floor(100000 + Math.random() * 900000).toString();
-
-  user.resetCode = resetCode;
-
-  await user.save();
-
-//  await transporter.sendMail({
-
-//    from: "mosstfa1239@gmail.com",
-
-//    to: email,
-
-//    subject: "Reset Password",
-//
-//    text: "Your reset code is: " + resetCode
-//  });
-
-  res.json({
-    msg: "code sent"
-  });
-});
-
-app.post("/reset-password", async (req, res) => {
-
-  const { email, code, newPassword } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if(!user){
-    return res.json({
-      error: "user not found"
-    });
-  }
-
-  if(user.resetCode != code){
-    return res.json({
-      error: "wrong code"
-    });
-  }
-
-  const hashed =
-
-    await bcrypt.hash(newPassword, 10);
-
-  user.password = hashed;
-
-  await user.save();
-
-  res.json({
-    msg: "password changed"
-  });
-});
 
 // 🔐 تسجيل دخول (حطه هون 👇
 
@@ -750,21 +683,6 @@ app.post("/reply", async (req, res) => {
   res.json({ msg: "replied" });
 });
 
-app.post("/verify", async (req, res) => {
-  const { email, code } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if(user.verifyCode == code){
-    user.verified = true;
-    await user.save();
-
-    res.json({ msg: "verified" });
-  } else {
-    res.json({ error: "wrong code" });
-  }
-});
-
 app.post("/deposit", async (req, res) => {
 
   const { amount, userId } = req.body;
@@ -1043,41 +961,6 @@ async (req, res) => {
     });
   }
 });
-
-app.post("/verify-email",
-
-async (req, res) => {
-
-  const { email, code }
-  = req.body;
-
-  const user =
-  await User.findOne({ email });
-
-  if(!user){
-
-    return res.json({
-      error:"user not found"
-    });
-  }
-
-  if(user.verifyCode != code){
-
-    return res.json({
-      error:"wrong code"
-    });
-  }
-
-  user.verified = true;
-
-  await user.save();
-
-  res.json({
-    msg:"verified successfully"
-  });
-});
-
-
 
 app.get("/admin/messages",
 
