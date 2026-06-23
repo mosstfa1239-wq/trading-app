@@ -162,16 +162,6 @@ const TaskSchema = new mongoose.Schema({
 
 const Task = mongoose.model("Task", TaskSchema);
 
-const WithdrawSchema = new mongoose.Schema({
-  userId: String,
-  wallet: String,
-  amount: Number,
-  status: { type: String, default: "pending" },
-  date: { type: Date, default: Date.now }
-});
-
-const Withdraw = mongoose.model("Withdraw", WithdrawSchema);
-
 const Message = mongoose.model("Message", {
   userId: String,
   userName: String,
@@ -201,7 +191,6 @@ app.delete("/admin/task/:id", async (req,res)=>{
   });
 
 });
-
 
 // 📥 تسجيل
 app.post("/register", async (req, res) => {
