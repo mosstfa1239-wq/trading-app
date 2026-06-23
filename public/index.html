@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -542,6 +543,7 @@ VIP4 - $1000
       <p>البلد: <span id="p_country"></span></p>
       <p>العنوان: <span id="p_address"></span></p>
 
+      <button onclick="copyReferral()">📋 Copy Referral Link</button>
       <button onclick="logout()">🚪 خروج</button>
     </div>
 
@@ -740,7 +742,7 @@ document.getElementById("vipLevel")
     ).innerText =
     data.referralCode;
 
-document.getElementById(
+   document.getElementById(
 "p_ref"
 ).innerText =
 
@@ -908,9 +910,12 @@ document.getElementById("vipLevel")
     data.address;
 
     document.getElementById(
-    "p_ref"
-    ).innerText =
-    data.referralCode;
+"p_ref"
+).innerText =
+
+location.origin +
+"/?ref=" +
+data.referralCode;
 
     document.getElementById(
     "adminMsg"
@@ -1084,6 +1089,22 @@ function showRegister(){
 function showLogin(){
   document.getElementById("registerPage").classList.remove("active");
   document.getElementById("loginPage").classList.add("active");
+}
+
+const params =
+new URLSearchParams(
+window.location.search
+);
+
+const ref =
+params.get("ref");
+
+if(ref){
+
+  document.getElementById(
+  "reg_ref"
+  ).value = ref;
+
 }
 
 async function register(){
@@ -1406,6 +1427,19 @@ async function addBalance(){
 
   alert(data.msg || data.error);
 }
+
+function copyReferral(){
+
+  const ref =
+  document.getElementById("p_ref")
+  .innerText;
+
+  navigator.clipboard.writeText(ref);
+
+  alert("Referral link copied");
+
+}
+
 </script>
 
 <script>
