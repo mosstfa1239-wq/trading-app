@@ -97,6 +97,17 @@ const Notification = mongoose.model("Notification",{
 
 });
 
+const Announcement = mongoose.model("Announcement",{
+
+  text:String,
+
+  date:{
+    type:Date,
+    default:Date.now
+  }
+
+});
+
 // 👤 User
 const UserSchema = new mongoose.Schema({
   email: String,
@@ -1457,6 +1468,39 @@ app.get("/notifications", async(req,res)=>{
   res.json(data);
 
 });
+//الرسائل الجماعية 
+app.post("/admin/announcement", async(req,res)=>{
+
+  const { text } = req.body;
+
+  await Announcement.create({
+
+    text
+
+  });
+
+  res.json({
+
+    msg:"Announcement Sent"
+
+  });
+
+});
+// جلب الاعلانات للمستخدم
+app.get("/announcements", async(req,res)=>{
+
+  const data =
+
+  await Announcement.find()
+
+  .sort({ date:-1 })
+
+  .limit(20);
+
+  res.json(data);
+
+});
+
 
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")

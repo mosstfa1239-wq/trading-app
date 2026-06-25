@@ -604,6 +604,18 @@ VIP4 - $1000
 
 </div>
 
+<div class="page"
+
+id="announcementPage">
+
+<h2>📢 Announcements</h2>
+
+<div id="announcements">
+
+</div>
+
+</div>
+
   <!-- 💬 الدعم -->
   <div id="chatBox" class="tab">
 
@@ -800,6 +812,8 @@ data.referralCode;
    loadStats();
 
   loadFinance();
+
+  loadAnnouncements();
 
     updateTasks();
 
@@ -1741,6 +1755,39 @@ async function loadNotifications(){
 
   document.getElementById(
     "notifications"
+  ).innerHTML = html;
+
+}
+
+async function loadAnnouncements(){
+
+  const res = await fetch(
+
+    "/announcements"
+
+  );
+
+  const data =
+  await res.json();
+
+  let html = "";
+
+  data.forEach(a=>{
+
+    html += `
+
+<div class="card">
+
+${a.text}
+
+</div>
+
+`;
+
+  });
+
+  document.getElementById(
+  "announcements"
   ).innerHTML = html;
 
 }
