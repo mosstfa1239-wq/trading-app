@@ -144,12 +144,7 @@ const Setting = mongoose.model("Setting", {
   totalWithdraws:{
     type:Number,
     default:0
-  },
-
-blocked:{
-  type:Boolean,
-  default:false
-},
+  }
 
 });
 
@@ -309,14 +304,6 @@ app.post("/login", async (req, res) => {
   if(!user){
     return res.json({ error: "email not found" });
   }
-
-if(user.blocked){
-
-  return res.json({
-    error:"Account blocked"
-  });
-
-}
 
 if(!user.verified){
 
@@ -880,46 +867,6 @@ app.post("/admin/add-balance", async (req, res) => {
   }
 });
 
-app.post("/admin/block-user", async(req,res)=>{
-
-  const { userId } = req.body;
-
-  await User.findByIdAndUpdate(
-
-    userId,
-
-    {
-      blocked:true
-    }
-
-  );
-
-  res.json({
-    msg:"User blocked"
-  });
-
-});
-
-app.post("/admin/unblock-user", async(req,res)=>{
-
-  const { userId } = req.body;
-
-  await User.findByIdAndUpdate(
-
-    userId,
-
-    {
-      blocked:false
-    }
-
-  );
-
-  res.json({
-    msg:"User unblocked"
-  });
-
-});
-
 app.post("/admin/send-message",
 
 async (req, res) => {
@@ -1140,6 +1087,9 @@ await User.countDocuments({
 
     totalBalance,
 
+totalUsers,
+
+  
   vip1,
 
   vip2,
@@ -1147,6 +1097,10 @@ await User.countDocuments({
   vip3,
 
   vip4
+
+
+
+  });
 
 });
 
@@ -1252,6 +1206,8 @@ app.get("/admin/history", async(req,res)=>{
   res.json(history);
 
 });
+
+
 
 app.post("/verify-email", async(req,res)=>{
 

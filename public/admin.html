@@ -54,6 +54,11 @@ button{
 
   <p>🧩 Tasks: <span id="sTasks">0</span></p>
 
+  <p id="vip1"></p>
+  <p id="vip2"></p>
+  <p id="vip3"></p>
+  <p id="vip4"></p>
+
 </div>
 
 <div class="card">
@@ -132,6 +137,17 @@ Add Balance
   </button>
 
   <div id="withdrawBox"></div>
+
+</div>
+
+<h2>💰 السجل المالي</h2>
+
+<button onclick="loadFinanceHistory()">
+عرض السجل المالي
+</button>
+
+<div id="financeHistory"></div>
+
 
 </div>
 
@@ -694,6 +710,50 @@ async function loadStats(){
 
   sTasks.innerText =
   data.tasks;
+
+document.getElementById("vip1").innerText =
+"VIP1: " + data.vip1;
+
+document.getElementById("vip2").innerText =
+"VIP2: " + data.vip2;
+
+document.getElementById("vip3").innerText =
+"VIP3: " + data.vip3;
+
+document.getElementById("vip4").innerText =
+"VIP4: " + data.vip4;
+
+}
+
+async function loadFinanceHistory(){
+
+  const res =
+  await fetch("/admin/history");
+
+  const data =
+  await res.json();
+
+  let html = "";
+
+  data.forEach(item=>{
+
+    html += `
+      <div class="card">
+
+        <b>${item.type}</b><br>
+
+        ${item.amount}$<br>
+
+        ${item.text}
+
+      </div>
+    `;
+
+  });
+
+  document.getElementById(
+    "financeHistory"
+  ).innerHTML = html;
 
 }
 
