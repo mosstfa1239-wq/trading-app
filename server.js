@@ -79,6 +79,24 @@ const Payment = mongoose.model("Payment",{
 
 });
 
+const Notification = mongoose.model("Notification",{
+
+  userId:String,
+
+  text:String,
+
+  read:{
+    type:Boolean,
+    default:false
+  },
+
+  date:{
+    type:Date,
+    default:Date.now
+  }
+
+});
+
 // 👤 User
 const UserSchema = new mongoose.Schema({
   email: String,
@@ -643,14 +661,24 @@ app.get("/admin/withdraws", async (req, res) => {
   res.json(data);
 });
 
+//نجاح السحب
 app.post("/admin/approve", async (req, res) => {
   const { id } = req.body;
 
   await Withdraw.findByIdAndUpdate(id, { status: "approved" });
 
+await Notification.create({
+
+  userId:w.userId,
+
+  text:"✅ Your withdrawal request has been approved"
+
+});
+
   res.json({ msg: "approved" });
 });
 
+// رفض السحب 
 app.post("/admin/reject", async (req, res) => {
   const { id } = req.body;
 
@@ -662,6 +690,14 @@ app.post("/admin/reject", async (req, res) => {
   await user.save();
 
   await Withdraw.findByIdAndUpdate(id, { status: "rejected" });
+
+await Notification.create({
+
+  userId:w.userId,
+
+  text:"❌ Your withdrawal request has been rejected"
+
+});
 
   res.json({ msg: "rejected" });
 });
@@ -845,7 +881,7 @@ app.post("/admin/add-task", async (req, res) => {
     msg: "task added"
   });
 });
-
+// اضافى الرصيد من الادمن
 app.post("/admin/add-balance", async (req, res) => {
 
   try {
@@ -865,6 +901,14 @@ app.post("/admin/add-balance", async (req, res) => {
     user.balance += Number(balance);
 
     await user.save();
+
+await Notification.create({
+
+  userId:user._id,
+
+  text:"💰 Balance added by admin"
+
+});
 
     res.json({
       msg: "balance updated"
@@ -1086,7 +1130,7 @@ app.get("/admin/user/:code", async (req, res) => {
   res.json(user);
 
 });
-
+// عداد الاحصايات
 app.get("/admin/stats", async (req,res)=>{
 
   const users =
@@ -1151,7 +1195,7 @@ await User.countDocuments({
 });
 
 });
-
+//ترقية في اي بي
 app.post("/upgrade-vip", async (req,res)=>{
 
   const { userId, vip } = req.body;
@@ -1181,6 +1225,14 @@ app.post("/upgrade-vip", async (req,res)=>{
   user.vip = vip;
 
   await user.save();
+
+await Notification.create({
+
+  userId:user._id,
+
+  text:"🔥 VIP upgraded successfully"
+
+});
 
 const parent =
 await User.findOne({
@@ -1385,6 +1437,27 @@ async(req,res)=>{
   });
 
 });
+
+//جلب الاشعارات
+app.get("/notifications", async(req,res)=>{
+
+  const { userId } = req.query;
+
+  const data =
+  await Notification.find({
+
+    userId
+
+  }).sort({
+
+    date:-1
+
+  });
+
+  res.json(data);
+
+});
+
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
 .then(() => {

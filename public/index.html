@@ -596,6 +596,14 @@ VIP4 - $1000
 
   </div>
 
+<div class="page" id="notificationsPage">
+
+  <h2>🔔 Notifications</h2>
+
+  <div id="notifications"></div>
+
+</div>
+
   <!-- 💬 الدعم -->
   <div id="chatBox" class="tab">
 
@@ -618,6 +626,7 @@ VIP4 - $1000
     <button onclick="showTab('profile')">👤</button>
     <button onclick="showTab('withdrawPage')">💸</button>
     <button onclick="showTab('historyPage')">📜</button>
+    <button onclick="showPage('notificationsPage')">🔔 Notifications</button>
   </div>
 
 </div>
@@ -1699,6 +1708,40 @@ async function resetPassword(){
   alert(
     data.msg || data.error
   );
+
+}
+
+</script>
+
+<script>
+async function loadNotifications(){
+
+  const res =
+  await fetch(
+
+    "/notifications?userId=" +
+    localStorage.getItem("userId")
+
+  );
+
+  const data =
+  await res.json();
+
+  let html = "";
+
+  data.forEach(n=>{
+
+    html += `
+      <div class="card">
+        ${n.text}
+      </div>
+    `;
+
+  });
+
+  document.getElementById(
+    "notifications"
+  ).innerHTML = html;
 
 }
 
