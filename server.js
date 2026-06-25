@@ -1150,6 +1150,7 @@ await User.countDocuments({
 
 });
 
+});
 
 app.post("/upgrade-vip", async (req,res)=>{
 
