@@ -674,19 +674,27 @@ app.get("/admin/withdraws", async (req, res) => {
 
 //نجاح السحب
 app.post("/admin/approve", async (req, res) => {
+
   const { id } = req.body;
 
-  await Withdraw.findByIdAndUpdate(id, { status: "approved" });
+  const w = await Withdraw.findById(id);
 
-await Notification.create({
+  await Withdraw.findByIdAndUpdate(id, {
+    status: "approved"
+  });
 
-  userId:w.userId,
+  await Notification.create({
 
-  text:"✅ Your withdrawal request has been approved"
+    userId:w.userId,
 
-});
+    text:"✅ Your withdrawal request has been approved"
 
-  res.json({ msg: "approved" });
+  });
+
+  res.json({
+    msg:"approved"
+  });
+
 });
 
 // رفض السحب 
