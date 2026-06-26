@@ -889,16 +889,19 @@ await Payment.create({
 
 app.post("/admin/add-task", async (req, res) => {
 
-  const { title, reward } = req.body;
+  const { title, price, profit, image } = req.body;
 
   await Task.create({
     title,
-    reward
+    price: Number(price),
+    profit: Number(profit),
+    image
   });
 
   res.json({
     msg: "task added"
   });
+
 });
 // اضافى الرصيد من الادمن
 app.post("/admin/add-balance", async (req, res) => {
@@ -1476,7 +1479,7 @@ app.get("/notifications", async(req,res)=>{
   res.json(data);
 
 });
-//الرسائل الجماعية 
+//الرسائل الجماعية
 app.post("/admin/announcement", async(req,res)=>{
 
   const { text } = req.body;
