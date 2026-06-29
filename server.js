@@ -1484,16 +1484,16 @@ app.post("/admin/announcement", async(req,res)=>{
 
   const { text } = req.body;
 
-  await Announcement.create({
+  console.log("TEXT =", text);
 
+  const a = await Announcement.create({
     text
-
   });
 
+  console.log("SAVED =", a);
+
   res.json({
-
     msg:"Announcement Sent"
-
   });
 
 });
