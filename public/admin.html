@@ -300,6 +300,14 @@ Reset Wallet
     Load Users
   </button>
 
+<button onclick="blockUser(true)">
+🚫 Block
+</button>
+
+<button onclick="blockUser(false)">
+✅ Unblock
+</button>
+
   <div id="usersBox"></div>
 
 </div>
@@ -380,6 +388,7 @@ async function resetWallet(){
 </script>
 
 <script>
+let currentUser = null;
 
 async function loadMessages(){
 
@@ -473,6 +482,8 @@ async function searchUser(){
 
   const user =
   await res.json();
+
+currentUser = user;
 
   if(user.error){
 
@@ -732,6 +743,44 @@ async function sendAnnouncement(){
       body:JSON.stringify({
 
         text
+
+      })
+
+    }
+
+  );
+
+  const data =
+  await res.json();
+
+  alert(data.msg);
+
+}
+
+async function blockUser(blocked){
+
+  const userId =
+  currentUser._id;
+
+  const res =
+  await fetch(
+
+    "/admin/block-user",
+
+    {
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":
+        "application/json"
+      },
+
+      body:JSON.stringify({
+
+        userId,
+
+        blocked
 
       })
 

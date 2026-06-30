@@ -721,6 +721,8 @@ await Notification.create({
   res.json({ msg: "rejected" });
 });
 
+
+
 app.get("/leaderboard", async (req, res) => {
   const users = await User.find().sort({ balance: -1 }).limit(5);
   res.json(users);
@@ -948,20 +950,25 @@ await Notification.create({
 
 app.post("/admin/block-user", async(req,res)=>{
 
-  const { userId } = req.body;
+  const { userId, blocked } = req.body;
 
-  await User.findByIdAndUpdate(
+  const user =
+  await User.findById(userId);
 
-    userId,
+  if(!user){
 
-    {
-      blocked:true
-    }
+    return res.json({
+      error:"User not found"
+    });
 
-  );
+  }
+
+  user.blocked = blocked;
+
+  await user.save();
 
   res.json({
-    msg:"User blocked"
+    msg: blocked ? "User blocked" : "User unblocked"
   });
 
 });
