@@ -768,39 +768,27 @@ async function sendAnnouncement(){
 
 async function blockUser(blocked){
 
-  const userId =
-  currentUser._id;
+  const userId = currentUser._id;
 
-  const res =
-  await fetch(
-
+  const res = await fetch(
     "/admin/block-user",
-
     {
-
       method:"POST",
-
       headers:{
-        "Content-Type":
-        "application/json"
+        "Content-Type":"application/json"
       },
-
       body:JSON.stringify({
-
         userId,
-
         blocked
-
       })
-
     }
-
   );
 
-  const data =
-  await res.json();
+  const data = await res.json();
 
   alert(data.msg);
+
+  searchUser();
 
 }
 
