@@ -152,6 +152,11 @@ dailyTasks: {
 lastTaskReset: {
   type: String,
   default: ""
+},
+
+blocked: {
+  type: Boolean,
+  default: false
 }
 
 });
