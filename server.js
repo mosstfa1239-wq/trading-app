@@ -952,16 +952,7 @@ app.post("/admin/block-user", async(req,res)=>{
 
   const { userId, blocked } = req.body;
 
-  const user =
-  await User.findById(userId);
-
-  console.log("BEFORE:", user.blocked);
-
-user.blocked = blocked;
-
-console.log("AFTER:", user.blocked);
-
-await user.save();
+  const user = await User.findById(userId);
 
   if(!user){
 
@@ -971,7 +962,11 @@ await user.save();
 
   }
 
+  console.log("BEFORE:", user.blocked);
+
   user.blocked = blocked;
+
+  console.log("AFTER:", user.blocked);
 
   await user.save();
 
