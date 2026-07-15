@@ -1139,8 +1139,9 @@ app.get("/admin/users", async (req, res) => {
 
   const users = await User.find(
     {},
-    "firstName lastName email referralCode balance country"
-  );
+"firstName lastName email referralCode balance country vip blocked"
+
+);
 
   res.json(users);
 

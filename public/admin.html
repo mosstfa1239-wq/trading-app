@@ -452,11 +452,29 @@ async function loadUsers(){
 
         <br>
 
+        📧 ${u.email}
+
+        <br>
+
+        🎁 ${u.referralCode}
+
+        <br>
+
         💰 ${u.balance}$
 
         <br>
 
-        📧 ${u.email}
+        🌍 ${u.country}
+
+        <br>
+
+        👑 VIP ${u.vip || 0}
+
+        <br>
+
+        ${u.blocked
+          ? "🚫 Blocked"
+          : "✅ Active"}
 
       </div>
     `;
@@ -464,7 +482,7 @@ async function loadUsers(){
   });
 
   document.getElementById(
-    "usersBox"
+    "usersList"
   ).innerHTML = html;
 
 }
