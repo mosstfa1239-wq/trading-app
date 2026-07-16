@@ -818,6 +818,11 @@ data.referralCode;
 
   loadNotifications();
 
+setInterval(
+  checkBlocked,
+  10000
+);
+
     updateTasks();
 
     updateProgress();
@@ -1799,6 +1804,38 @@ ${a.text}
   document.getElementById(
   "announcements"
   ).innerHTML = html;
+
+}
+
+//الطرد
+async function checkBlocked(){
+
+  const userId =
+  localStorage.getItem("userId");
+
+  if(!userId) return;
+
+  const res =
+  await fetch(
+    "/user/status?userId=" + userId
+  );
+
+  const data =
+  await res.json();
+
+  if(data.blocked){
+
+    alert(
+      "🚫 Your account has been blocked"
+    );
+
+    localStorage.removeItem(
+      "userId"
+    );
+
+    location.reload();
+
+  }
 
 }
 

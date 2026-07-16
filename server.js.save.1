@@ -108,62 +108,6 @@ const Announcement = mongoose.model("Announcement",{
 
 });
 
-async function checkBlocked(req,res,next){
-
-  const userId =
-  req.body.userId ||
-  req.query.userId;
-
-  if(!userId){
-
-    return next();
-
-  }
-
-  const user =
-  await User.findById(userId);
-
-  if(!user){
-
-    return res.json({
-      error:"User not found"
-    });
-
-  }
-
-  if(user.blocked){
-
-    return res.json({
-      error:"Your account has been blocked"
-    });
-
-  }
-
-  next();
-
-}
-
-async function checkAdmin(req,res,next){
-
-  const userId =
-    req.body.userId ||
-    req.query.userId;
-
-  const user =
-    await User.findById(userId);
-
-  if(!user || !user.isAdmin){
-
-    return res.json({
-      error:"Access denied"
-    });
-
-  }
-
-  next();
-
-}
-
 // 👤 User
 const UserSchema = new mongoose.Schema({
   email: String,
@@ -211,11 +155,6 @@ lastTaskReset: {
 },
 
 blocked: {
-  type: Boolean,
-  default: false
-},
-
-isAdmin: {
   type: Boolean,
   default: false
 }
@@ -536,7 +475,7 @@ app.get("/daily-tasks", async (req, res) => {
 });
 
 // 🛒 شراء مهمة
-app.post("/buy-task", checkBlocked, async(req,res)=>{
+app.post("/buy-task", async (req, res) => {
   const { userId, taskId } = req.body;
 
 console.log("COMPLETE TASK START");
@@ -585,7 +524,7 @@ app.get("/user", async (req, res) => {
 });
 
 // ✅ تنفيذ المهمة
-app.post("/complete-task", checkBlocked, async(req,res)=>{
+app.post("/complete-task", async (req, res) => {
 
   const { userId, taskId } = req.body;
 
@@ -695,7 +634,7 @@ app.get("/cards", (req, res) => {
 
 });
 
-app.post("/withdraw", checkBlocked, async(req,res)=>{
+app.post("/withdraw", async (req, res) => {
   const { userId, wallet, amount } = req.body;
 
   const user = await User.findById(userId);
@@ -794,7 +733,7 @@ app.get("/leaderboard", async (req, res) => {
   res.json(users);
 });
 
-app.post("/send-message", checkBlocked, async (req, res) => {
+app.post("/send-message", async (req, res) => {
   const { userId, userName, text } = req.body;
 
   await Message.create({
@@ -819,7 +758,7 @@ app.post("/reply", async (req, res) => {
   res.json({ msg: "replied" });
 });
 
-app.post("/deposit", checkBlocked, async(req,res)=>{
+app.post("/deposit", async (req, res) => {
 
   const { amount, userId } = req.body;
 
@@ -1042,6 +981,26 @@ app.post("/admin/block-user", async(req,res)=>{
 
 });
 
+app.post("/admin/unblock-user", async(req,res)=>{
+
+  const { userId } = req.body;
+
+  await User.findByIdAndUpdate(
+
+    userId,
+
+    {
+      blocked:false
+    }
+
+  );
+
+  res.json({
+    msg:"User unblocked"
+  });
+
+});
+
 app.post("/admin/send-message",
 
 async (req, res) => {
@@ -1115,7 +1074,9 @@ async (req, res) => {
   }
 });
 
-app.post("/send-to-admin", checkBlocked, async(req,res)=>{
+app.post("/send-to-admin",
+
+async (req, res) => {
 
   try{
 
@@ -1273,7 +1234,8 @@ await User.countDocuments({
 
 });
 //ترقية في اي بي
-app.post("/upgrade-vip", checkBlocked, async (req,res)=>{
+app.post("/upgrade-vip", async (req,res)=>{
+
   const { userId, vip } = req.body;
 
   const user = await User.findById(userId);
@@ -1588,22 +1550,6 @@ app.get("/user/status", async(req,res)=>{
   });
 
 });
-//مؤقت
-app.get("/make-admin", async(req,res)=>{
-
-  await User.updateOne(
-
-    { email:"mosstfa1239@gmail.com" },
-
-    { isAdmin:true }
-
-  );
-
-  res.send("Done");
-
-});
-
-
 
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
