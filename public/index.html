@@ -1388,28 +1388,33 @@ async function deposit(){
   const amount =
     document.getElementById("depositAmount").value;
 
-  const res = await fetch("/deposit", {
+  const res = await fetch("/deposit",{
 
-    method: "POST",
+    method:"POST",
 
     headers:{
       "Content-Type":"application/json"
     },
 
-    body: JSON.stringify({
+    body:JSON.stringify({
       amount,
-      userId: localStorage.getItem("userId")
+      userId:localStorage.getItem("userId")
     })
 
   });
 
   const data = await res.json();
 
-  if(data.invoice_url){
-    window.location.href = data.invoice_url;
-  } else {
-    alert("Deposit error");
+  if(data.payment_url){
+
+    window.location.href = data.payment_url;
+
+  }else{
+
+    alert(data.error || "Deposit error");
+
   }
+
 }
 
 async function addTask(){
