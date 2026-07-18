@@ -2,8 +2,6 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
-const axios = require("axios");
-const crypto = require("crypto");
 const { Resend } = require("resend");
 
 const crypto = require("crypto");
