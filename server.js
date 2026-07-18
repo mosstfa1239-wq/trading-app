@@ -6,6 +6,12 @@ const axios = require("axios");
 const crypto = require("crypto");
 const { Resend } = require("resend");
 
+const crypto = require("crypto");
+const axios = require("axios");
+
+const TINPAY_API_KEY = "c30efed9306fbdaf9de4425bd35b64a0ea75f299b31f31ea";
+const TINPAY_API_SECRET = "d36efca079f34a0c54d27e40f9bf9215784f767833abe896174b6ac3e47968fd";
+
 const resend = new Resend(
   process.env.RESEND_API_KEY
 );
@@ -107,6 +113,19 @@ const Announcement = mongoose.model("Announcement",{
   }
 
 });
+
+function signTinPay(timestamp, method, path, body) {
+    const payload =
+        timestamp + "\n" +
+        method + "\n" +
+        path + "\n" +
+        JSON.stringify(body);
+
+    return crypto
+        .createHmac("sha256", TINPAY_API_SECRET)
+        .update(payload)
+        .digest("hex");
+}
 
 async function checkBlocked(req,res,next){
 
@@ -239,12 +258,7 @@ const Setting = mongoose.model("Setting", {
   totalWithdraws:{
     type:Number,
     default:0
-  },
-
-blocked:{
-  type:Boolean,
-  default:false
-},
+  }
 
 });
 
@@ -819,42 +833,64 @@ app.post("/reply", async (req, res) => {
   res.json({ msg: "replied" });
 });
 
-app.post("/deposit", checkBlocked, async(req,res)=>{
+app.post("/deposit", checkBlocked, async (req, res) => {
 
-  const { amount, userId } = req.body;
+    const { amount, userId } = req.body;
 
-  try {
+    const body = {
+        amount: Number(amount),
+        wallet_code: "trc-a97880",
+        network: "TRC20",
+        description: "Deposit",
+        metadata: {
+            userId: userId
+        },
+        expireMinutes: 30
+    };
 
-    const response = await axios.post(
-      "https://api.nowpayments.io/v1/invoice",
+    const timestamp = Date.now().toString();
 
-      {
-        price_amount: amount,
-        price_currency: "usd",
-        order_id: userId,
-        ipn_callback_url: "https://trading-app-1-1xpc.onrender.com/payment-webhook"
-      },
-
-      {
-        headers: {
-          "x-api-key": "A1VW7PH-JWAMTKS-HYW0YEA-W01FGAD"
-        }
-      }
+    const signature = signTinPay(
+        timestamp,
+        "POST",
+        "/v1/orders",
+        body
     );
 
-    res.json({
-      invoice_url: response.data.invoice_url
-    });
+    try {
 
-  } catch (err) {
+        const response = await axios.post(
+            "https://tinpay.dev/v1/orders",
+            body,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-API-Key": TINPAY_API_KEY,
+                    "X-Timestamp": timestamp,
+                    "X-Signature": signature,
+                    "Idempotency-Key": crypto.randomUUID()
+                }
+            }
+        );
 
-    console.log(err.response?.data || err);
+        res.json({
+            paymentId: response.data.id,
+            address: response.data.pay_address,
+            amount: response.data.unique_amount,
+            payment_url: response.data.payment_url,
+            expire: response.data.expire_at
+        });
 
-    res.json({
-      error: "payment failed"
-    });
+    } catch (err) {
 
-  }
+        console.log(err.response?.data || err);
+
+        res.status(500).json({
+            error: "TinPay Error"
+        });
+
+    }
+
 });
 
 // 👥 الفريق
@@ -1588,22 +1624,6 @@ app.get("/user/status", async(req,res)=>{
   });
 
 });
-//مؤقت
-app.get("/make-admin", async(req,res)=>{
-
-  await User.updateOne(
-
-    { email:"mosstfa1239@gmail.com" },
-
-    { isAdmin:true }
-
-  );
-
-  res.send("Done");
-
-});
-
-
 
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
