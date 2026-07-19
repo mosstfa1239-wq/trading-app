@@ -7,360 +7,1009 @@
 
 <style>
 
+/*==================================================
+            PREMIUM UI V2 - PART 1
+==================================================*/
+
 *{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+html{
+scroll-behavior:smooth;
 }
 
 body{
 
-  font-family:Arial,sans-serif;
+font-family:
+"Segoe UI",
+Tahoma,
+Arial,
+sans-serif;
 
-  background:
-  linear-gradient(
-    135deg,
-    #14001f,
-    #3d0a46,
-    #7a1c44
-  );
+background:
+linear-gradient(
+180deg,
+#08111F 0%,
+#101A2F 40%,
+#19243B 100%
+);
 
-  min-height:100vh;
+color:#fff;
 
-  color:white;
+overflow-x:hidden;
 
-  text-align:center;
+min-height:100vh;
 
-  overflow-x:hidden;
+font-size:22px;
+
 }
 
-/* 📄 الصفحات */
+/* Scroll */
+
+::-webkit-scrollbar{
+width:8px;
+}
+
+::-webkit-scrollbar-track{
+background:#111827;
+}
+
+::-webkit-scrollbar-thumb{
+
+background:
+linear-gradient(
+180deg,
+#FFD54F,
+#FF9800
+);
+
+border-radius:20px;
+
+}
+
+/* Pages */
 
 .page{
-  display:none;
-  padding-bottom:100px;
+
+display:none;
+
+padding:35px;
+
+padding-bottom:120px;
+
+animation:fade .35s;
+
 }
 
 .page.active{
-  display:block;
-  animation:fade 0.4s;
+display:block;
 }
 
 .tab{
-  display:none;
+
+display:none;
+
+animation:fade .35s;
+
 }
 
 .tab.active{
-  display:block;
-  animation:fade 0.4s;
+display:block;
 }
-
-/* ✨ الحركة */
 
 @keyframes fade{
 
-  from{
-    opacity:0;
-    transform:
-    translateY(15px);
-  }
+from{
 
-  to{
-    opacity:1;
-    transform:
-    translateY(0);
-  }
+opacity:0;
+
+transform:
+translateY(18px);
+
 }
 
-/* 🧩 الكروت */
+to{
+
+opacity:1;
+
+transform:
+translateY(0);
+
+}
+
+}
+
+/*=============================
+        CARDS
+=============================*/
 
 .card{
 
-  width:92%;
+width:96%;
 
-  max-width:460px;
+max-width:520px;
 
-  margin:20px auto;
+margin:28px auto;
 
-  padding:25px;
+padding:32px;
 
-  border-radius:24px;
+border-radius:28px;
 
-  background:
-  rgba(255,255,255,0.08);
+background:
+rgba(255,255,255,.06);
 
-  backdrop-filter:blur(14px);
+backdrop-filter:
+blur(20px);
 
-  border:
-  1px solid
-  rgba(255,255,255,0.08);
+border:
+1px solid
+rgba(255,255,255,.08);
 
-  box-shadow:
-  0 0 25px
-  rgba(0,0,0,0.4);
+box-shadow:
 
-  transition:0.3s;
+0 18px 45px
+rgba(0,0,0,.45),
+
+0 0 20px
+rgba(255,213,79,.06);
+
+position:relative;
+
+overflow:hidden;
+
+transition:.35s;
+
+}
+
+.card::before{
+
+content:"";
+
+position:absolute;
+
+top:0;
+
+left:0;
+
+width:100%;
+
+height:5px;
+
+background:
+linear-gradient(
+90deg,
+#FFD54F,
+#FF9800
+);
+
 }
 
 .card:hover{
 
-  transform:
-  translateY(-3px);
+transform:
+translateY(-6px);
+
+box-shadow:
+
+0 30px 60px
+rgba(0,0,0,.55),
+
+0 0 35px
+rgba(255,213,79,.18);
+
 }
 
-/* 📝 العناوين */
+/*=============================
+      TITLES
+=============================*/
 
-h1,h2,h3{
+h1{
 
-  margin-bottom:18px;
+font-size:42px;
 
-  font-weight:bold;
+font-weight:800;
+
+margin-bottom:18px;
+
 }
 
-/* 🧾 الإدخال */
+h2{
 
-input{
+font-size:34px;
 
-  width:100%;
+font-weight:700;
 
-  padding:15px;
+margin-bottom:16px;
 
-  margin-top:14px;
-
-  border:none;
-
-  border-radius:14px;
-
-  outline:none;
-
-  font-size:15px;
-
-  background:
-  rgba(255,255,255,0.12);
-
-  color:white;
-
-  transition:0.3s;
 }
 
-/* ✨ عند الكتابة */
+h3{
 
-input:focus{
+font-size:28px;
 
-  border:
-  1px solid #ff7a18;
+font-weight:700;
 
-  background:
-  rgba(255,255,255,0.18);
+margin-bottom:14px;
 
-  box-shadow:
-  0 0 15px
-  rgba(255,122,24,0.5);
 }
-
-/* 🪄 placeholder */
-
-input::placeholder{
-
-  color:#ddd;
-}
-
-/* 🔘 الأزرار */
-
-button{
-
-  width:100%;
-
-  padding:15px;
-
-  margin-top:16px;
-
-  border:none;
-
-  border-radius:14px;
-
-  font-size:16px;
-
-  font-weight:bold;
-
-  color:white;
-
-  cursor:pointer;
-
-  transition:0.25s;
-
-  background:
-  linear-gradient(
-    90deg,
-    #ff3d77,
-    #ff7a18
-  );
-
-  box-shadow:
-  0 0 18px
-  rgba(255,61,119,0.35);
-}
-
-/* ✨ hover */
-
-button:hover{
-
-  transform:
-  translateY(-2px);
-
-  opacity:0.92;
-}
-
-/* 👆 ضغط */
-
-button:active{
-
-  transform:scale(0.97);
-}
-
-/* 🔄 زر disabled */
-
-button:disabled{
-
-  opacity:0.6;
-
-  cursor:not-allowed;
-
-  background:
-  linear-gradient(
-    90deg,
-    #666,
-    #444
-  );
-}
-
-/* 📊 الرصيد */
-
-#bal{
-
-  color:#00ff99;
-
-  font-size:28px;
-
-  font-weight:bold;
-
-  text-shadow:
-  0 0 10px
-  rgba(0,255,153,0.5);
-}
-
-/* 📩 الحالات */
-
-#loginStatus,
-#verifyStatus{
-
-  margin-top:15px;
-
-  font-size:15px;
-
-  font-weight:bold;
-
-  color:#ffcc70;
-}
-
-/* 🧭 شريط التنقل */
-
-.nav{
-
-  position:fixed;
-
-  bottom:0;
-
-  left:0;
-
-  width:100%;
-
-  display:flex;
-
-  justify-content:space-around;
-
-  align-items:center;
-
-  padding:12px;
-
-  background:
-  rgba(0,0,0,0.5);
-
-  backdrop-filter:blur(12px);
-
-  border-top:
-  1px solid
-  rgba(255,255,255,0.08);
-}
-
-/* 🔘 أزرار الناف */
-
-.nav button{
-
-  width:auto;
-
-  background:none;
-
-  box-shadow:none;
-
-  margin:0;
-
-  padding:10px;
-
-  font-size:24px;
-
-  border-radius:16px;
-}
-
-/* ✨ hover nav */
-
-.nav button:hover{
-
-  background:
-  rgba(255,255,255,0.08);
-
-  transform:
-  translateY(-2px);
-}
-
-/* 📜 النصوص */
 
 p{
 
-  margin-top:10px;
+font-size:22px;
 
-  line-height:1.5;
+line-height:1.7;
+
+color:#D4D7DD;
+
 }
 
-/* 💬 الدعم */
+/*=============================
+      BALANCE
+=============================*/
 
-#adminMsg{
+.balance-box{
 
-  color:#ffddaa;
+text-align:center;
 
-  margin-top:12px;
+padding:25px;
+
+border-radius:24px;
+
+background:
+linear-gradient(
+145deg,
+#16223B,
+#0F172A
+);
+
+margin-bottom:22px;
+
 }
 
-/* 📱 موبايل */
+.balance-title{
 
-@media(max-width:500px){
+font-size:20px;
 
-  .card{
+color:#C8CDD6;
 
-    width:95%;
+letter-spacing:1px;
 
-    padding:20px;
-  }
+}
 
-  button{
+.balance-value{
 
-    font-size:15px;
-  }
+font-size:46px;
 
-  input{
+font-weight:900;
 
-    font-size:15px;
-  }
+color:#FFD54F;
+
+margin-top:10px;
+
+text-shadow:
+0 0 20px
+rgba(255,213,79,.25);
+
+}
+
+.profit{
+
+margin-top:12px;
+
+font-size:22px;
+
+color:#00E676;
+
+font-weight:bold;
+
+}
+/*==================================================
+            PREMIUM UI V2 - PART 2
+==================================================*/
+
+/* INPUTS */
+
+input,
+select,
+textarea{
+
+width:100%;
+
+padding:20px;
+
+margin-top:18px;
+
+border-radius:18px;
+
+border:1px solid rgba(255,255,255,.08);
+
+background:#18253D;
+
+color:#fff;
+
+font-size:22px;
+
+outline:none;
+
+transition:.3s;
+
+}
+
+input::placeholder{
+
+color:#B8C1CC;
+
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+
+border-color:#FFD54F;
+
+box-shadow:
+0 0 18px rgba(255,213,79,.35);
+
+background:#22314D;
+
+}
+
+/* BUTTON */
+
+button{
+
+width:100%;
+
+padding:20px;
+
+margin-top:20px;
+
+border:none;
+
+border-radius:18px;
+
+cursor:pointer;
+
+font-size:22px;
+
+font-weight:700;
+
+color:#111;
+
+background:
+
+linear-gradient(
+90deg,
+#FFD54F,
+#FF9800
+);
+
+transition:.25s;
+
+box-shadow:
+
+0 15px 30px
+rgba(255,193,7,.25);
+
+position:relative;
+
+overflow:hidden;
+
+}
+
+button:hover{
+
+transform:translateY(-3px);
+
+box-shadow:
+
+0 25px 45px
+rgba(255,193,7,.35);
+
+}
+
+button:active{
+
+transform:scale(.97);
+
+}
+
+button:disabled{
+
+background:#555;
+
+color:#ddd;
+
+box-shadow:none;
+
+cursor:not-allowed;
+
+}
+
+/* GOLD EFFECT */
+
+button::after{
+
+content:"";
+
+position:absolute;
+
+top:0;
+
+left:-120%;
+
+width:60%;
+
+height:100%;
+
+background:
+
+linear-gradient(
+90deg,
+transparent,
+rgba(255,255,255,.45),
+transparent
+);
+
+transition:.7s;
+
+}
+
+button:hover::after{
+
+left:140%;
+
+}
+
+/* NAVIGATION */
+
+.nav{
+
+position:fixed;
+
+bottom:0;
+
+left:0;
+
+width:100%;
+
+height:88px;
+
+display:flex;
+
+justify-content:space-around;
+
+align-items:center;
+
+background:
+
+rgba(10,18,34,.96);
+
+backdrop-filter:blur(18px);
+
+border-top:
+
+1px solid rgba(255,255,255,.08);
+
+z-index:999;
+
+}
+
+.nav button{
+
+width:68px;
+
+height:68px;
+
+padding:0;
+
+margin:0;
+
+border-radius:20px;
+
+background:none;
+
+color:#BFC7D3;
+
+font-size:30px;
+
+box-shadow:none;
+
+}
+
+.nav button:hover{
+
+background:
+
+rgba(255,255,255,.08);
+
+color:#FFD54F;
+
+transform:translateY(-3px);
+
+}
+
+.nav button.active{
+
+background:
+
+linear-gradient(
+180deg,
+#FFD54F,
+#FF9800
+);
+
+color:#111;
+
+}
+
+/* STATUS */
+
+.success{
+
+color:#00E676;
+
+font-weight:bold;
+
+font-size:22px;
+
+}
+
+.error{
+
+color:#FF5A5A;
+
+font-weight:bold;
+
+font-size:22px;
+
+}
+
+.warning{
+
+color:#FFD54F;
+
+font-weight:bold;
+
+font-size:22px;
+
+}
+
+/* ANIMATION */
+
+.fade{
+
+animation:fade .35s;
+
+}
+
+.zoom{
+
+animation:zoom .35s;
+
+}
+
+@keyframes zoom{
+
+from{
+
+transform:scale(.92);
+
+opacity:0;
+
+}
+
+to{
+
+transform:scale(1);
+
+opacity:1;
+
+}
+
+}
+
+/* MOBILE */
+
+@media(max-width:650px){
+
+body{
+
+font-size:19px;
+
+}
+
+.card{
+
+padding:26px;
+
+}
+
+h1{
+
+font-size:36px;
+
+}
+
+h2{
+
+font-size:30px;
+
+}
+
+.balance-value{
+
+font-size:40px;
+
+}
+
+button{
+
+font-size:20px;
+
+}
+
+input{
+
+font-size:20px;
+
+}
+
+}
+
+/*==================================================
+            PREMIUM UI V2 - PART 3
+==================================================*/
+
+/* PRODUCT CARD */
+
+.product{
+
+width:100%;
+
+background:
+linear-gradient(
+180deg,
+rgba(255,255,255,.06),
+rgba(255,255,255,.03)
+);
+
+border-radius:24px;
+
+padding:22px;
+
+margin-top:24px;
+
+border:1px solid rgba(255,255,255,.08);
+
+transition:.35s;
+
+}
+
+.product:hover{
+
+transform:translateY(-6px);
+
+box-shadow:
+0 20px 45px rgba(0,0,0,.45);
+
+}
+
+.product img{
+
+width:100%;
+
+height:220px;
+
+object-fit:cover;
+
+border-radius:18px;
+
+margin-bottom:18px;
+
+}
+
+.product-name{
+
+font-size:28px;
+
+font-weight:800;
+
+margin-bottom:10px;
+
+}
+
+.product-price{
+
+font-size:24px;
+
+color:#FFD54F;
+
+font-weight:bold;
+
+margin-top:8px;
+
+}
+
+.product-profit{
+
+font-size:22px;
+
+color:#00E676;
+
+font-weight:bold;
+
+margin-top:6px;
+
+}
+
+.stars{
+
+font-size:22px;
+
+color:#FFD54F;
+
+margin-top:8px;
+
+}
+
+/* VIP CARD */
+
+.vip-card{
+
+padding:26px;
+
+margin-top:22px;
+
+border-radius:26px;
+
+background:
+linear-gradient(
+135deg,
+#2A1E00,
+#5C4300
+);
+
+border:1px solid rgba(255,213,79,.30);
+
+box-shadow:
+0 20px 45px rgba(255,193,7,.18);
+
+}
+
+.vip-title{
+
+font-size:30px;
+
+font-weight:900;
+
+color:#FFD54F;
+
+}
+
+.vip-profit{
+
+font-size:24px;
+
+margin-top:10px;
+
+color:#fff;
+
+}
+
+/* DASHBOARD */
+
+.dashboard{
+
+display:grid;
+
+grid-template-columns:
+repeat(2,1fr);
+
+gap:18px;
+
+margin-top:20px;
+
+}
+
+.stat{
+
+padding:20px;
+
+border-radius:20px;
+
+background:#16233A;
+
+text-align:center;
+
+}
+
+.stat-value{
+
+font-size:30px;
+
+font-weight:900;
+
+color:#FFD54F;
+
+}
+
+.stat-label{
+
+margin-top:8px;
+
+font-size:18px;
+
+color:#C6CED8;
+
+}
+
+/* TRANSACTIONS */
+
+.history{
+
+margin-top:25px;
+
+}
+
+.history-item{
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:18px;
+
+margin-top:12px;
+
+border-radius:18px;
+
+background:#152236;
+
+transition:.3s;
+
+}
+
+.history-item:hover{
+
+background:#20314D;
+
+}
+
+.history-title{
+
+font-size:21px;
+
+font-weight:bold;
+
+}
+
+.history-amount{
+
+font-size:22px;
+
+font-weight:bold;
+
+color:#00E676;
+
+}
+
+/* PROFILE */
+
+.avatar{
+
+width:120px;
+
+height:120px;
+
+border-radius:50%;
+
+margin:20px auto;
+
+display:block;
+
+border:5px solid #FFD54F;
+
+box-shadow:
+0 0 30px rgba(255,213,79,.25);
+
+}
+
+.username{
+
+font-size:30px;
+
+font-weight:900;
+
+margin-top:12px;
+
+}
+
+.level{
+
+font-size:20px;
+
+color:#FFD54F;
+
+margin-top:8px;
+
+}
+
+/* NOTIFICATION */
+
+.notice{
+
+padding:18px;
+
+margin-top:20px;
+
+border-radius:18px;
+
+background:
+rgba(255,213,79,.12);
+
+border-left:6px solid #FFD54F;
+
+font-size:20px;
+
+}
+
+/* GLASS EFFECT */
+
+.glass{
+
+background:
+rgba(255,255,255,.05);
+
+backdrop-filter:blur(18px);
+
+border:1px solid rgba(255,255,255,.08);
+
+border-radius:22px;
+
+}
+
+/* FOOTER SPACE */
+
+.footer-space{
+
+height:120px;
+
+}
+
+/* RESPONSIVE */
+
+@media(max-width:650px){
+
+.dashboard{
+
+grid-template-columns:1fr;
+
+}
+
+.product img{
+
+height:180px;
+
+}
+
+.product-name{
+
+font-size:24px;
+
+}
+
+.vip-title{
+
+font-size:26px;
+
+}
+
 }
 
 </style>
@@ -368,281 +1017,912 @@ p{
 
 <body>
 
-<!-- 🔐 تسجيل الدخول -->
+<!-- =========================
+        LOGIN PAGE
+========================= -->
+
 <div id="loginPage" class="page active">
-  <div class="card">
-    <h2>🔐 تسجيل دخول</h2>
 
-    <input id="email" placeholder="Email" autocomplete="email">
-    <input id="pass" type="password" placeholder="Password" autocomplete="current-password">
+<div class="glass-container">
 
-    <button onclick="login()">دخول</button>
-    <p id="loginStatus"></p>
+<div class="logo-box">
 
-<button onclick="showForgotPage()">
-Forgot Password
+<h1 class="logo-title">
+TRADING APP
+</h1>
+
+<p class="logo-sub">
+Crypto Investment Platform
+</p>
+
+</div>
+
+<div class="card login-card">
+
+<h2>
+Welcome Back
+</h2>
+
+<p class="card-text">
+Sign in to continue
+</p>
+
+<input
+
+id="email"
+
+type="email"
+
+placeholder="Email Address"
+
+autocomplete="email">
+
+<input
+
+id="pass"
+
+type="password"
+
+placeholder="Password"
+
+autocomplete="current-password">
+
+<button
+
+class="btn-primary"
+
+onclick="login()">
+
+Sign In
+
 </button>
 
-    <button onclick="showRegister()">إنشاء حساب</button>
-  </div>
+<p
+
+id="loginStatus"
+
+class="status-text">
+
+</p>
+
+<div class="btn-group">
+
+<button
+
+class="btn-secondary"
+
+onclick="showForgotPage()">
+
+Forgot Password
+
+</button>
+
+<button
+
+class="btn-secondary"
+
+onclick="showRegister()">
+
+Create Account
+
+</button>
+
 </div>
 
-<!-- 📝 التسجيل -->
+</div>
+
+</div>
+
+</div>
+
+<!-- =========================
+      REGISTER PAGE
+========================= -->
+
 <div id="registerPage" class="page">
-  <div class="card">
-    <h2>📝 تسجيل</h2>
 
-    <input id="reg_email" placeholder="Email" autocomplete="email">
-    <input id="reg_pass" type="password" placeholder="Password" autocomplete="new-password">
-    <input id="reg_first" placeholder="الاسم">
-    <input id="reg_last" placeholder="الكنية">
-    <input id="reg_phone" placeholder="رقم الهاتف">
-    <input id="reg_country" placeholder="البلد">
-    <input id="reg_ref" placeholder="Referral Code">
-    <input id="reg_address" placeholder="العنوان">
+<div class="glass-container">
 
-    <button onclick="register()">تسجيل</button>
-    <button onclick="showLogin()">عندي حساب</button>
-  </div>
+<div class="card register-card">
+
+<h2>
+
+Create Account
+
+</h2>
+
+<p class="card-text">
+
+Join our platform
+
+</p>
+
+<input
+
+id="reg_email"
+
+placeholder="Email Address"
+
+autocomplete="email">
+
+<input
+
+id="reg_pass"
+
+type="password"
+
+placeholder="Password"
+
+autocomplete="new-password">
+
+<input
+
+id="reg_first"
+
+placeholder="First Name">
+
+<input
+
+id="reg_last"
+
+placeholder="Last Name">
+
+<input
+
+id="reg_phone"
+
+placeholder="Phone Number">
+
+<input
+
+id="reg_country"
+
+placeholder="Country">
+
+<input
+
+id="reg_address"
+
+placeholder="Address">
+
+<input
+
+id="reg_ref"
+
+placeholder="Referral Code">
+
+<button
+
+class="btn-primary"
+
+onclick="register()">
+
+Register
+
+</button>
+
+<button
+
+class="btn-secondary"
+
+onclick="showLogin()">
+
+Back To Login
+
+</button>
+
 </div>
+
+</div>
+
+</div>
+
+<!-- =========================
+      VERIFY PAGE
+========================= -->
 
 <div id="verifyPage" class="page">
 
-  <div class="card">
+<div class="glass-container">
 
-    <h2>📧 Verify Email</h2>
+<div class="card">
 
-    <input
-      id="verifyCode"
-      placeholder="Enter verification code">
+<h2>
 
-    <button onclick="verifyAccount()">
-      Verify
-    </button>
+Email Verification
 
-  </div>
+</h2>
+
+<p class="card-text">
+
+Enter the verification code
+
+</p>
+
+<input
+
+id="verifyCode"
+
+placeholder="Verification Code">
+
+<button
+
+class="btn-primary"
+
+onclick="verifyAccount()">
+
+Verify Account
+
+</button>
+
+<p id="verifyStatus"></p>
 
 </div>
+
+</div>
+
+</div>
+
+<!-- =========================
+      RESET PASSWORD
+========================= -->
 
 <div id="forgotPage" class="page">
 
-  <div class="card">
+<div class="glass-container">
 
-    <input
-    id="resetEmail"
-    placeholder="Email">
+<div class="card">
 
-    <button
-    onclick="sendResetCode()">
+<h2>
 
-    Send Code
+Reset Password
 
-    </button>
+</h2>
 
-    <input
-    id="resetCode"
-    placeholder="Code">
+<input
 
-    <input
-    id="newPassword"
-    type="password"
-    placeholder="New Password">
+id="resetEmail"
 
-    <button
-    onclick="resetPassword()">
+placeholder="Email Address">
 
-    Reset Password
+<button
 
-    </button>
+class="btn-primary"
 
-  </div>
+onclick="sendResetCode()">
+
+Send Code
+
+</button>
+
+<input
+
+id="resetCode"
+
+placeholder="Verification Code">
+
+<input
+
+id="newPassword"
+
+type="password"
+
+placeholder="New Password">
+
+<button
+
+class="btn-primary"
+
+onclick="resetPassword()">
+
+Reset Password
+
+</button>
+
+<button
+
+class="btn-secondary"
+
+onclick="showLogin()">
+
+Back
+
+</button>
 
 </div>
 
-<!-- 📱 التطبيق -->
+</div>
+
+</div>
+
+<!-- =========================
+      MAIN APPLICATION
+========================= -->
+
+<div
+
+id="app"
+
+style="display:none;">
+
 <div id="app" style="display:none;">
 
-  <!-- 🏠 الرئيسية -->
-  <div id="home" class="tab active">
+<!-- =========================
+            HOME
+========================= -->
 
-    <div class="card">
-      <h3 id="userinfo"></h3>
-      <h3>💰 الرصيد</h3>
-      <h1 id="bal">0</h1>
-       <h3 id="vipLevel">
-       VIP 0
-       </h3>
-       <p>
-⭐ VIP:
-<span id="vipLevel">0</span>
+<div id="home" class="tab active">
+
+<div class="balance-box">
+
+<p class="balance-title">
+Available Balance
 </p>
 
-<button onclick="upgradeVip(1)">
-VIP1 - $50
-</button>
+<h1 id="bal" class="balance-value">
+0.00 USDT
+</h1>
 
-<button onclick="upgradeVip(2)">
-VIP2 - $200
-</button>
+<p class="profit">
+Today's Profit
+<span id="progress">
+0%
+</span>
+</p>
 
-<button onclick="upgradeVip(3)">
-VIP3 - $500
-</button>
+<div class="vip-badge">
 
-<button onclick="upgradeVip(4)">
-VIP4 - $1000
-</button>
+<span>
+VIP
+</span>
 
-
-    </div>
-
-    <div class="card">
-      <h3>📊 أرباحك</h3>
-      <canvas id="profitChart"></canvas>
-    </div>
-
-    <div class="card">
-      <h3>⏳ المهام اليومية</h3>
-      <p>أنجزت: <span id="doneTasks">0</span> / 5</p>
-    </div>
-
-    <div class="card">
-      <h3>🎯 هدف اليوم</h3>
-      <p>اربح: 10$</p>
-      <p>تقدّمك: <span id="progress">0</span>%</p>
-    </div>
-
-    <div class="card">
-      <h3>🏆 أفضل المستخدمين</h3>
-      <marquee id="leaderboard"></marquee>
-    </div>
-
-    <div class="card">
-      <h2>📋 Daily Tasks</h2>
-      <h3 id="dailyLeft"></h3>
-    </div>
-
-  </div>
-
-  <!-- 🧩 المهام -->
-  <div id="tasksPage" class="tab">
-    <div id="tasks"></div>
-  </div>
-
-  <!-- 👤 الحساب -->
-  <div id="profile" class="tab">
-
-    <div class="card">
-      <h3>👤 معلوماتي</h3>
-
-      <p>الاسم: <span id="p_name"></span></p>
-      <p>🎁: <span id="p_ref"></span></p>
-      <p>الكنية: <span id="p_last"></span></p>
-      <p>البريد: <span id="p_email"></span></p>
-      <p>الهاتف: <span id="p_phone"></span></p>
-      <p>البلد: <span id="p_country"></span></p>
-      <p>العنوان: <span id="p_address"></span></p>
-
-      <button onclick="copyReferral()">📋 Copy Referral Link</button>
-      <button onclick="logout()">🚪 خروج</button>
-    </div>
-
-    <div class="card">
-      <h3>👥 فريقي</h3>
-      <p>عدد الأعضاء: <span id="teamCount">0</span></p>
-      <div id="teamList"></div>
-    </div>
-
-    <div class="card">
-      <h2>📩 رسائل الإدارة</h2>
-      <p id="adminMsg">No messages</p>
-    </div>
-
-    <div class="card">
-      <h2>💬 Contact Admin</h2>
-      <input id="userMessage" placeholder="Write message">
-      <button onclick="sendToAdmin()">Send</button>
-    </div>
-
-  </div>
-
-  <!-- 💸 السحب -->
-  <div id="withdrawPage" class="tab">
-
-    <div class="card">
-      <h3>💸 سحب TRC20</h3>
-      <input id="wallet" placeholder="عنوان المحفظة">
-      <input id="amount" placeholder="المبلغ">
-      <button onclick="withdraw()">سحب</button>
-    </div>
-
-    <div class="card">
-      <h2>Deposit</h2>
-      <input id="depositAmount" placeholder="Amount">
-      <button onclick="deposit()">Deposit Crypto</button>
-    </div>
-
-  </div>
-
-  <!-- 📜 السجل -->
-  <div id="historyPage" class="tab">
-
-    <div class="card">
-      <h2>📜 سجل العمليات</h2>
-      <div id="historyBox">
-        لا يوجد بيانات
-      </div>
-    </div>
-
-  </div>
-
-<div class="page" id="notificationsPage">
-
-  <h2>🔔 Notifications</h2>
-
-  <div id="notifications"></div>
+<h2 id="vipLevel">
+VIP 0
+</h2>
 
 </div>
 
-<div class="page"
+</div>
 
-id="announcementPage">
+<!-- Quick Actions -->
 
-<h2>📢 Announcements</h2>
+<div class="dashboard">
+
+<div class="stat glass">
+
+<div class="stat-value">
+💳
+</div>
+
+<div class="stat-label">
+Deposit
+</div>
+
+</div>
+
+<div class="stat glass">
+
+<div class="stat-value">
+💸
+</div>
+
+<div class="stat-label">
+Withdraw
+</div>
+
+</div>
+
+<div class="stat glass">
+
+<div class="stat-value">
+🛒
+</div>
+
+<div class="stat-label">
+Products
+</div>
+
+</div>
+
+<div class="stat glass">
+
+<div class="stat-value">
+👥
+</div>
+
+<div class="stat-label">
+Team
+</div>
+
+</div>
+
+</div>
+
+<!-- Profit Chart -->
+
+<div class="card">
+
+<h2>
+
+Profit Chart
+
+</h2>
+
+<canvas id="profitChart"></canvas>
+
+</div>
+
+<!-- Daily Tasks -->
+
+<div class="card">
+
+<h2>
+
+Daily Tasks
+
+</h2>
+
+<h3 id="dailyLeft">
+
+0 / 5
+
+</h3>
+
+</div>
+
+<!-- Leaderboard -->
+
+<div class="card">
+
+<h2>
+
+Top Traders
+
+</h2>
+
+<marquee id="leaderboard">
+
+No Data
+
+</marquee>
+
+</div>
+
+</div>
+
+<!-- =========================
+          PRODUCTS
+========================= -->
+
+<div id="tasksPage" class="tab">
+
+<div class="card">
+
+<h2>
+
+Products
+
+</h2>
+
+<div id="tasks">
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =========================
+          PROFILE
+========================= -->
+
+<div id="profile" class="tab">
+
+<div class="card">
+
+<img
+
+class="avatar"
+
+src="https://cdn-icons-png.flaticon.com/512/149/149071.png">
+
+<h2 class="username">
+
+<span id="p_name">
+
+User
+
+</span>
+
+</h2>
+
+<p class="level">
+
+VIP Level
+
+<span id="vipLevel">
+
+0
+
+</span>
+
+</p>
+
+<hr>
+
+<p>
+
+First Name
+
+<br>
+
+<b id="p_name"></b>
+
+</p>
+
+<p>
+
+Last Name
+
+<br>
+
+<b id="p_last"></b>
+
+</p>
+
+<p>
+
+Email
+
+<br>
+
+<b id="p_email"></b>
+
+</p>
+
+<p>
+
+Phone
+
+<br>
+
+<b id="p_phone"></b>
+
+</p>
+
+<p>
+
+Country
+
+<br>
+
+<b id="p_country"></b>
+
+</p>
+
+<p>
+
+Address
+
+<br>
+
+<b id="p_address"></b>
+
+</p>
+
+<p>
+
+Referral Code
+
+<br>
+
+<b id="p_ref"></b>
+
+</p>
+
+<button onclick="copyReferral()">
+
+Copy Referral
+
+</button>
+
+<button onclick="logout()">
+
+Logout
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+My Team
+
+</h2>
+
+<p>
+
+Members
+
+<span id="teamCount">
+
+0
+
+</span>
+
+</p>
+
+<div id="teamList">
+
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+Admin Message
+
+</h2>
+
+<p id="adminMsg">
+
+No Messages
+
+</p>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+Contact Support
+
+</h2>
+
+<input
+
+id="userMessage"
+
+placeholder="Write your message">
+
+<button onclick="sendToAdmin()">
+
+Send
+
+</button>
+
+</div>
+
+</div>
+
+<!-- =========================
+        WITHDRAW
+========================= -->
+
+<div id="withdrawPage" class="tab">
+
+<div class="card">
+
+<h2>
+Wallet
+</h2>
+
+<input
+
+id="wallet"
+
+placeholder="TRC20 Wallet Address">
+
+<input
+
+id="amount"
+
+placeholder="Amount (USDT)">
+
+<button
+
+onclick="withdraw()">
+
+Withdraw
+
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>
+
+Deposit
+
+</h2>
+
+<input
+
+id="depositAmount"
+
+placeholder="Amount">
+
+<button
+
+onclick="deposit()">
+
+Deposit Crypto
+
+</button>
+
+</div>
+
+</div>
+
+<!-- =========================
+        HISTORY
+========================= -->
+
+<div id="historyPage" class="tab">
+
+<div class="card">
+
+<h2>
+
+Transaction History
+
+</h2>
+
+<div id="historyBox">
+
+No Transactions
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =========================
+      NOTIFICATIONS
+========================= -->
+
+<div id="notificationsPage" class="tab">
+
+<div class="card">
+
+<h2>
+
+Notifications
+
+</h2>
+
+<div id="notifications">
+
+No Notifications
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =========================
+      ANNOUNCEMENTS
+========================= -->
+
+<div id="announcementPage" class="tab">
+
+<div class="card">
+
+<h2>
+
+Announcements
+
+</h2>
 
 <div id="announcements">
 
+No Announcements
+
+</div>
+
 </div>
 
 </div>
 
-  <!-- 💬 الدعم -->
-  <div id="chatBox" class="tab">
+<!-- =========================
+          SUPPORT
+========================= -->
 
-    <div class="card">
-      <h3>💬 الدعم</h3>
+<div id="chatBox" class="tab">
 
-      <textarea id="msg" placeholder="اكتب رسالتك"></textarea>
+<div class="card">
 
-      <button onclick="sendMsg()">إرسال</button>
+<h2>
 
-      <div id="myMessages"></div>
-    </div>
+Support Center
 
-  </div>
+</h2>
 
-  <!-- 🔻 التنقل -->
-  <div class="nav">
-    <button onclick="showTab('home')">🏠</button>
-    <button onclick="showTab('tasksPage')">🧩</button>
-    <button onclick="showTab('profile')">👤</button>
-    <button onclick="showTab('withdrawPage')">💸</button>
-    <button onclick="showTab('historyPage')">📜</button>
-    <button onclick="showPage('notificationsPage')">🔔 Notifications</button>
-    <button onclick="showPage('announcementPage')">📢 Announcements</button>
-  </div>
+<textarea
+
+id="msg"
+
+placeholder="Write your message">
+
+</textarea>
+
+<button
+
+onclick="sendMsg()">
+
+Send Message
+
+</button>
+
+<div id="myMessages">
 
 </div>
+
+</div>
+
+</div>
+
+<!-- =========================
+      BOTTOM NAVIGATION
+========================= -->
+
+<div class="nav">
+
+<button
+
+onclick="showTab('home')">
+
+🏠
+
+</button>
+
+<button
+
+onclick="showTab('tasksPage')">
+
+🛍
+
+</button>
+
+<button
+
+onclick="showTab('withdrawPage')">
+
+💳
+
+</button>
+
+<button
+
+onclick="showTab('historyPage')">
+
+📜
+
+</button>
+
+<button
+
+onclick="showTab('profile')">
+
+👤
+
+</button>
+
+</div>
+
+</div>
+
+</body>
+
+</html>
  
 
 <script>
