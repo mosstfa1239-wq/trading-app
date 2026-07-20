@@ -1980,12 +1980,6 @@ async function login(){
       return;
     }
 
-document.getElementById(
-"vipLevel"
-).innerText =
-"VIP " + (data.vip || 0);
-
-
     // ✅ حفظ تسجيل الدخول
     localStorage.setItem(
     "userId",
@@ -2041,11 +2035,6 @@ document.getElementById("vipLevel")
     ).innerText =
     data.address;
 
-    document.getElementById(
-    "p_ref"
-    ).innerText =
-    data.referralCode;
-
    document.getElementById(
 "p_ref"
 ).innerText =
@@ -2078,51 +2067,51 @@ data.referralCode;
     );
 
     document.getElementById("app").style.display = "block";
+// ===== Load Application =====
 
-   // ✅ تحميل
-    loadTasks();
+if(typeof loadTasks === "function") loadTasks();
 
-    loadHistory();
+if(typeof loadHistory === "function") loadHistory();
 
-    loadChart();
+if(typeof loadChart === "function") loadChart();
 
-    loadLeaderboard();
+if(typeof loadLeaderboard === "function") loadLeaderboard();
 
-   loadHistory();
+if(typeof loadAdminTasks === "function") loadAdminTasks();
 
-   loadAdminTasks();
+if(typeof loadStats === "function") loadStats();
 
-   loadStats();
+if(typeof loadFinance === "function") loadFinance();
 
-  loadFinance();
+if(typeof loadAnnouncements === "function") loadAnnouncements();
 
-  loadAnnouncements();
+if(typeof loadNotifications === "function") loadNotifications();
 
-  loadNotifications();
+if(typeof updateTasks === "function") updateTasks();
 
-setInterval(
-  checkBlocked,
-  10000
-);
+if(typeof updateProgress === "function") updateProgress();
 
-    updateTasks();
+if(typeof checkBlocked === "function"){
 
-    updateProgress();
+setInterval(checkBlocked,10000);
 
-  } catch(err){
+}
+
+}
+
+catch(err){
 
 console.error(err);
-alert(err.message);
 
-    document.getElementById(
-    "loginStatus"
-    ).innerText =
-    "Server error";
+document.getElementById("loginStatus").innerText =
+err.message;
 
-    document.querySelector(
-    'button[onclick="login()"]'
-    ).disabled = false;
-  }
+document.querySelector(
+'button[onclick="login()"]'
+).disabled = false;
+
+}
+
 }
 
 
@@ -2241,26 +2230,47 @@ data.referralCode;
     data.referralCode
     );
 
-    // ✅ تحميل
-console.log("TASKS");
-    loadTasks();
-console.log("CHART");
-    loadChart();
-console.log("LEADER");
-    loadLeaderboard();
-console.log("DONE");
-    updateTasks();
+// ===== Load Application =====
 
-    updateProgress();
+if(typeof loadTasks === "function") loadTasks();
 
-  } catch(err){
+if(typeof loadHistory === "function") loadHistory();
 
-    console.log(err);
+if(typeof loadChart === "function") loadChart();
 
-    localStorage.removeItem(
-    "userId"
-    );
-  }
+if(typeof loadLeaderboard === "function") loadLeaderboard();
+
+if(typeof loadAdminTasks === "function") loadAdminTasks();
+
+if(typeof loadStats === "function") loadStats();
+
+if(typeof loadFinance === "function") loadFinance();
+
+if(typeof loadAnnouncements === "function") loadAnnouncements();
+
+if(typeof loadNotifications === "function") loadNotifications();
+
+if(typeof updateTasks === "function") updateTasks();
+
+if(typeof updateProgress === "function") updateProgress();
+
+if(typeof checkBlocked === "function"){
+
+setInterval(checkBlocked,10000);
+
+}
+
+}catch(err){
+
+console.error(err);
+
+localStorage.removeItem("userId");
+
+location.reload();
+
+}
+
+
 }
 
 </script>
@@ -2270,43 +2280,70 @@ console.log("DONE");
 // 🔄 تبديل الصفحات
 function showTab(id){
 
-  document.querySelectorAll(".tab")
-    .forEach(t => t.classList.remove("active"));
+document.querySelectorAll(".tab")
+.forEach(tab=>tab.classList.remove("active"));
 
-  document.getElementById(id)
-    .classList.add("active");
+const page=document.getElementById(id);
 
-  if(id === "historyPage"){
-    loadHistory();
-  }
+if(page){
+
+page.classList.add("active");
+
 }
 
+if(id==="historyPage" && typeof loadHistory==="function"){
 
-// 🚪 خروج
+loadHistory();
+
+}
+
+}
+
 function logout(){
-  localStorage.removeItem("userId");
-  document.getElementById("app").style.display = "none";
-  document.getElementById("loginPage").classList.add("active");
-}
 
+localStorage.removeItem("userId");
+
+document.getElementById("app").style.display="none";
+
+document.querySelectorAll(".page")
+.forEach(p=>p.classList.remove("active"));
+
+document.getElementById("loginPage")
+.classList.add("active");
+
+}
 
 // 👇 حطها هون
 async function loadLeaderboard(){
 
-  const res = await fetch("/leaderboard");
+try{
 
-  const users = await res.json();
+const res=await fetch("/leaderboard");
 
-  let text = "";
+const users=await res.json();
 
-  users.forEach(u => {
+let text="";
 
-    text +=
-    `🏆 ${u.firstName || "User"} - $${u.balance} 🔥 | `;
-  });
+users.forEach(user=>{
 
-  document.getElementById("leaderboard")
-  .innerText = text;
+text+=`🏆 ${user.firstName || "User"} - ${user.balance} USDT | `;
+
+});
+
+const board=document.getElementById("leaderboard");
+
+if(board){
+
+board.innerText=text;
+
+}
+
+}catch(err){
+
+console.error(err);
+
+}
+
 }
 // 🛒 شراء
 async function buyTask(taskId){
@@ -2322,15 +2359,22 @@ updateTasks();
 
   const data = await res.json();
 
-console.log("LOGIN DATA:", data);
+if(data.error){
 
-alert("LOGIN OK");
+alert(data.error);
 
-  if(data.error){
-    alert(data.error);
-  } else {
-    document.getElementById("bal").innerText = data.balance;
-  }
+return;
+
+}
+
+document.getElementById("bal").innerText=data.balance;
+
+if(typeof loadTasks==="function"){
+
+loadTasks();
+
+ }
+
 }
 
 // ✅ تنفيذ
@@ -2363,36 +2407,84 @@ async function completeTask(taskId){
       .innerText = data.balance;
   }
 
-document.getElementById("dailyLeft")
-.innerText =
-"Remaining Tasks: " +
+const daily=document.getElementById("dailyLeft");
+
+if(daily){
+
+daily.innerText=
+"Remaining Tasks: "+
 data.dailyTasks;
+
+}
 
   loadTasks();
 }
 
 // 💸 سحب
 async function withdraw(){
-  const userId = localStorage.getItem("userId");
-  const wallet = document.getElementById("wallet").value;
-  const amount = Number(document.getElementById("amount").value);
 
-  const res = await fetch("/withdraw", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ userId, wallet, amount })
-  });
+const userId=localStorage.getItem("userId");
 
-  const data = await res.json();
+const wallet=document.getElementById("wallet").value.trim();
 
-  if(data.error){
-    alert(data.error);
-    return;
-  }
+const amount=Number(document.getElementById("amount").value);
 
-  document.getElementById("bal").innerText = data.balance;
+if(!wallet){
 
-  alert("✅ تم إرسال طلب السحب");
+alert("Enter Wallet Address");
+
+return;
+
+}
+
+if(amount<=0){
+
+alert("Invalid Amount");
+
+return;
+
+}
+
+try{
+
+const res=await fetch("/withdraw",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify({
+userId,
+wallet,
+amount
+})
+
+});
+
+const data=await res.json();
+
+if(data.error){
+
+alert(data.error);
+
+return;
+
+}
+
+document.getElementById("bal").innerText=data.balance;
+
+alert("Withdrawal Request Sent");
+
+}catch(err){
+
+console.error(err);
+
+alert("Withdraw Failed");
+
+}
+
 }
 
 function showRegister(){
@@ -2426,6 +2518,16 @@ async function register(){
   try{
 
     console.log("REGISTER START");
+
+if(!reg_email.value ||
+!reg_pass.value ||
+!reg_first.value){
+
+alert("Please Fill All Required Fields");
+
+return;
+
+}
 
     const res = await fetch("/register", {
       method: "POST",
@@ -2479,53 +2581,88 @@ let myChart;
 
 function loadChart(){
 
-  const ctx = document.getElementById('profitChart');
+const canvas=document.getElementById("profitChart");
 
-  if(myChart){
-    myChart.destroy();
-  }
+if(!canvas)return;
 
-  myChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Mon','Tue','Wed','Thu','Fri'],
-      datasets: [{
-        label: 'Profit',
-        data: [2, 5, 3, 8, 6],
-        borderWidth: 2
-      }]
-    }
-  });
+if(myChart){
+
+myChart.destroy();
+
+}
+
+myChart=new Chart(canvas,{
+
+type:"line",
+
+data:{
+
+labels:["Mon","Tue","Wed","Thu","Fri"],
+
+datasets:[{
+
+label:"Profit",
+
+data:[2,5,3,8,6],
+
+borderWidth:2,
+
+tension:0.4,
+
+fill:true
+
+}]
+
+}
+
+});
+
 }
 
 function updateTasks(){
-  try {
-    const el = document.getElementById("doneTasks");
-    if(!el) return;
 
-    const tasks = window.userTasks || [];
-    el.innerText = tasks.length;
+try{
 
-  } catch(e){
-    console.log("updateTasks error:", e);
-  }
+const el=document.getElementById("doneTasks");
+
+if(!el)return;
+
+const tasks=window.userTasks || [];
+
+el.innerText=tasks.length;
+
+}catch(err){
+
+console.error(err);
+
+}
+
 }
 
 function updateProgress(){
-  try {
-    const bal = document.getElementById("bal");
-    const goal = document.getElementById("progress");
 
-    if(!bal || !goal) return;
+try{
 
-    let balance = Number(bal.innerText) || 0;
-    let percent = Math.min((balance / 10) * 100, 100);
+const bal=document.getElementById("bal");
 
-    goal.innerText = balance + "$ / 10$ (" + percent.toFixed(0) + "%)";
+const progress=document.getElementById("progress");
 
-  } catch(e){
-    console.log("updateProgress error:", e);
-  }
+if(!bal || !progress)return;
+
+const balance=Number(bal.innerText)||0;
+
+const percent=Math.min((balance/10)*100,100);
+
+progress.innerText=
+balance+" USDT / 10 USDT ("+
+percent.toFixed(0)+"%)";
+
+}catch(err){
+
+console.error(err);
+
+}
+
 }
 
 </script>
@@ -2552,45 +2689,75 @@ async function sendMsg(){
 }
 
 async function loadMyMessages(){
-  const userId = localStorage.getItem("userId");
 
-  const res = await fetch("/messages");
-  const data = await res.json();
+try{
 
-  let html = "";
+const userId = localStorage.getItem("userId");
 
-  data
-    .filter(m => m.userId === userId)
-    .forEach(m => {
-      html += `
-        <div style="margin:10px;padding:10px;border:1px solid #444">
-          🧑‍💻 ${m.text}<br>
-          🤖 ${m.reply || "⏳ بانتظار الرد..."}
-        </div>
-      `;
-    });
+const res = await fetch("/messages");
 
-  document.getElementById("myMessages").innerHTML = html;
+const data = await res.json();
+
+let html = "";
+
+data
+.filter(m=>m.userId===userId)
+.forEach(m=>{
+
+html += `
+<div style="margin:10px;padding:10px;border:1px solid #444">
+
+🧑‍💻 ${m.text}<br>
+
+🤖 ${m.reply || "⏳ Waiting..."}
+
+</div>
+`;
+
+});
+
+document.getElementById("myMessages").innerHTML = html;
+
+}catch(err){
+
+console.error(err);
+
+}
+
 }
 
 async function loadTeam(refCode){
 
-  const res = await fetch(`/team?code=${refCode}`);
-  const users = await res.json();
+try{
 
-  document.getElementById("teamCount").innerText = users.length;
+const res = await fetch(`/team?code=${refCode}`);
 
-  let html = "";
+const users = await res.json();
 
-  users.forEach(u => {
-    html += `
-      <div class="card">
-        👤 ${u.firstName} - ${u.country}
-      </div>
-    `;
-  });
+document.getElementById("teamCount").innerText = users.length;
 
-  document.getElementById("teamList").innerHTML = html;
+let html="";
+
+users.forEach(u=>{
+
+html += `
+<div class="card">
+
+👤 ${u.firstName} - ${u.country}
+
+</div>
+`;
+
+});
+
+document.getElementById("teamList").innerHTML = html;
+
+}catch(err){
+
+console.error(err);
+
+}
+
 }
 
 async function loadHistory(){
@@ -2629,20 +2796,19 @@ async function loadHistory(){
 
   });
 
-  document.getElementById(
-  "historyBox"
-  ).innerHTML =
-  html || "لا يوجد عمليات";
+const box=document.getElementById("historyBox");
+
+if(box){
+
+box.innerHTML=
+html || "No History";
 
 }
 
 function showPage(id){
 
-  document
-  .querySelectorAll(".page")
-  .forEach(p =>
-    p.classList.remove("active")
-  );
+document.querySelectorAll(".page,.tab")
+.forEach(p=>p.classList.remove("active"));
 
   document
   .getElementById(id)
@@ -2654,8 +2820,6 @@ function showPage(id){
 
   if(id === "announcementPage"){
     loadAnnouncements();
-  }
-
   if(id === "notificationsPage"){
     loadNotifications();
   }
@@ -2667,6 +2831,8 @@ function showPage(id){
 <script>
 
 async function deposit(){
+
+try{
 
   const amount =
     document.getElementById("depositAmount").value;
@@ -2698,7 +2864,16 @@ async function deposit(){
 
   }
 
+}catch(err){
+
+console.error(err);
+
+alert("Deposit Failed");
+
 }
+
+}
+
 
 async function addTask(){
 
@@ -2722,12 +2897,14 @@ async function addTask(){
     })
   });
 
-  constdata = await res.json();
+  const data = await res.json();
 
   alert(data.msg || data.error);
 }
 
 async function addBalance(){
+
+try{
 
   const email =
     document.getElementById("userEmail").value;
@@ -2754,15 +2931,30 @@ async function addBalance(){
   alert(data.msg || data.error);
 }
 
+
+}catch(err){
+
+console.error(err);
+
+alert("Server Error");
+
+}
+
 function copyReferral(){
 
-  const ref =
-  document.getElementById("p_ref")
-  .innerText;
+const ref=document.getElementById("p_ref").innerText;
 
-  navigator.clipboard.writeText(ref);
+if(!ref){
 
-  alert("Referral link copied");
+alert("No Referral Link");
+
+return;
+
+}
+
+navigator.clipboard.writeText(ref);
+
+alert("Referral Link Copied");
 
 }
 
@@ -2772,6 +2964,8 @@ function copyReferral(){
 
 async function loadTasks(){
 
+try{
+
   const res = await fetch(
 
     "/daily-tasks?userId=" +
@@ -2780,10 +2974,14 @@ async function loadTasks(){
   );
 
   const tasks = await res.json();
-document.getElementById("dailyLeft")
-.innerText =
+const daily=document.getElementById("dailyLeft");
+
+if(daily){
+
+daily.innerText=
 "Remaining Tasks: " + tasks.length;
 
+}
 
   let html = "";
 
@@ -2817,7 +3015,7 @@ document.getElementById("dailyLeft")
 
   <p>
   🔥 Expected Return:
-  $${task.price + task.profit}
+$${(Number(task.price)+Number(task.profit)).toFixed(2)}
   </p>
 
   <button
@@ -2831,8 +3029,27 @@ document.getElementById("dailyLeft")
 `;
   });
 
-  document.getElementById("tasks")
-    .innerHTML = html;
+const box=document.getElementById("tasks");
+
+if(box){
+
+box.innerHTML=html;
+
+}
+
+}catch(err){
+
+console.error(err);
+
+const box=document.getElementById("tasks");
+
+if(box){
+
+box.innerHTML="<div class='card'>No Tasks Available</div>";
+
+}
+
+}
 }
 
 </script>
