@@ -2069,31 +2069,45 @@ data.referralCode;
     document.getElementById("app").style.display = "block";
 // ===== Load Application =====
 
+console.log("1");
 if(typeof loadTasks === "function") loadTasks();
 
+console.log("2");
 if(typeof loadHistory === "function") loadHistory();
 
+console.log("3");
 if(typeof loadChart === "function") loadChart();
 
+console.log("4");
 if(typeof loadLeaderboard === "function") loadLeaderboard();
 
+console.log("5");
 if(typeof loadAdminTasks === "function") loadAdminTasks();
 
+console.log("6");
 if(typeof loadStats === "function") loadStats();
 
+console.log("7");
 if(typeof loadFinance === "function") loadFinance();
 
+console.log("8");
 if(typeof loadAnnouncements === "function") loadAnnouncements();
 
+console.log("9");
 if(typeof loadNotifications === "function") loadNotifications();
 
+console.log("10");
 if(typeof updateTasks === "function") updateTasks();
 
+console.log("11");
 if(typeof updateProgress === "function") updateProgress();
 
+console.log("12");
 if(typeof checkBlocked === "function"){
+    setInterval(checkBlocked,10000);
+}
 
-setInterval(checkBlocked,10000);
+console.log("END");
 
 }
 
