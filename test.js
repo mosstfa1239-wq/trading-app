@@ -139,33 +139,45 @@ data.referralCode;
     document.getElementById("app").style.display = "block";
 // ===== Load Application =====
 
+console.log("1");
 if(typeof loadTasks === "function") loadTasks();
 
+console.log("2");
 if(typeof loadHistory === "function") loadHistory();
 
+console.log("3");
 if(typeof loadChart === "function") loadChart();
 
+console.log("4");
 if(typeof loadLeaderboard === "function") loadLeaderboard();
 
+console.log("5");
 if(typeof loadAdminTasks === "function") loadAdminTasks();
 
+console.log("6");
 if(typeof loadStats === "function") loadStats();
 
+console.log("7");
 if(typeof loadFinance === "function") loadFinance();
 
+console.log("8");
 if(typeof loadAnnouncements === "function") loadAnnouncements();
 
+console.log("9");
 if(typeof loadNotifications === "function") loadNotifications();
 
+console.log("10");
 if(typeof updateTasks === "function") updateTasks();
 
+console.log("11");
 if(typeof updateProgress === "function") updateProgress();
 
+console.log("12");
 if(typeof checkBlocked === "function"){
-
-setInterval(checkBlocked,10000);
-
+    setInterval(checkBlocked,10000);
 }
+
+console.log("END");
 
 }catch(err){
 
@@ -341,8 +353,6 @@ location.reload();
 
 }
 
-</script>
-<script>
 
 // 🔄 تبديل الصفحات
 function showTab(id){
@@ -732,8 +742,6 @@ console.error(err);
 
 }
 
-</script>
-<script>
 function openSupport(){
   document.getElementById("chatBox").style.display = "block";
   loadMyMessages();
@@ -895,8 +903,6 @@ document.querySelectorAll(".page,.tab")
   }
 
 }
-</script>
-<script>
 
 async function deposit(){
 
@@ -997,7 +1003,6 @@ try{
   const data = await res.json();
 
   alert(data.msg || data.error);
-}
 
 
 }catch(err){
@@ -1005,6 +1010,8 @@ try{
 console.error(err);
 
 alert("Server Error");
+
+}
 
 }
 
@@ -1026,8 +1033,7 @@ alert("Referral Link Copied");
 
 }
 
-</script>
-<script>
+
 
 async function loadTasks(){
 
@@ -1119,95 +1125,154 @@ box.innerHTML="<div class='card'>No Tasks Available</div>";
 }
 }
 
-</script>
-<script>
 
 async function sendToAdmin(){
 
-  const res = await fetch(
-    "/send-to-admin",
-  {
+  try{
 
-    method:"POST",
+    const input =
+    document.getElementById("userMessage");
 
-    headers:{
-      "Content-Type":"application/json"
-    },
+    if(!input){
+      console.warn("userMessage not found");
+      return;
+    }
 
-    body:JSON.stringify({
 
-      userId:
-      localStorage.getItem(
-      "userId"),
+    const res = await fetch(
+      "/send-to-admin",
+      {
 
-      message:
-      document.getElementById(
-      "userMessage").value
+        method:"POST",
 
-    })
-  });
+        headers:{
+          "Content-Type":"application/json"
+        },
 
-  const data = await res.json();
+        body:JSON.stringify({
 
-  alert(data.msg || data.error);
+          userId:
+          localStorage.getItem("userId"),
+
+          message:
+          input.value
+
+        })
+      }
+    );
+
+
+    if(!res.ok){
+      throw new Error("sendToAdmin server error");
+    }
+
+
+    const data =
+    await res.json();
+
+
+    alert(data.msg || data.error);
+
+
+  }catch(err){
+
+    console.error("sendToAdmin error:",err);
+
+  }
+
 }
+
+
 
 
 
 async function upgradeVip(vip){
 
-  const res =
-  await fetch("/upgrade-vip",{
+  try{
 
-    method:"POST",
 
-    headers:{
-      "Content-Type":"application/json"
-    },
+    const res =
+    await fetch("/upgrade-vip",{
 
-    body:JSON.stringify({
+      method:"POST",
 
-      userId:
-      localStorage.getItem("userId"),
+      headers:{
+        "Content-Type":"application/json"
+      },
 
-      vip
+      body:JSON.stringify({
 
-    })
+        userId:
+        localStorage.getItem("userId"),
 
-  });
+        vip
 
-  const data =
-  await res.json();
+      })
 
-  alert(data.msg || data.error);
+    });
 
-  if(data.balance !== undefined){
 
-    document.getElementById("bal")
-    .innerText =
-    data.balance;
 
-  }
+    if(!res.ok){
+      throw new Error("upgradeVip server error");
+    }
 
-  if(data.vip !== undefined){
 
-    document.getElementById("vipLevel")
-    .innerText =
-    data.vip;
+
+    const data =
+    await res.json();
+
+
+
+    alert(data.msg || data.error);
+
+
+
+    const bal =
+    document.getElementById("bal");
+
+
+    if(bal && data.balance !== undefined){
+
+      bal.innerText =
+      data.balance;
+
+    }
+
+
+
+    const vipLevel =
+    document.getElementById("vipLevel");
+
+
+    if(vipLevel && data.vip !== undefined){
+
+      vipLevel.innerText =
+      data.vip;
+
+    }
+
+
+
+  }catch(err){
+
+    console.error("upgradeVip error:",err);
 
   }
 
 }
-</script>
-<script>
+
 
 async function verifyAccount(){
+
+try{
 
   const email =
     localStorage.getItem("verifyEmail");
 
   const code =
     document.getElementById("verifyCode").value;
+
 
   const res = await fetch("/verify-email",{
 
@@ -1224,7 +1289,9 @@ async function verifyAccount(){
 
   });
 
+
   const data = await res.json();
+
 
   if(data.msg){
 
@@ -1234,29 +1301,58 @@ async function verifyAccount(){
 
   }else{
 
-    alert(data.error);
+    alert(data.error || "Verification failed");
 
   }
+
+
+}catch(err){
+
+  console.error("verifyAccount error:",err);
+
+  alert("Server connection error");
+
 }
 
+}
+
+
+
 function showForgotPage(){
+
+try{
 
   document
   .querySelectorAll(".page")
   .forEach(p=>p.classList.remove("active"));
 
+
   document
   .getElementById("forgotPage")
   .classList.add("active");
 
+
+}catch(err){
+
+ console.error("showForgotPage error:",err);
+
 }
 
+}
+
+
+
+
+
 async function sendResetCode(){
+
+try{
 
   const email =
   document.getElementById("resetEmail").value;
 
-  await fetch("/forgot-password",{
+
+  const res = await fetch("/forgot-password",{
 
     method:"POST",
 
@@ -1268,20 +1364,42 @@ async function sendResetCode(){
 
   });
 
-  alert("Code Sent");
+
+  const data = await res.json();
+
+
+  alert(data.msg || "Code Sent");
+
+
+}catch(err){
+
+ console.error("sendResetCode error:",err);
+
+ alert("Server connection error");
 
 }
 
+}
+
+
+
+
+
 async function resetPassword(){
+
+try{
 
   const email =
   document.getElementById("resetEmail").value;
 
+
   const code =
   document.getElementById("resetCode").value;
 
+
   const password =
   document.getElementById("newPassword").value;
+
 
   const res =
   await fetch("/reset-password",{
@@ -1302,31 +1420,48 @@ async function resetPassword(){
 
   });
 
+
   const data =
   await res.json();
 
+
   alert(
-    data.msg || data.error
+    data.msg || data.error || "Done"
   );
+
+
+}catch(err){
+
+ console.error("resetPassword error:",err);
+
+ alert("Server connection error");
 
 }
 
-</script>
-<script>
+}
+
+
+
 async function loadNotifications(){
+
+try{
+
+  const userId =
+  localStorage.getItem("userId");
+
 
   const res =
   await fetch(
-
-    "/notifications?userId=" +
-    localStorage.getItem("userId")
-
+    "/notifications?userId=" + userId
   );
+
 
   const data =
   await res.json();
 
+
   let html = "";
+
 
   data.forEach(n=>{
 
@@ -1338,74 +1473,151 @@ async function loadNotifications(){
 
   });
 
-  document.getElementById(
-    "notifications"
-  ).innerHTML = html;
+
+  const box =
+  document.getElementById("notifications");
+
+
+  if(box){
+
+    box.innerHTML = html;
+
+  }
+
+
+}catch(err){
+
+ console.error("loadNotifications error:",err);
 
 }
 
+}
+
+
+
+
+
 async function loadAnnouncements(){
 
-  const res = await fetch(
+try{
 
-    "/announcements"
 
-  );
+  const res =
+  await fetch("/announcements");
+
 
   const data =
   await res.json();
 
+
   let html = "";
+
 
   data.forEach(a=>{
 
     html += `
 
-<div class="card">
+      <div class="card">
+        ${a.text}
+      </div>
 
-${a.text}
-
-</div>
-
-`;
+    `;
 
   });
 
-  document.getElementById(
-  "announcements"
-  ).innerHTML = html;
+
+  const box =
+  document.getElementById("announcements");
+
+
+  if(box){
+
+    box.innerHTML = html;
+
+  }
+
+
+}catch(err){
+
+ console.error("loadAnnouncements error:",err);
 
 }
 
-//الطرد
+}
+
+
+
+
+
+
+
+// فحص حالة الحساب
+
 async function checkBlocked(){
+
+try{
+
 
   const userId =
   localStorage.getItem("userId");
 
+
   if(!userId) return;
+
+
 
   const res =
   await fetch(
     "/user/status?userId=" + userId
   );
 
+
+  if(!res.ok){
+
+    console.log(
+      "Status check failed:",
+      res.status
+    );
+
+    return;
+
+  }
+
+
   const data =
   await res.json();
 
+
+
   if(data.blocked){
+
 
     alert(
       "🚫 Your account has been blocked"
     );
 
+
     localStorage.removeItem(
       "userId"
     );
+
 
     location.reload();
 
   }
 
+
+}catch(err){
+
+
+ console.error(
+  "checkBlocked error:",
+  err
+ );
+
+
 }
+
+}
+
 
