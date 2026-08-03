@@ -138,7 +138,21 @@ padding:32px;
 
 border-radius:28px;
 
-background:rgba(255,255,255,.06);
+background:
+
+linear-gradient(
+135deg,
+rgba(18,18,25,.92),
+rgba(8,8,12,.94)
+),
+
+url("/branding/logo-ar.png");
+
+background-repeat:no-repeat;
+
+background-position:center;
+
+background-size:72%;
 
 backdrop-filter:blur(20px);
 
@@ -158,7 +172,7 @@ transition:.35s;
 
 }
 
-/* الخط الذهبي */
+/* الخط الذهبي أعلى الكرت */
 
 .card::before{
 
@@ -186,39 +200,7 @@ z-index:2;
 
 }
 
-/* شعار أبو حنين بالخلفية */
-
-.card::after{
-
-content:"";
-
-position:absolute;
-
-inset:0;
-
-background:url("/branding/logo-ar.png") center center no-repeat;
-
-background-size:65%;
-
-opacity:.05;
-
-pointer-events:none;
-
-z-index:0;
-
-}
-
-/* محتوى الكرت فوق الشعار */
-
-.card>*{
-
-position:relative;
-
-z-index:3;
-
-}
-
-/* حركة */
+/* حركة عند المرور */
 
 .card:hover{
 
