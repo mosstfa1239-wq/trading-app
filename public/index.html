@@ -1327,51 +1327,55 @@ transform:rotateY(180deg);
 
 }
 
-.logo-reflection{
+.logo3d::before{
+
+content:"";
 
 position:absolute;
 
-top:-20%;
-left:-70%;
+inset:-6px;
 
-width:45%;
-height:160%;
+border-radius:50%;
 
 background:
 
-linear-gradient(
+conic-gradient(
 
-90deg,
+from 0deg,
 
 transparent,
 
-rgba(255,255,255,.95),
+rgba(255,215,120,.9),
+
+transparent,
+
+rgba(255,255,255,.7),
 
 transparent
 
 );
 
-transform:rotate(25deg);
+filter:blur(6px);
 
-mix-blend-mode:screen;
+opacity:.7;
 
-animation:reflectionMove 3s linear infinite;
+animation:borderGlow 4s linear infinite;
 
 pointer-events:none;
 
 }
 
-@keyframes reflectionMove{
+@keyframes borderGlow{
 
-0%{
+from{
 
-left:-70%;
+transform:rotate(0deg);
 
 }
 
-100%{
+to{
 
-left:150%;
+transform:rotate(360deg);
 
 }
 
