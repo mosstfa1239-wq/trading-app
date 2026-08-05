@@ -2700,60 +2700,71 @@ Send Message
 
 <div class="nav">
 
-<button
-
-onclick="showTab('home')">
-
+<button onclick="showTab('home')">
 🏠
-
 </button>
 
-<button
-
-onclick="showTab('tasksPage')">
-
+<button onclick="showTab('tasksPage')">
 🛍
-
 </button>
 
-<button
+<button onclick="showTab('marketplacePage')">
+🛒
+</button>
 
-onclick="showTab('withdrawPage')">
-
+<button onclick="showTab('withdrawPage')">
 💳
-
 </button>
 
-<button
-
-onclick="showTab('historyPage')">
-
+<button onclick="showTab('historyPage')">
 📜
-
 </button>
 
-<button
-
-onclick="showTab('profile')">
-
+<button onclick="showTab('profile')">
 👤
-
-</button>
-
-<button onclick="showTab('announcementPage')">
-
-📢 Announcements
-
 </button>
 
 </div>
 
 </div>
 
-</body>
+<div id="marketplacePage" class="tab">
 
-</html>
- 
+<div class="card">
+
+<h2>🛒 Marketplace</h2>
+
+<p>Select a category</p>
+
+</div>
+
+<div class="card" onclick="openMarket('products')">
+
+📦 Products
+
+</div>
+
+<div class="card" onclick="openMarket('services')">
+
+💼 Services
+
+</div>
+
+<div class="card" onclick="openMarket('ads')">
+
+📢 Advertisements
+
+</div>
+
+<div class="card" onclick="openMarket('offers')">
+
+🎁 Offers
+
+</div>
+
+<div id="marketContent"></div>
+
+</div> 
 
 <script>
 
