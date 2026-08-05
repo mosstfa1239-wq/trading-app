@@ -196,6 +196,30 @@ const UserSchema = new mongoose.Schema({
   country: String,
   address: String,
 
+accountType: {
+  type: String,
+  default: "customer"
+},
+
+companyName: String,
+
+businessType: String,
+
+companyCity: String,
+
+website: String,
+
+licenseNumber: String,
+
+commercialRegister: String,
+
+companyDescription: String,
+
+merchantStatus: {
+  type: String,
+  default: ""
+},
+
 walletAddress: String,
 walletLocked: Boolean,
 
@@ -308,16 +332,27 @@ app.delete("/admin/task/:id", async (req,res)=>{
 // 📥 تسجيل
 app.post("/register", async (req, res) => {
 
-  const {
-    email,
-    password,
-    firstName,
-    lastName,
-    phone,
-    country,
-    address,
-    referralCode
-  } = req.body;
+const {
+  email,
+  password,
+  firstName,
+  lastName,
+  phone,
+  country,
+  address,
+  referralCode,
+
+  accountType,
+
+  companyName,
+  businessType,
+  companyCity,
+  website,
+  licenseNumber,
+  commercialRegister,
+  companyDescription
+
+} = req.body;
 
   const hashed = await bcrypt.hash(password, 10);
 
@@ -372,19 +407,55 @@ if(exists){
   //انشاء مستخدم
 
 const user = await User.create({
+
   email,
   password: hashed,
+
   firstName,
   lastName,
+
   phone,
   country,
   address,
+
+  accountType:
+  accountType || "customer",
+
+  companyName:
+  companyName || "",
+
+  businessType:
+  businessType || "",
+
+  companyCity:
+  companyCity || "",
+
+  website:
+  website || "",
+
+  licenseNumber:
+  licenseNumber || "",
+
+  commercialRegister:
+  commercialRegister || "",
+
+  companyDescription:
+  companyDescription || "",
+
+  merchantStatus:
+  accountType === "merchant"
+  ? "pending"
+  : "",
+
   referralCode: myRef,
   referredBy: referralCode || "",
+
   verifyCode: code,
   verified: false,
+
   resetCode: "",
-   balance: 0,
+
+  balance: 0,
 
   tasks: [],
 

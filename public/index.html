@@ -3454,6 +3454,7 @@ async function register(){
 
     console.log("REGISTER START");
 
+
 if(!reg_email.value ||
 !reg_pass.value ||
 !reg_first.value){
@@ -3475,7 +3476,33 @@ return;
         phone: reg_phone.value,
         country: reg_country.value,
         address: reg_address.value,
-        referralCode: reg_ref.value
+        referralCode: reg_ref.value,
+
+accountType:
+document.querySelector('input[name="accountType"]:checked').value,
+
+companyName:
+merchant_company.value,
+
+businessType:
+merchant_type.value,
+
+companyCity:
+merchant_city.value,
+
+website:
+merchant_website.value,
+
+licenseNumber:
+merchant_license.value,
+
+commercialRegister:
+merchant_register.value,
+
+companyDescription:
+merchant_description.value
+
+
       })
     });
 
