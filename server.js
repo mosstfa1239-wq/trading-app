@@ -284,6 +284,37 @@ const Setting = mongoose.model("Setting", {
 
 });
 
+const ProductSchema = new mongoose.Schema({
+
+  merchantId: String,
+
+  merchantName: String,
+
+  name: String,
+
+  price: Number,
+
+  category: String,
+
+  image: String,
+
+  description: String,
+
+  active: {
+    type: Boolean,
+    default: true
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+
+});
+
+const Product =
+mongoose.model("Product", ProductSchema);
+
 // 🧩 Task
 const TaskSchema = new mongoose.Schema({
 
@@ -521,6 +552,84 @@ console.log("LOGIN SUCCESS:", user.email);
 
  res.json(user);
 
+
+});
+//حفض المنتج
+app.post("/merchant/add-product", async (req,res)=>{
+
+const{
+
+merchantId,
+
+merchantName,
+
+name,
+
+price,
+
+category,
+
+image,
+
+description
+
+}=req.body;
+
+const product = await Product.create({
+
+merchantId,
+
+merchantName,
+
+name,
+
+price,
+
+category,
+
+image,
+
+description
+
+});
+
+res.json({
+
+success:true,
+
+product
+
+});
+
+});
+//عرمنتجات التاج
+
+app.get("/merchant/products/:id",async(req,res)=>{
+
+const products=
+
+await Product.find({
+
+merchantId:req.params.id
+
+});
+
+res.json(products);
+
+});
+//المتجر
+
+app.get("/market/products",async(req,res)=>{
+
+const products=
+
+await Product.find({
+
+active:true
+
+});
+
+res.json(products);
 
 });
 
@@ -1693,6 +1802,22 @@ app.get("/user/status", async(req,res)=>{
   });
 
 });
+//التجاري
+
+app.get("/market/products",async(req,res)=>{
+
+const products=
+
+await Product.find({
+
+active:true
+
+});
+
+res.json(products);
+
+});
+
 
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")

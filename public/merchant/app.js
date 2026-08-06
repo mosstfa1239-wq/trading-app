@@ -18,9 +18,56 @@ break;
 case "products":
 
 content.innerHTML = `
-<h2>📦 Products</h2>
 
-<p>Your products will appear here.</p>
+<div class="card">
+
+<h2>📦 My Products</h2>
+
+<button onclick="showAddProduct()">
+
+➕ Add Product
+
+</button>
+
+</div>
+
+<div id="productForm" style="display:none;">
+
+<input
+id="product_name"
+placeholder="Product Name">
+
+<input
+id="product_price"
+type="number"
+placeholder="Price">
+
+<input
+id="product_category"
+placeholder="Category">
+
+<input
+id="product_image"
+placeholder="Image URL">
+
+<textarea
+id="product_description"
+placeholder="Description"></textarea>
+
+<button onclick="saveProduct()">
+
+💾 Save Product
+
+</button>
+
+</div>
+
+<div id="productsList">
+
+No products yet.
+
+</div>
+
 `;
 
 break;
@@ -32,6 +79,8 @@ content.innerHTML = `
 
 <p>Your customer orders will appear here.</p>
 `;
+
+setTimeout(loadProducts,100);
 
 break;
 
@@ -66,3 +115,104 @@ window.location.href="/";
 }
 
 showPage("dashboard");
+
+function showAddProduct(){
+
+document.getElementById("productForm").style.display="block";
+
+}
+
+async function saveProduct(){
+
+const merchantId =
+localStorage.getItem("userId");
+
+const merchantName =
+document.getElementById("merchantName").innerText;
+
+const body={
+
+merchantId,
+
+merchantName,
+
+name:
+document.getElementById("product_name").value,
+
+price:
+Number(document.getElementById("product_price").value),
+
+category:
+document.getElementById("product_category").value,
+
+image:
+document.getElementById("product_image").value,
+
+description:
+document.getElementById("product_description").value
+
+};
+
+const res=await fetch(
+"/merchant/add-product",{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json"
+},
+
+body:JSON.stringify(body)
+
+});
+
+const data=await res.json();
+
+if(data.success){
+
+alert("✅ Product Added");
+
+loadProducts();
+
+}else{
+
+alert("❌ Error");
+
+}
+
+}
+
+async function loadProducts(){
+
+const merchantId=
+localStorage.getItem("userId");
+
+const res=
+await fetch("/merchant/products/"+merchantId);
+
+const products=
+await res.json();
+
+let html="";
+
+products.forEach(p=>{
+
+html+=`
+
+<div class="card">
+
+<h3>${p.name}</h3>
+
+<p>${p.category}</p>
+
+<p>${p.price} USDT</p>
+
+</div>
+
+`;
+
+});
+
+document.getElementById("productsList").innerHTML=html;
+
+}

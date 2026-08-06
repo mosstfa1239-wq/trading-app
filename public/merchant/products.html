@@ -1,0 +1,49 @@
+<div class="card">
+
+<h2>📦 My Products</h2>
+
+<button
+class="btn-add"
+onclick="showAddProduct()">
+
+➕ Add Product
+
+</button>
+
+</div>
+
+<div id="productForm" style="display:none;">
+
+<input
+id="product_name"
+placeholder="Product Name">
+
+<input
+id="product_price"
+type="number"
+placeholder="Price">
+
+<input
+id="product_category"
+placeholder="Category">
+
+<input
+id="product_image"
+placeholder="Image URL">
+
+<textarea
+id="product_description"
+placeholder="Product Description"></textarea>
+
+<button
+onclick="saveProduct()">
+
+💾 Save Product
+
+</button>
+
+</div>
+
+<div id="productsList">
+
+</div>
