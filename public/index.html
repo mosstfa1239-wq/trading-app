@@ -2961,6 +2961,15 @@ data.referralCode;
     ).innerText =
     "Login successful";
 
+// إذا كان الحساب تاجر افتح لوحة التاجر
+if (data.accountType === "merchant") {
+
+    window.location.href = "/merchant/index.html";
+
+    return;
+
+}
+
     // ✅ فتح التطبيق
     document.querySelectorAll(
     ".page"
