@@ -7,6 +7,24 @@ const { Resend } = require("resend");
 const crypto = require("crypto");
 const axios = require("axios");
 
+const cloudinary = require("cloudinary").v2;
+
+const multer = require("multer");
+
+const upload = multer({
+storage: multer.memoryStorage()
+});
+
+cloudinary.config({
+
+cloud_name: "ma3oodbb",
+
+api_key: "954661348451215",
+
+api_secret: "qzbljethhYGioJvcF7IdvNvQi7U API_SECRET"
+
+});
+
 const TINPAY_API_KEY = "c30efed9306fbdaf9de4425bd35b64a0ea75f299b31f31ea";
 const TINPAY_API_SECRET = "d36efca079f34a0c54d27e40f9bf9215784f767833abe896174b6ac3e47968fd";
 
@@ -1817,7 +1835,66 @@ active:true
 res.json(products);
 
 });
+//رفع الصور
 
+app.post(
+"/merchant/upload-image",
+
+upload.single("image"),
+
+async(req,res)=>{
+
+try{
+
+const result=
+
+await new Promise(
+
+(resolve,reject)=>{
+
+cloudinary.uploader.upload_stream(
+
+{
+
+folder:"marketplace"
+
+},
+
+(error,result)=>{
+
+if(error) reject(error);
+
+else resolve(result);
+
+}
+
+).end(req.file.buffer);
+
+}
+
+);
+
+res.json({
+
+success:true,
+
+url:result.secure_url
+
+});
+
+}catch(err){
+
+res.json({
+
+success:false,
+
+error:err.message
+
+});
+
+}
+
+});
 
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
