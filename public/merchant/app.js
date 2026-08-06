@@ -47,8 +47,13 @@ id="product_category"
 placeholder="Category">
 
 <input
+type="file"
+id="product_file"
+accept="image/*">
+
+<input
 id="product_image"
-placeholder="Image URL">
+placeholder="Image URL (Optional)">
 
 <textarea
 id="product_description"
@@ -70,6 +75,8 @@ No products yet.
 
 `;
 
+setTimeout(loadProducts,100);
+
 break;
 
 case "orders":
@@ -79,8 +86,6 @@ content.innerHTML = `
 
 <p>Your customer orders will appear here.</p>
 `;
-
-setTimeout(loadProducts,100);
 
 break;
 
