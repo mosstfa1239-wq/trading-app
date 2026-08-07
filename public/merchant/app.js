@@ -360,3 +360,65 @@ if(box){
 }
 
 }
+async function deleteProduct(productId){
+
+  const ok = confirm(
+    "Are you sure you want to delete this product?"
+  );
+
+  if(!ok) return;
+
+  const merchantId =
+    localStorage.getItem("userId");
+
+  try {
+
+    const res = await fetch(
+      "/merchant/delete-product",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify({
+          productId: productId,
+          merchantId: merchantId
+        })
+      }
+    );
+
+    const data = await res.json();
+
+    console.log("DELETE RESPONSE:", data);
+
+    if(data.success){
+
+      alert("✅ Product deleted successfully");
+
+      loadProducts();
+
+      closeProductOptions();
+
+    }else{
+
+      alert(
+        "❌ Product could not be deleted: " +
+        (data.error || "Unknown error")
+      );
+
+    }
+
+  }catch(err){
+
+    console.error("DELETE ERROR:", err);
+
+    alert(
+      "❌ Delete error: " +
+      err.message
+    );
+
+  }
+
+}
