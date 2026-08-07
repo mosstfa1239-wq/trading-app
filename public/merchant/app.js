@@ -129,6 +129,8 @@ document.getElementById("productForm").style.display="block";
 
 async function saveProduct(){
 
+console.log("1");
+
 const merchantId =
 localStorage.getItem("userId");
 
@@ -143,11 +145,15 @@ document.getElementById("product_image").value;
 const file =
 document.getElementById("product_file").files[0];
 
+console.log("2", file);
+
 if(file){
 
 const formData = new FormData();
 
 formData.append("image", file);
+
+console.log("3");
 
 const uploadRes = await fetch(
 
@@ -165,6 +171,8 @@ body:formData
 
 const uploadData =
 await uploadRes.json();
+
+console.log(uploadData);
 
 if(uploadData.success){
 
