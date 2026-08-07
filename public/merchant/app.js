@@ -49,7 +49,8 @@ placeholder="Category">
 <input
 type="file"
 id="product_file"
-accept="image/*">
+accept="image/*"
+onchange="uploadProductImage()">
 
 <input
 id="product_image"
@@ -219,5 +220,70 @@ html+=`
 });
 
 document.getElementById("productsList").innerHTML=html;
+
+}
+async function uploadProductImage(){
+
+  const fileInput =
+    document.getElementById("product_file");
+
+  const imageInput =
+    document.getElementById("product_image");
+
+  const file =
+    fileInput.files[0];
+
+  if(!file){
+    return;
+  }
+
+  try{
+
+    console.log("IMAGE SELECTED:", file.name);
+
+    const formData =
+      new FormData();
+
+    formData.append("image", file);
+
+    const res =
+      await fetch(
+        "/merchant/upload-image",
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+
+    const data =
+      await res.json();
+
+    console.log("IMAGE UPLOAD:", data);
+
+    if(!data.success){
+
+      alert(
+        "Image upload failed: " +
+        (data.error || "Unknown error")
+      );
+
+      return;
+    }
+
+    imageInput.value =
+      data.url;
+
+    alert("✅ Image uploaded");
+
+  }catch(err){
+
+    console.error(err);
+
+    alert(
+      "Image upload error: " +
+      err.message
+    );
+
+  }
 
 }
