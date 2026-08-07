@@ -205,7 +205,10 @@ products.forEach(p=>{
 
 html+=`
 
-<div class="card">
+<div
+class="card merchant-product"
+onclick="openProductOptions('${p._id}')"
+>
 
 <h3>${p.name}</h3>
 
@@ -285,5 +288,75 @@ async function uploadProductImage(){
     );
 
   }
+
+}
+function openProductOptions(productId){
+
+const old =
+document.getElementById("productOptions");
+
+if(old){
+  old.remove();
+}
+
+const box =
+document.createElement("div");
+
+box.id="productOptions";
+
+box.className="card";
+
+box.innerHTML=`
+
+<h3>Product Options</h3>
+
+<button
+onclick="deleteProduct('${productId}')"
+style="
+background:#dc2626;
+color:white;
+border:0;
+padding:12px;
+border-radius:10px;
+width:100%;
+margin-top:10px;
+">
+
+🗑️ Delete Product
+
+</button>
+
+<button
+onclick="closeProductOptions()"
+style="
+background:#374151;
+color:white;
+border:0;
+padding:12px;
+border-radius:10px;
+width:100%;
+margin-top:10px;
+">
+
+✖️ Cancel
+
+</button>
+
+`;
+
+document
+.getElementById("productsList")
+.prepend(box);
+
+}
+
+function closeProductOptions(){
+
+const box =
+document.getElementById("productOptions");
+
+if(box){
+  box.remove();
+}
 
 }
