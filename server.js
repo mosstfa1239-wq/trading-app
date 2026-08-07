@@ -651,6 +651,53 @@ res.json(products);
 
 });
 
+app.post("/merchant/delete-product", async (req, res) => {
+
+  try {
+
+    const { productId, merchantId } = req.body;
+
+    if (!productId || !merchantId) {
+      return res.json({
+        success: false,
+        error: "Missing product information"
+      });
+    }
+
+    const product = await Product.findOne({
+      _id: productId,
+      merchantId: merchantId
+    });
+
+    if (!product) {
+      return res.json({
+        success: false,
+        error: "Product not found"
+      });
+    }
+
+    await Product.deleteOne({
+      _id: productId,
+      merchantId: merchantId
+    });
+
+    res.json({
+      success: true
+    });
+
+  } catch (err) {
+
+    console.log("DELETE PRODUCT ERROR:", err);
+
+    res.json({
+      success: false,
+      error: err.message
+    });
+
+  }
+
+});
+
 // 📋 عرض المهام
 app.get("/tasks", async (req, res) => {
   const tasks = await Task.find();
