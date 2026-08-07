@@ -117,3 +117,80 @@ padding:30px;
 width:100%;
 
 }/
+/* =========================
+   MERCHANT PRODUCTS
+========================= */
+
+#productForm {
+  margin-top: 18px;
+  padding: 18px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+}
+
+#productForm input,
+#productForm textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 13px 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  background: #151d30;
+  color: #fff;
+  outline: none;
+}
+
+#productForm input:focus,
+#productForm textarea:focus {
+  border-color: #4da3ff;
+}
+
+#productForm input[type="file"] {
+  padding: 10px;
+  background: #111827;
+}
+
+#productForm textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+#productForm button {
+  width: 100%;
+  margin-top: 15px;
+  padding: 13px;
+  border: 0;
+  border-radius: 12px;
+  background: #2563eb;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+#productForm button:active {
+  transform: scale(0.98);
+}
+
+#productsList {
+  margin-top: 18px;
+}
+
+#productsList .card {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 16px;
+  background: #151d30;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+#productsList h3 {
+  margin: 0 0 8px;
+  color: white;
+}
+
+#productsList p {
+  margin: 5px 0;
+  color: #aeb8ca;
+}
