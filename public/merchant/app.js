@@ -129,64 +129,11 @@ document.getElementById("productForm").style.display="block";
 
 async function saveProduct(){
 
-console.log("1");
-
 const merchantId =
 localStorage.getItem("userId");
 
 const merchantName =
 document.getElementById("merchantName").innerText;
-
-// رابط الصورة النهائي
-let imageUrl =
-document.getElementById("product_image").value;
-
-// إذا اختار صورة من الهاتف
-const file =
-document.getElementById("product_file").files[0];
-
-console.log("2", file);
-
-if(file){
-
-const formData = new FormData();
-
-formData.append("image", file);
-
-console.log("3");
-
-const uploadRes = await fetch(
-
-"/merchant/upload-image",
-
-{
-
-method:"POST",
-
-body:formData
-
-}
-
-);
-
-const uploadData =
-await uploadRes.json();
-
-console.log(uploadData);
-
-if(uploadData.success){
-
-imageUrl = uploadData.url;
-
-}else{
-
-alert("Image upload failed");
-
-return;
-
-}
-
-}
 
 const body={
 
@@ -203,18 +150,16 @@ Number(document.getElementById("product_price").value),
 category:
 document.getElementById("product_category").value,
 
-image:imageUrl,
+image:
+document.getElementById("product_image").value,
 
 description:
 document.getElementById("product_description").value
 
 };
 
-const res = await fetch(
-
-"/merchant/add-product",
-
-{
+const res=await fetch(
+"/merchant/add-product",{
 
 method:"POST",
 
@@ -224,11 +169,9 @@ headers:{
 
 body:JSON.stringify(body)
 
-}
+});
 
-);
-
-const data = await res.json();
+const data=await res.json();
 
 if(data.success){
 
@@ -243,7 +186,6 @@ alert("❌ Error");
 }
 
 }
-
 
 async function loadProducts(){
 
