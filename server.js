@@ -333,6 +333,90 @@ const ProductSchema = new mongoose.Schema({
 const Product =
 mongoose.model("Product", ProductSchema);
 
+const OrderSchema = new mongoose.Schema({
+
+  orderId: {
+    type: String,
+    unique: true
+  },
+
+  customerId: String,
+  customerName: String,
+  customerEmail: String,
+
+  merchantId: String,
+  merchantName: String,
+
+  productId: String,
+  productName: String,
+
+  quantity: {
+    type: Number,
+    default: 1
+  },
+
+  unitPrice: Number,
+
+  productsTotal: Number,
+
+  shippingType: {
+    type: String,
+    enum: ["pickup", "delivery"],
+    default: "pickup"
+  },
+
+  shippingAddress: {
+    type: String,
+    default: ""
+  },
+
+  shippingCost: {
+    type: Number,
+    default: 0
+  },
+
+  platformFee: {
+    type: Number,
+    default: 0
+  },
+
+  total: Number,
+
+  paymentMethod: {
+    type: String,
+    default: "balance"
+  },
+
+  paymentStatus: {
+    type: String,
+    default: "pending"
+  },
+
+  orderStatus: {
+    type: String,
+    default: "pending"
+  },
+
+  rating: {
+    type: Number,
+    default: 0
+  },
+
+  review: {
+    type: String,
+    default: ""
+  },
+
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+
+});
+
+const Order =
+mongoose.model("Order", OrderSchema);
+
 // 🧩 Task
 const TaskSchema = new mongoose.Schema({
 
@@ -692,6 +776,228 @@ app.post("/merchant/delete-product", async (req, res) => {
     res.json({
       success: false,
       error: err.message
+    });
+
+  }
+
+});
+// فاتورة المنتجات
+app.post("/orders/create", async (req, res) => {
+
+  try {
+
+    const {
+      customerId,
+      productId,
+      quantity,
+      shippingType,
+      shippingAddress
+    } = req.body;
+
+    if (!customerId || !productId) {
+
+      return res.json({
+        success: false,
+        error: "Missing customer or product"
+      });
+
+    }
+
+    const customer =
+      await User.findById(customerId);
+
+    if (!customer) {
+
+      return res.json({
+        success: false,
+        error: "Customer not found"
+      });
+
+    }
+
+    const product =
+      await Product.findById(productId);
+
+    if (!product) {
+
+      return res.json({
+        success: false,
+        error: "Product not found"
+      });
+
+    }
+
+    if (!product.active) {
+
+      return res.json({
+        success: false,
+        error: "Product is not available"
+      });
+
+    }
+
+    const qty =
+      Math.max(1, Number(quantity) || 1);
+
+    const productsTotal =
+      product.price * qty;
+
+    /*
+      Shipping:
+      Pickup = 0
+      Delivery = demo 3 USDT
+    */
+
+    const shippingCost =
+      shippingType === "delivery"
+        ? 3
+        : 0;
+
+    /*
+      Platform commission.
+      We start with 2%.
+      Later we can make it configurable
+      from Admin Settings.
+    */
+
+    const platformFee =
+      Number(
+        (productsTotal * 0.02)
+        .toFixed(2)
+      );
+
+    const total =
+      Number(
+        (
+          productsTotal +
+          shippingCost +
+          platformFee
+        ).toFixed(2)
+      );
+
+    /*
+      Check customer balance
+    */
+
+    if (customer.balance < total) {
+
+      return res.json({
+        success: false,
+        error: "Insufficient USDT balance"
+      });
+
+    }
+
+    const orderId =
+      "ORD-" +
+      Date.now() +
+      "-" +
+      Math.floor(
+        1000 + Math.random() * 9000
+      );
+
+    /*
+      Create order
+    */
+
+    const order =
+      await Order.create({
+
+        orderId,
+
+        customerId:
+          customer._id.toString(),
+
+        customerName:
+          (
+            customer.firstName || ""
+          ) +
+          " " +
+          (
+            customer.lastName || ""
+          ),
+
+        customerEmail:
+          customer.email,
+
+        merchantId:
+          product.merchantId,
+
+        merchantName:
+          product.merchantName,
+
+        productId:
+          product._id.toString(),
+
+        productName:
+          product.name,
+
+        quantity: qty,
+
+        unitPrice:
+          product.price,
+
+        productsTotal,
+
+        shippingType,
+
+        shippingAddress:
+          shippingType === "delivery"
+            ? shippingAddress || ""
+            : "",
+
+        shippingCost,
+
+        platformFee,
+
+        total,
+
+        paymentMethod:
+          "balance",
+
+        paymentStatus:
+          "paid",
+
+        orderStatus:
+          "pending"
+
+      });
+
+    /*
+      Deduct customer balance
+    */
+
+    customer.balance =
+      Number(
+        (
+          customer.balance - total
+        ).toFixed(2)
+      );
+
+    await customer.save();
+
+    res.json({
+
+      success: true,
+
+      order
+
+    });
+
+  } catch (err) {
+
+    console.log(
+      "CREATE ORDER ERROR:",
+      err
+    );
+
+    res.json({
+
+      success: false,
+
+      error:
+        err.message
+
     });
 
   }

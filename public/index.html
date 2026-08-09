@@ -2830,6 +2830,32 @@ Send Message
 
 </div> 
 
+<div
+id="productDetailsModal"
+style="display:none;"
+class="product-modal"
+>
+
+<div class="card">
+
+<button
+onclick="closeProductDetails()"
+style="
+float:right;
+background:none;
+border:0;
+font-size:22px;
+"
+>
+✖
+</button>
+
+<div id="productDetailsContent"></div>
+
+</div>
+
+</div>
+
 <script>
 
 // 🔐 تسجيل دخول
@@ -4615,7 +4641,11 @@ products.forEach(p => {
 
 html += `
 
-<div class="card marketplace-product">
+<div
+class="card marketplace-product"
+onclick="openProductDetails('${p._id}')"
+style="cursor:pointer;"
+>
 
 ${
 p.image
@@ -4638,11 +4668,7 @@ ${p.name}
 </h3>
 
 <p>
-Category: ${p.category || "General"}
-</p>
-
-<p>
-${p.description || ""}
+${p.category || "General"}
 </p>
 
 <strong>
@@ -4688,6 +4714,510 @@ Unable to load products.
 
 </script>
 
+<script>
+
+async function openProductDetails(productId){
+
+  try {
+
+    const res =
+      await fetch("/market/products");
+
+    const products =
+      await res.json();
+
+    const product =
+      products.find(
+        p => p._id === productId
+      );
+
+    if(!product){
+
+      alert("Product not found");
+
+      return;
+
+    }
+
+    window.selectedProduct =
+      product;
+
+    document.getElementById(
+      "productDetailsContent"
+    ).innerHTML = `
+
+      ${
+        product.image
+        ?
+        `<img
+        src="${product.image}"
+        style="
+        width:100%;
+        max-height:260px;
+        object-fit:cover;
+        border-radius:15px;
+        ">`
+        :
+        ""
+      }
+
+      <h2>
+        ${product.name}
+      </h2>
+
+      <p>
+        ${product.description || ""}
+      </p>
+
+      <p>
+        Category:
+        ${product.category || "General"}
+      </p>
+
+      <h3>
+        ${product.price} USDT
+      </h3>
+
+      <p>
+        ⭐ No ratings yet
+      </p>
+
+      <hr>
+
+      <h3>
+        Quantity
+      </h3>
+
+      <div
+      style="
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:20px;
+      "
+      >
+
+        <button
+        onclick="changeProductQuantity(-1)"
+        >
+        −
+        </button>
+
+        <strong
+        id="productQuantity"
+        >
+        1
+        </strong>
+
+        <button
+        onclick="changeProductQuantity(1)"
+        >
+        +
+        </button>
+
+      </div>
+
+      <br>
+
+      <h3>
+        Delivery
+      </h3>
+
+      <select
+      id="shippingType"
+      onchange="updateCheckoutPreview()"
+      style="
+      width:100%;
+      padding:12px;
+      "
+      >
+
+        <option value="pickup">
+          📍 Pickup from merchant
+        </option>
+
+        <option value="delivery">
+          🚚 Delivery to my address
+        </option>
+
+      </select>
+
+      <div
+      id="shippingAddressBox"
+      style="display:none;margin-top:10px;"
+      >
+
+        <textarea
+        id="shippingAddress"
+        placeholder="Enter your shipping address"
+        style="
+        width:100%;
+        min-height:90px;
+        "
+        ></textarea>
+
+      </div>
+
+      <div
+      id="checkoutPreview"
+      style="
+      margin-top:20px;
+      "
+      >
+      </div>
+
+      <button
+      onclick="buyProduct()"
+      style="
+      width:100%;
+      margin-top:15px;
+      padding:14px;
+      background:#16a34a;
+      color:white;
+      border:0;
+      border-radius:12px;
+      font-size:16px;
+      "
+      >
+
+      🛒 Buy Now
+
+      </button>
+
+    `;
+
+    document.getElementById(
+      "productDetailsModal"
+    ).style.display = "block";
+
+    updateCheckoutPreview();
+
+  } catch(err) {
+
+    console.error(
+      "PRODUCT DETAILS ERROR:",
+      err
+    );
+
+  }
+
+}
+
+function changeProductQuantity(amount){
+
+  const quantityElement =
+    document.getElementById(
+      "productQuantity"
+    );
+
+  if(!quantityElement)
+    return;
+
+  let quantity =
+    Number(
+      quantityElement.innerText
+    );
+
+  quantity += amount;
+
+  if(quantity < 1)
+    quantity = 1;
+
+  quantityElement.innerText =
+    quantity;
+
+  updateCheckoutPreview();
+
+}
+
+function updateCheckoutPreview(){
+
+  const product =
+    window.selectedProduct;
+
+  if(!product)
+    return;
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "productQuantity"
+      )?.innerText || 1
+    );
+
+  const shippingType =
+    document.getElementById(
+      "shippingType"
+    )?.value || "pickup";
+
+  const productsTotal =
+    product.price * quantity;
+
+  const shipping =
+    shippingType === "delivery"
+      ? 3
+      : 0;
+
+  const fee =
+    Number(
+      (
+        productsTotal * 0.02
+      ).toFixed(2)
+    );
+
+  const total =
+    Number(
+      (
+        productsTotal +
+        shipping +
+        fee
+      ).toFixed(2)
+    );
+
+  const addressBox =
+    document.getElementById(
+      "shippingAddressBox"
+    );
+
+  if(addressBox){
+
+    addressBox.style.display =
+      shippingType === "delivery"
+        ? "block"
+        : "none";
+
+  }
+
+  const preview =
+    document.getElementById(
+      "checkoutPreview"
+    );
+
+  if(!preview)
+    return;
+
+  preview.innerHTML = `
+
+    <div class="card">
+
+      <h3>
+        🧾 Order Summary
+      </h3>
+
+      <p>
+        Unit price:
+        ${product.price.toFixed(2)}
+        USDT
+      </p>
+
+      <p>
+        Quantity:
+        ${quantity}
+      </p>
+
+      <p>
+        Products:
+        ${productsTotal.toFixed(2)}
+        USDT
+      </p>
+
+      <p>
+        Shipping:
+        ${shipping.toFixed(2)}
+        USDT
+      </p>
+
+      <p>
+        Platform fee:
+        ${fee.toFixed(2)}
+        USDT
+      </p>
+
+      <hr>
+
+      <h2>
+        Total:
+        ${total.toFixed(2)}
+        USDT
+      </h2>
+
+    </div>
+
+  `;
+
+}
+
+async function buyProduct(){
+
+  const product =
+    window.selectedProduct;
+
+  if(!product){
+
+    alert(
+      "Product not selected"
+    );
+
+    return;
+
+  }
+
+  const customerId =
+    localStorage.getItem(
+      "userId"
+    );
+
+  if(!customerId){
+
+    alert(
+      "Please login first"
+    );
+
+    return;
+
+  }
+
+  const quantity =
+    Number(
+      document.getElementById(
+        "productQuantity"
+      ).innerText
+    );
+
+  const shippingType =
+    document.getElementById(
+      "shippingType"
+    ).value;
+
+  const shippingAddress =
+    document.getElementById(
+      "shippingAddress"
+    )?.value || "";
+
+  if(
+    shippingType === "delivery" &&
+    !shippingAddress.trim()
+  ){
+
+    alert(
+      "Please enter your shipping address"
+    );
+
+    return;
+
+  }
+
+  const ok =
+    confirm(
+      "Confirm this purchase?"
+    );
+
+  if(!ok)
+    return;
+
+  try {
+
+    const res =
+      await fetch(
+        "/orders/create",
+        {
+
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+
+            customerId,
+
+            productId:
+              product._id,
+
+            quantity,
+
+            shippingType,
+
+            shippingAddress
+
+          })
+
+        }
+      );
+
+    const data =
+      await res.json();
+
+    console.log(
+      "ORDER RESPONSE:",
+      data
+    );
+
+    if(data.success){
+
+      alert(
+        "✅ Order created successfully\n\n" +
+        "Order ID: " +
+        data.order.orderId
+      );
+
+      closeProductDetails();
+
+      /*
+        Later we will call loadOrders()
+        here to refresh customer orders.
+      */
+
+    }else{
+
+      alert(
+        "❌ " +
+        (
+          data.error ||
+          "Order failed"
+        )
+      );
+
+    }
+
+  }catch(err){
+
+    console.error(
+      "BUY PRODUCT ERROR:",
+      err
+    );
+
+    alert(
+      "❌ Purchase error: " +
+      err.message
+    );
+
+  }
+
+}
+
+function closeProductDetails(){
+
+  const modal =
+    document.getElementById(
+      "productDetailsModal"
+    );
+
+  if(modal){
+
+    modal.style.display =
+      "none";
+
+  }
+
+  window.selectedProduct =
+    null;
+
+}
+
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
