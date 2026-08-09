@@ -2806,6 +2806,10 @@ Send Message
 
 📦 Products
 
+<button onclick="openMarket('orders')">
+🧾 My Orders
+</button>
+
 </div>
 
 <div class="card" onclick="openMarket('services')">
@@ -2826,9 +2830,45 @@ Send Message
 
 </div>
 
+<div class="card">
+
+  <h3>🛒 Marketplace</h3>
+
+  <div style="
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+  ">
+
+    <button onclick="openMarket('products')">
+      📦 Products
+    </button>
+
+    <button onclick="openMarket('orders')">
+      🧾 My Orders
+    </button>
+
+    <button onclick="openMarket('favorites')">
+      ❤️ Favorites
+    </button>
+
+  </div>
+
+</div>
+
 <div id="marketContent"></div>
 
 </div> 
+
+<div
+id="myOrdersList"
+style="display:none;"
+></div>
+
+<p
+id="ordersStatus"
+style="display:none;"
+></p>
 
 <div
 id="productDetailsModal"
@@ -4571,6 +4611,34 @@ offers:"🎁 Offers"
 const marketContent =
 document.getElementById("marketContent");
 
+if(type === "orders"){
+
+  const marketContent =
+    document.getElementById(
+      "marketContent"
+    );
+
+  marketContent.innerHTML = `
+
+    <div class="card">
+
+      <h2>🧾 My Orders</h2>
+
+      <p id="ordersStatus">
+        Loading orders...
+      </p>
+
+    </div>
+
+    <div id="myOrdersList"></div>
+
+  `;
+
+  await loadMyOrders();
+
+  return;
+}
+
 if(type !== "products"){
 
 marketContent.innerHTML = `
@@ -5214,6 +5282,219 @@ function closeProductDetails(){
 
   window.selectedProduct =
     null;
+
+}
+
+async function loadMyOrders(){
+
+  const customerId =
+    localStorage.getItem("userId");
+
+  const list =
+    document.getElementById(
+      "myOrdersList"
+    );
+
+  const status =
+    document.getElementById(
+      "ordersStatus"
+    );
+
+  if(!customerId){
+
+    if(status)
+      status.innerText =
+        "Please login first";
+
+    return;
+
+  }
+
+  if(list)
+    list.innerHTML = "";
+
+  if(status)
+    status.innerText =
+      "Loading orders...";
+
+  try {
+
+    const res =
+      await fetch(
+        "/orders/customer/" +
+        customerId
+      );
+
+    const data =
+      await res.json();
+
+    if(!data.success){
+
+      if(status)
+        status.innerText =
+          data.error ||
+          "Unable to load orders";
+
+      return;
+
+    }
+
+    const orders =
+      data.orders || [];
+
+    if(!orders.length){
+
+      if(status)
+        status.innerText =
+          "No orders yet.";
+
+      return;
+
+    }
+
+    if(status)
+      status.innerText =
+        "";
+
+    let html = "";
+
+    orders.forEach(order => {
+
+      const date =
+        order.createdAt
+        ?
+        new Date(
+          order.createdAt
+        ).toLocaleString()
+        :
+        "";
+
+      html += `
+
+        <div class="card">
+
+          <h3>
+            📦 ${order.productName}
+          </h3>
+
+          <p>
+            Order ID:
+            <strong>
+              ${order.orderId}
+            </strong>
+          </p>
+
+          <p>
+            Quantity:
+            ${order.quantity}
+          </p>
+
+          <p>
+            Unit Price:
+            ${Number(
+              order.unitPrice || 0
+            ).toFixed(2)}
+            USDT
+          </p>
+
+          <p>
+            Products:
+            ${Number(
+              order.productsTotal || 0
+            ).toFixed(2)}
+            USDT
+          </p>
+
+          <p>
+            Shipping:
+            ${Number(
+              order.shippingCost || 0
+            ).toFixed(2)}
+            USDT
+          </p>
+
+          <p>
+            Platform Fee:
+            ${Number(
+              order.platformFee || 0
+            ).toFixed(2)}
+            USDT
+          </p>
+
+          <hr>
+
+          <h3>
+            Total:
+            ${Number(
+              order.total || 0
+            ).toFixed(2)}
+            USDT
+          </h3>
+
+          <p>
+            Payment:
+            ${order.paymentStatus}
+          </p>
+
+          <p>
+            Status:
+            ${order.orderStatus}
+          </p>
+
+          <p>
+            ${
+              order.shippingType ===
+              "delivery"
+              ?
+              "🚚 Delivery"
+              :
+              "📍 Pickup"
+            }
+          </p>
+
+          ${
+            order.shippingType ===
+            "delivery"
+            ?
+            `
+            <p>
+              📍 ${order.shippingAddress}
+            </p>
+            `
+            :
+            ""
+          }
+
+          <p
+          style="
+          opacity:.6;
+          font-size:13px;
+          "
+          >
+            ${date}
+          </p>
+
+        </div>
+
+      `;
+
+    });
+
+    list.innerHTML =
+      html;
+
+  } catch(err) {
+
+    console.error(
+      "MY ORDERS ERROR:",
+      err
+    );
+
+    if(status)
+      status.innerText =
+        "Unable to load orders.";
+
+  }
 
 }
 
