@@ -83,10 +83,22 @@ break;
 case "orders":
 
 content.innerHTML = `
-<h2>🧾 Orders</h2>
 
-<p>Your customer orders will appear here.</p>
+  <div class="card">
+
+    <h2>🧾 Customer Orders</h2>
+
+    <p id="merchantOrdersStatus">
+      Loading orders...
+    </p>
+
+  </div>
+
+  <div id="merchantOrdersList"></div>
+
 `;
+
+loadMerchantOrders();
 
 break;
 
@@ -416,6 +428,394 @@ async function deleteProduct(productId){
 
     alert(
       "❌ Delete error: " +
+      err.message
+    );
+
+  }
+
+}
+
+async function loadMerchantOrders(){
+
+  const merchantId =
+    localStorage.getItem("userId");
+
+  const list =
+    document.getElementById(
+      "merchantOrdersList"
+    );
+
+  const status =
+    document.getElementById(
+      "merchantOrdersStatus"
+    );
+
+  if(!merchantId){
+
+    if(status)
+      status.innerText =
+        "Please login first";
+
+    return;
+
+  }
+
+  try {
+
+    const res =
+      await fetch(
+        "/orders/merchant/" +
+        merchantId
+      );
+
+    const data =
+      await res.json();
+
+    if(!data.success){
+
+      if(status)
+        status.innerText =
+          data.error ||
+          "Unable to load orders";
+
+      return;
+
+    }
+
+    const orders =
+      data.orders || [];
+
+    if(!orders.length){
+
+      if(status)
+        status.innerText =
+          "No customer orders yet.";
+
+      if(list)
+        list.innerHTML = "";
+
+      return;
+
+    }
+
+    if(status)
+      status.innerText = "";
+
+    let html = "";
+
+    orders.forEach(order => {
+
+      const date =
+        order.createdAt
+        ?
+        new Date(
+          order.createdAt
+        ).toLocaleString()
+        :
+        "";
+
+      html += `
+
+        <div class="card">
+
+          <h3>
+            📦 ${order.productName}
+          </h3>
+
+          <p>
+            Order ID:
+            <strong>
+              ${order.orderId}
+            </strong>
+          </p>
+
+          <p>
+            Customer:
+            ${order.customerName || "Customer"}
+          </p>
+
+          <p>
+            Email:
+            ${order.customerEmail || "-"}
+          </p>
+
+          <p>
+            Quantity:
+            ${order.quantity}
+          </p>
+
+          <p>
+            Total:
+            <strong>
+              ${Number(
+                order.total || 0
+              ).toFixed(2)}
+              USDT
+            </strong>
+          </p>
+
+          <p>
+            Payment:
+            ${order.paymentStatus}
+          </p>
+
+          <p>
+            Order Status:
+            <strong>
+              ${order.orderStatus}
+            </strong>
+          </p>
+
+          <p>
+            ${
+              order.shippingType === "delivery"
+              ?
+              "🚚 Delivery"
+              :
+              "📍 Pickup"
+            }
+          </p>
+
+          ${
+            order.shippingType === "delivery"
+            ?
+            `
+            <p>
+              📍 ${order.shippingAddress}
+            </p>
+            `
+            :
+            ""
+          }
+
+          <p
+          style="
+          opacity:.6;
+          font-size:13px;
+          "
+          >
+            ${date}
+          </p>
+
+          <hr>
+
+          ${
+            order.orderStatus === "pending"
+            ?
+            `
+
+            <button
+              onclick="updateMerchantOrderStatus(
+                '${order.orderId}',
+                'accepted'
+              )"
+            >
+              ✅ Accept
+            </button>
+
+            <button
+              onclick="updateMerchantOrderStatus(
+                '${order.orderId}',
+                'rejected'
+              )"
+            >
+              ❌ Reject
+            </button>
+
+            `
+            :
+            ""
+          }
+
+          ${
+            order.orderStatus === "accepted"
+            ?
+            `
+            <button
+              onclick="updateMerchantOrderStatus(
+                '${order.orderId}',
+                'preparing'
+              )"
+            >
+              🔧 Preparing
+            </button>
+            `
+            :
+            ""
+          }
+
+          ${
+            order.orderStatus === "preparing"
+            ?
+            `
+            <button
+              onclick="updateMerchantOrderStatus(
+                '${order.orderId}',
+                'ready'
+              )"
+            >
+              📦 Ready
+            </button>
+            `
+            :
+            ""
+          }
+
+          ${
+            order.orderStatus === "ready" &&
+            order.shippingType === "delivery"
+            ?
+            `
+            <button
+              onclick="updateMerchantOrderStatus(
+                '${order.orderId}',
+                'shipped'
+              )"
+            >
+              🚚 Shipped
+            </button>
+            `
+            :
+            ""
+          }
+
+          ${
+            order.orderStatus === "ready" &&
+            order.shippingType === "pickup"
+            ?
+            `
+            <button
+              onclick="updateMerchantOrderStatus(
+                '${order.orderId}',
+                'completed'
+              )"
+            >
+              ✅ Completed
+            </button>
+            `
+            :
+            ""
+          }
+
+          ${
+            order.orderStatus === "shipped"
+            ?
+            `
+            <button
+              onclick="updateMerchantOrderStatus(
+                '${order.orderId}',
+                'completed'
+              )"
+            >
+              ✅ Completed
+            </button>
+            `
+            :
+            ""
+          }
+
+        </div>
+
+      `;
+
+    });
+
+    list.innerHTML =
+      html;
+
+  } catch(err) {
+
+    console.error(
+      "MERCHANT ORDERS ERROR:",
+      err
+    );
+
+    if(status)
+      status.innerText =
+        "Unable to load orders.";
+
+  }
+
+}
+
+async function updateMerchantOrderStatus(
+  orderId,
+  status
+){
+
+  const merchantId =
+    localStorage.getItem("userId");
+
+  if(!merchantId){
+
+    alert(
+      "Please login first"
+    );
+
+    return;
+
+  }
+
+  try {
+
+    const res =
+      await fetch(
+        "/orders/merchant/status",
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            orderId,
+
+            merchantId,
+
+            status
+
+          })
+
+        }
+      );
+
+    const data =
+      await res.json();
+
+    console.log(
+      "ORDER STATUS RESPONSE:",
+      data
+    );
+
+    if(data.success){
+
+      loadMerchantOrders();
+
+    }else{
+
+      alert(
+        "❌ " +
+        (
+          data.error ||
+          "Unable to update order"
+        )
+      );
+
+    }
+
+  } catch(err) {
+
+    console.error(
+      "ORDER STATUS ERROR:",
+      err
+    );
+
+    alert(
+      "❌ " +
       err.message
     );
 

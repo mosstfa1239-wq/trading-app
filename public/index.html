@@ -2802,15 +2802,6 @@ Send Message
 
 </div>
 
-<div class="card" onclick="openMarket('products')">
-
-📦 Products
-
-<button onclick="openMarket('orders')">
-🧾 My Orders
-</button>
-
-</div>
 
 <div class="card" onclick="openMarket('services')">
 
@@ -2860,15 +2851,6 @@ Send Message
 
 </div> 
 
-<div
-id="myOrdersList"
-style="display:none;"
-></div>
-
-<p
-id="ordersStatus"
-style="display:none;"
-></p>
 
 <div
 id="productDetailsModal"
@@ -4601,182 +4583,249 @@ try{
 
 async function openMarket(type){
 
-const title = {
-products:"📦 Products",
-services:"💼 Services",
-ads:"📢 Advertisements",
-offers:"🎁 Offers"
-};
-
-const marketContent =
-document.getElementById("marketContent");
-
-if(type === "orders"){
-
   const marketContent =
-    document.getElementById(
-      "marketContent"
-    );
+    document.getElementById("marketContent");
 
-  marketContent.innerHTML = `
+  if(!marketContent) return;
 
-    <div class="card">
 
-      <h2>🧾 My Orders</h2>
+  // =========================
+  // PRODUCTS
+  // =========================
 
-      <p id="ordersStatus">
-        Loading orders...
-      </p>
+  if(type === "products"){
 
-    </div>
+    marketContent.innerHTML = `
+      <div class="card">
+        <h2>📦 Products</h2>
+        <p>Loading products...</p>
+      </div>
+    `;
 
-    <div id="myOrdersList"></div>
+    try{
 
-  `;
+      const res =
+        await fetch("/market/products");
 
-  await loadMyOrders();
+      const products =
+        await res.json();
 
-  return;
-}
+      if(!products.length){
 
-if(type !== "products"){
+        marketContent.innerHTML = `
+          <div class="card">
+            <h2>📦 Products</h2>
+            <p>No products available.</p>
+          </div>
+        `;
 
-marketContent.innerHTML = `
+        return;
+      }
 
-<div class="card">
+      let html = `
+        <div class="card">
+          <h2>📦 Products</h2>
+        </div>
+      `;
 
-<h2>${title[type]}</h2>
 
-<p>No items yet.</p>
+      products.forEach(product => {
 
-</div>
+        html += `
 
-`;
+          <div
+            class="card marketplace-product"
+            onclick="openProductDetails('${product._id}')"
+            style="cursor:pointer;"
+          >
 
-return;
+            ${
+              product.image
+              ?
+              `
+              <img
+                src="${product.image}"
+                style="
+                  width:100%;
+                  height:180px;
+                  object-fit:cover;
+                  border-radius:14px;
+                  margin-bottom:12px;
+                "
+              >
+              `
+              :
+              ""
+            }
 
-}
+            <h3>
+              ${product.name}
+            </h3>
 
-marketContent.innerHTML = `
+            <p>
+              ${product.category || "General"}
+            </p>
 
-<div class="card">
+            <h3>
+              ${Number(product.price || 0).toFixed(2)}
+              USDT
+            </h3>
 
-<h2>📦 Products</h2>
+            <p style="opacity:.7;">
+              👤 ${product.merchantName || "Merchant"}
+            </p>
 
-<p>Loading products...</p>
+          </div>
 
-</div>
+        `;
 
-`;
+      });
 
-try{
+      marketContent.innerHTML =
+        html;
 
-const res =
-await fetch("/market/products");
+    }catch(err){
 
-const products =
-await res.json();
+      console.error(
+        "MARKET PRODUCTS ERROR:",
+        err
+      );
 
-if(!products.length){
+      marketContent.innerHTML = `
+        <div class="card">
+          <h2>📦 Products</h2>
+          <p>Unable to load products.</p>
+        </div>
+      `;
 
-marketContent.innerHTML = `
+    }
 
-<div class="card">
+    return;
+  }
 
-<h2>📦 Products</h2>
 
-<p>No products available yet.</p>
+  // =========================
+  // MY ORDERS
+  // =========================
 
-</div>
+  if(type === "orders"){
 
-`;
+    marketContent.innerHTML = `
 
-return;
+      <div class="card">
 
-}
+        <h2>🧾 My Orders</h2>
 
-let html = `
+        <p id="ordersStatus">
+          Loading orders...
+        </p>
 
-<div class="card">
+      </div>
 
-<h2>📦 Products</h2>
+      <div id="myOrdersList"></div>
 
-</div>
+    `;
 
-`;
+    await loadMyOrders();
 
-products.forEach(p => {
+    return;
+  }
 
-html += `
 
-<div
-class="card marketplace-product"
-onclick="openProductDetails('${p._id}')"
-style="cursor:pointer;"
->
+  // =========================
+  // FAVORITES
+  // =========================
 
-${
-p.image
-?
-`<img
-src="${p.image}"
-style="
-width:100%;
-height:180px;
-object-fit:cover;
-border-radius:14px;
-margin-bottom:12px;
-">`
-:
-""
-}
+  if(type === "favorites"){
 
-<h3>
-${p.name}
-</h3>
+    marketContent.innerHTML = `
 
-<p>
-${p.category || "General"}
-</p>
+      <div class="card">
 
-<strong>
-${p.price} USDT
-</strong>
+        <h2>❤️ Favorites</h2>
 
-<p style="opacity:.7;">
-Sold by: ${p.merchantName || "Merchant"}
-</p>
+        <p>
+          No favorites yet.
+        </p>
 
-</div>
+      </div>
 
-`;
+    `;
 
-});
+    return;
+  }
 
-marketContent.innerHTML = html;
 
-}catch(err){
+  // =========================
+  // SERVICES
+  // =========================
 
-console.error(
-"Marketplace error:",
-err
-);
+  if(type === "services"){
 
-marketContent.innerHTML = `
+    marketContent.innerHTML = `
 
-<div class="card">
+      <div class="card">
 
-<h2>📦 Products</h2>
+        <h2>💼 Services</h2>
 
-<p>
-Unable to load products.
-</p>
+        <p>
+          Services will appear here.
+        </p>
 
-</div>
+      </div>
 
-`;
+    `;
 
-}
+    return;
+  }
+
+
+  // =========================
+  // ADVERTISEMENTS
+  // =========================
+
+  if(type === "ads"){
+
+    marketContent.innerHTML = `
+
+      <div class="card">
+
+        <h2>📢 Advertisements</h2>
+
+        <p>
+          Advertisements will appear here.
+        </p>
+
+      </div>
+
+    `;
+
+    return;
+  }
+
+
+  // =========================
+  // OFFERS
+  // =========================
+
+  if(type === "offers"){
+
+    marketContent.innerHTML = `
+
+      <div class="card">
+
+        <h2>🎁 Offers</h2>
+
+        <p>
+          Special offers will appear here.
+        </p>
+
+      </div>
+
+    `;
+
+    return;
+  }
 
 }
 

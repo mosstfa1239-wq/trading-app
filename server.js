@@ -1004,6 +1004,175 @@ app.post("/orders/create", async (req, res) => {
 
 });
 
+app.get("/orders/merchant/:id", async (req, res) => {
+
+  try {
+
+    const merchantId = req.params.id;
+
+    if (!merchantId) {
+
+      return res.json({
+        success: false,
+        error: "Merchant ID required"
+      });
+
+    }
+
+    const orders = await Order.find({
+      merchantId: merchantId
+    }).sort({
+      createdAt: -1
+    });
+
+    res.json({
+      success: true,
+      orders: orders
+    });
+
+  } catch (err) {
+
+    console.log(
+      "MERCHANT ORDERS ERROR:",
+      err
+    );
+
+    res.json({
+      success: false,
+      error: err.message
+    });
+
+  }
+
+});
+
+app.post("/orders/merchant/status", async (req, res) => {
+
+  try {
+
+    const {
+      orderId,
+      merchantId,
+      status
+    } = req.body;
+
+    if (
+      !orderId ||
+      !merchantId ||
+      !status
+    ) {
+
+      return res.json({
+        success: false,
+        error: "Missing order information"
+      });
+
+    }
+
+    const allowedStatuses = [
+      "accepted",
+      "rejected",
+      "preparing",
+      "ready",
+      "shipped",
+      "completed"
+    ];
+
+    if (
+      !allowedStatuses.includes(status)
+    ) {
+
+      return res.json({
+        success: false,
+        error: "Invalid order status"
+      });
+
+    }
+
+    const order =
+      await Order.findOne({
+        orderId: orderId,
+        merchantId: merchantId
+      });
+
+    if (!order) {
+
+      return res.json({
+        success: false,
+        error: "Order not found"
+      });
+
+    }
+
+    order.orderStatus =
+      status;
+
+    await order.save();
+
+    res.json({
+      success: true,
+      order: order
+    });
+
+  } catch (err) {
+
+    console.log(
+      "UPDATE ORDER STATUS ERROR:",
+      err
+    );
+
+    res.json({
+      success: false,
+      error: err.message
+    });
+
+  }
+
+});
+
+app.get("/orders/customer/:id", async (req, res) => {
+
+  try {
+
+    const customerId = req.params.id;
+
+    if (!customerId) {
+
+      return res.json({
+        success: false,
+        error: "Customer ID required"
+      });
+
+    }
+
+    const orders = await Order.find({
+      customerId: customerId
+    }).sort({
+      createdAt: -1
+    });
+
+    res.json({
+      success: true,
+      orders: orders
+    });
+
+  } catch (err) {
+
+    console.log(
+      "CUSTOMER ORDERS ERROR:",
+      err
+    );
+
+    res.json({
+      success: false,
+      error: err.message
+    });
+
+  }
+
+});
+
+
 // 📋 عرض المهام
 app.get("/tasks", async (req, res) => {
   const tasks = await Task.find();
