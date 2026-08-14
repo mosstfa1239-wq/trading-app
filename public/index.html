@@ -5332,7 +5332,6 @@ function closeProductDetails(){
   window.selectedProduct =
     null;
 
-}
 
 async function loadMyOrders(){
 
@@ -5340,14 +5339,10 @@ async function loadMyOrders(){
     localStorage.getItem("userId");
 
   const list =
-    document.getElementById(
-      "myOrdersList"
-    );
+    document.getElementById("myOrdersList");
 
   const status =
-    document.getElementById(
-      "ordersStatus"
-    );
+    document.getElementById("ordersStatus");
 
   if(!customerId){
 
@@ -5356,7 +5351,6 @@ async function loadMyOrders(){
         "Please login first";
 
     return;
-
   }
 
   if(list)
@@ -5385,7 +5379,6 @@ async function loadMyOrders(){
           "Unable to load orders";
 
       return;
-
     }
 
     const orders =
@@ -5398,12 +5391,10 @@ async function loadMyOrders(){
           "No orders yet.";
 
       return;
-
     }
 
     if(status)
-      status.innerText =
-        "";
+      status.innerText = "";
 
     let html = "";
 
@@ -5417,6 +5408,205 @@ async function loadMyOrders(){
         ).toLocaleString()
         :
         "";
+
+      let ratingHTML = "";
+
+
+      // =========================
+      // RATING SECTION
+      // =========================
+
+      if(order.orderStatus === "completed"){
+
+        if(Number(order.rating || 0) > 0){
+
+          ratingHTML = `
+
+            <div style="
+              margin-top:15px;
+              padding-top:10px;
+              border-top:1px solid #333;
+            ">
+
+              <strong>
+                ⭐ Your Rating
+              </strong>
+
+              <p style="
+                font-size:22px;
+                letter-spacing:3px;
+              ">
+                ${
+                  "★".repeat(
+                    Number(order.rating)
+                  )
+                }${
+                  "☆".repeat(
+                    5 - Number(order.rating)
+                  )
+                }
+              </p>
+
+              ${
+                order.review
+                ?
+                `
+                <p>
+                  💬 ${order.review}
+                </p>
+                `
+                :
+                ""
+              }
+
+            </div>
+
+          `;
+
+        }else{
+
+          ratingHTML = `
+
+            <div style="
+              margin-top:15px;
+              padding-top:10px;
+              border-top:1px solid #333;
+            ">
+
+              <button
+                onclick="
+                  openRatingBox(
+                    '${order.orderId}'
+                  )
+                "
+              >
+                ⭐ Rate Product
+              </button>
+
+              <div
+                id="
+                  ratingBox_${order.orderId}
+                "
+                style="
+                  display:none;
+                  margin-top:10px;
+                "
+              >
+
+                <p>
+                  How would you rate this product?
+                </p>
+
+                <div style="
+                  display:flex;
+                  gap:5px;
+                  font-size:28px;
+                ">
+
+                  <button
+                    type="button"
+                    onclick="
+                      selectRating(
+                        '${order.orderId}',
+                        1
+                      )
+                    "
+                  >
+                    ☆
+                  </button>
+
+                  <button
+                    type="button"
+                    onclick="
+                      selectRating(
+                        '${order.orderId}',
+                        2
+                      )
+                    "
+                  >
+                    ☆
+                  </button>
+
+                  <button
+                    type="button"
+                    onclick="
+                      selectRating(
+                        '${order.orderId}',
+                        3
+                      )
+                    "
+                  >
+                    ☆
+                  </button>
+
+                  <button
+                    type="button"
+                    onclick="
+                      selectRating(
+                        '${order.orderId}',
+                        4
+                      )
+                    "
+                  >
+                    ☆
+                  </button>
+
+                  <button
+                    type="button"
+                    onclick="
+                      selectRating(
+                        '${order.orderId}',
+                        5
+                      )
+                    "
+                  >
+                    ☆
+                  </button>
+
+                </div>
+
+                <input
+                  id="
+                    review_${order.orderId}
+                  "
+                  placeholder="
+                    Write a review (optional)
+                  "
+                  style="
+                    width:100%;
+                    margin-top:10px;
+                  "
+                >
+
+                <button
+                  onclick="
+                    submitRating(
+                      '${order.orderId}'
+                    )
+                  "
+                  style="
+                    margin-top:10px;
+                  "
+                >
+                  ⭐ Submit Rating
+                </button>
+
+                <p
+                  id="
+                    ratingStatus_${order.orderId}
+                  "
+                ></p>
+
+              </div>
+
+            </div>
+
+          `;
+
+        }
+
+      }
+
 
       html += `
 
@@ -5514,14 +5704,14 @@ async function loadMyOrders(){
             ""
           }
 
-          <p
-          style="
-          opacity:.6;
-          font-size:13px;
-          "
-          >
+          <p style="
+            opacity:.6;
+            font-size:13px;
+          ">
             ${date}
           </p>
+
+          ${ratingHTML}
 
         </div>
 
@@ -5545,7 +5735,222 @@ async function loadMyOrders(){
 
   }
 
+}}
+
+function openRatingBox(orderId){
+
+  const box =
+    document.getElementById(
+      "ratingBox_" + orderId
+    );
+
+  if(!box) return;
+
+  box.style.display =
+    box.style.display === "none"
+    ? "block"
+    : "none";
+
 }
+
+
+function selectRating(
+  orderId,
+  rating
+){
+
+  window.selectedRatings =
+    window.selectedRatings || {};
+
+  window.selectedRatings[
+    orderId
+  ] = Number(rating);
+
+
+  const box =
+    document.getElementById(
+      "ratingBox_" + orderId
+    );
+
+  if(!box) return;
+
+
+  const buttons =
+    box.querySelectorAll(
+      "button[type='button']"
+    );
+
+
+  buttons.forEach(
+    (button, index) => {
+
+      button.innerText =
+        index < rating
+        ? "★"
+        : "☆";
+
+    }
+  );
+
+}
+
+
+async function submitRating(
+  orderId
+){
+
+  const customerId =
+    localStorage.getItem("userId");
+
+  const rating =
+    window.selectedRatings
+    ?
+    window.selectedRatings[
+      orderId
+    ]
+    :
+    0;
+
+
+  const reviewInput =
+    document.getElementById(
+      "review_" + orderId
+    );
+
+
+  const review =
+    reviewInput
+    ?
+    reviewInput.value.trim()
+    :
+    "";
+
+
+  const status =
+    document.getElementById(
+      "ratingStatus_" + orderId
+    );
+
+
+  if(!customerId){
+
+    if(status)
+      status.innerText =
+        "Please login first";
+
+    return;
+
+  }
+
+
+  if(!rating){
+
+    if(status)
+      status.innerText =
+        "Please select a rating";
+
+    return;
+
+  }
+
+
+  if(status)
+    status.innerText =
+      "Submitting rating...";
+
+
+  try {
+
+    const res =
+      await fetch(
+        "/orders/rating",
+        {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+
+            orderId,
+
+            customerId,
+
+            rating,
+
+            review
+
+          })
+
+        }
+      );
+
+
+    const data =
+      await res.json();
+
+
+    console.log(
+      "RATING RESPONSE:",
+      data
+    );
+
+
+    if(data.success){
+
+      if(status)
+        status.innerText =
+          "✅ Rating submitted";
+
+
+      if(window.selectedRatings)
+        delete window.selectedRatings[
+          orderId
+        ];
+
+
+      setTimeout(
+        () => {
+          loadMyOrders();
+        },
+        500
+      );
+
+
+    }else{
+
+      if(status)
+        status.innerText =
+          "❌ " +
+          (
+            data.error ||
+            "Unable to submit rating"
+          );
+
+    }
+
+
+  } catch(err) {
+
+    console.error(
+      "RATING ERROR:",
+      err
+    );
+
+
+    if(status)
+      status.innerText =
+        "❌ " +
+        err.message;
+
+  }
+
+}
+
+
 
 </script>
 

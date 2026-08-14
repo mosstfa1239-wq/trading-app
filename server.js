@@ -1048,6 +1048,8 @@ app.get("/orders/merchant/:id", async (req, res) => {
 
 app.post("/orders/merchant/status", async (req, res) => {
 
+  const session = await mongoose.startSession();
+
   try {
 
     const {
@@ -1056,11 +1058,7 @@ app.post("/orders/merchant/status", async (req, res) => {
       status
     } = req.body;
 
-    if (
-      !orderId ||
-      !merchantId ||
-      !status
-    ) {
+    if (!orderId || !merchantId || !status) {
 
       return res.json({
         success: false,
@@ -1078,9 +1076,7 @@ app.post("/orders/merchant/status", async (req, res) => {
       "completed"
     ];
 
-    if (
-      !allowedStatuses.includes(status)
-    ) {
+    if (!allowedStatuses.includes(status)) {
 
       return res.json({
         success: false,
@@ -1089,13 +1085,16 @@ app.post("/orders/merchant/status", async (req, res) => {
 
     }
 
-    const order =
-      await Order.findOne({
-        orderId: orderId,
-        merchantId: merchantId
-      });
+    session.startTransaction();
+
+    const order = await Order.findOne({
+      orderId: orderId,
+      merchantId: merchantId
+    }).session(session);
 
     if (!order) {
+
+      await session.abortTransaction();
 
       return res.json({
         success: false,
@@ -1104,17 +1103,167 @@ app.post("/orders/merchant/status", async (req, res) => {
 
     }
 
+    const currentStatus =
+      order.orderStatus || "pending";
+
+
+    const allowedTransitions = {
+
+      pending: [
+        "accepted",
+        "rejected"
+      ],
+
+      accepted: [
+        "preparing"
+      ],
+
+      preparing: [
+        "ready"
+      ],
+
+      ready: [
+        "shipped",
+        "completed"
+      ],
+
+      shipped: [
+        "completed"
+      ],
+
+      completed: [],
+
+      rejected: []
+
+    };
+
+
+    if (
+      !allowedTransitions[currentStatus] ||
+      !allowedTransitions[currentStatus]
+        .includes(status)
+    ) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          "Invalid order status transition"
+      });
+
+    }
+
+
+    // =================================
+    // REJECT + FULL REFUND
+    // =================================
+
+    if (status === "rejected") {
+
+      if (order.paymentStatus !== "paid") {
+
+        await session.abortTransaction();
+
+        return res.json({
+          success: false,
+          error:
+            "Order payment is not refundable"
+        });
+
+      }
+
+      const refundAmount =
+        Number(order.total || 0);
+
+      if (refundAmount <= 0) {
+
+        await session.abortTransaction();
+
+        return res.json({
+          success: false,
+          error:
+            "Invalid refund amount"
+        });
+
+      }
+
+
+      const customer =
+        await User.findOne({
+          _id: order.customerId
+        }).session(session);
+
+      if (!customer) {
+
+        await session.abortTransaction();
+
+        return res.json({
+          success: false,
+          error:
+            "Customer not found"
+        });
+
+      }
+
+
+      customer.balance =
+        Number(customer.balance || 0)
+        + refundAmount;
+
+      await customer.save({
+        session
+      });
+
+
+      order.orderStatus =
+        "rejected";
+
+      order.paymentStatus =
+        "refunded";
+
+      await order.save({
+        session
+      });
+
+
+      await session.commitTransaction();
+
+      return res.json({
+        success: true,
+        refunded: true,
+        refundAmount: refundAmount,
+        order: order
+      });
+
+    }
+
+
+    // =================================
+    // NORMAL STATUS UPDATE
+    // =================================
+
     order.orderStatus =
       status;
 
-    await order.save();
+    await order.save({
+      session
+    });
+
+
+    await session.commitTransaction();
 
     res.json({
       success: true,
+      refunded: false,
       order: order
     });
 
   } catch (err) {
+
+    try {
+      await session.abortTransaction();
+    } catch (e) {}
 
     console.log(
       "UPDATE ORDER STATUS ERROR:",
@@ -1125,6 +1274,10 @@ app.post("/orders/merchant/status", async (req, res) => {
       success: false,
       error: err.message
     });
+
+  } finally {
+
+    session.endSession();
 
   }
 
@@ -1171,6 +1324,201 @@ app.get("/orders/customer/:id", async (req, res) => {
   }
 
 });
+
+app.post("/orders/rating", async (req, res) => {
+
+  try {
+
+    const {
+      orderId,
+      customerId,
+      rating,
+      review
+    } = req.body;
+
+
+    if (
+      !orderId ||
+      !customerId ||
+      rating === undefined
+    ) {
+
+      return res.json({
+        success: false,
+        error: "Missing rating information"
+      });
+
+    }
+
+
+    const score =
+      Number(rating);
+
+
+    if (
+      !Number.isInteger(score) ||
+      score < 1 ||
+      score > 5
+    ) {
+
+      return res.json({
+        success: false,
+        error: "Rating must be between 1 and 5"
+      });
+
+    }
+
+
+    const order =
+      await Order.findOne({
+        orderId: orderId,
+        customerId: customerId
+      });
+
+
+    if (!order) {
+
+      return res.json({
+        success: false,
+        error: "Order not found"
+      });
+
+    }
+
+
+    if (
+      order.orderStatus !== "completed"
+    ) {
+
+      return res.json({
+        success: false,
+        error:
+          "You can rate only completed orders"
+      });
+
+    }
+
+
+    if (
+      Number(order.rating || 0) > 0
+    ) {
+
+      return res.json({
+        success: false,
+        error:
+          "This order has already been rated"
+      });
+
+    }
+
+
+    order.rating =
+      score;
+
+    order.review =
+      String(review || "").trim();
+
+
+    await order.save();
+
+
+    res.json({
+      success: true,
+      order: order
+    });
+
+
+  } catch (err) {
+
+    console.log(
+      "ORDER RATING ERROR:",
+      err
+    );
+
+    res.json({
+      success: false,
+      error: err.message
+    });
+
+  }
+
+});
+
+app.get(
+  "/products/:id/rating",
+  async (req, res) => {
+
+    try {
+
+      const productId =
+        req.params.id;
+
+
+      const orders =
+        await Order.find({
+          productId: productId,
+          orderStatus: "completed",
+          rating: {
+            $gte: 1
+          }
+        });
+
+
+      if (!orders.length) {
+
+        return res.json({
+          success: true,
+          averageRating: 0,
+          ratingCount: 0
+        });
+
+      }
+
+
+      const total =
+        orders.reduce(
+          (sum, order) =>
+            sum + Number(
+              order.rating || 0
+            ),
+          0
+        );
+
+
+      const average =
+        total / orders.length;
+
+
+      res.json({
+        success: true,
+
+        averageRating:
+          Number(
+            average.toFixed(1)
+          ),
+
+        ratingCount:
+          orders.length
+      });
+
+
+    } catch (err) {
+
+      console.log(
+        "PRODUCT RATING ERROR:",
+        err
+      );
+
+      res.json({
+        success: false,
+        error: err.message
+      });
+
+    }
+
+  }
+);
+
 
 
 // 📋 عرض المهام
