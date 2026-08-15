@@ -215,18 +215,44 @@ let html="";
 
 products.forEach(p=>{
 
-html+=`
+html += `
 
 <div
-class="card merchant-product"
-onclick="openProductOptions('${p._id}')"
+  class="card merchant-product"
+  onclick="openProductOptions('${p._id}')"
 >
 
-<h3>${p.name}</h3>
+  ${
+    p.image
+    ?
+    `
+    <img
+      src="${p.image}"
+      alt="${p.name}"
+      style="
+        width:100%;
+        height:180px;
+        object-fit:cover;
+        border-radius:14px;
+        margin-bottom:12px;
+      "
+      onerror="
+        this.style.display='none';
+      "
+    >
+    `
+    :
+    ""
+  }
 
-<p>${p.category}</p>
+  <h3>${p.name}</h3>
 
-<p>${p.price} USDT</p>
+  <p>${p.category || "General"}</p>
+
+  <p>
+    ${Number(p.price || 0).toFixed(2)}
+    USDT
+  </p>
 
 </div>
 

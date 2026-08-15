@@ -350,6 +350,11 @@ const OrderSchema = new mongoose.Schema({
   productId: String,
   productName: String,
 
+productImage: {
+  type: String,
+  default: ""
+},
+
   quantity: {
     type: Number,
     default: 1
@@ -931,6 +936,9 @@ app.post("/orders/create", async (req, res) => {
 
         productName:
           product.name,
+
+productImage:
+  product.image || "",
 
         quantity: qty,
 
