@@ -60,6 +60,57 @@ placeholder="Image URL (Optional)">
 id="product_description"
 placeholder="Description"></textarea>
 
+<div
+  style="
+    margin-top:15px;
+    padding:15px;
+    border:1px solid #333;
+    border-radius:12px;
+  "
+>
+
+  <h3>🚚 Delivery Options</h3>
+
+  <label>
+    <input
+      type="checkbox"
+      id="shipping_available"
+      onchange="toggleShippingFields()"
+    >
+    This product supports delivery
+  </label>
+
+  <div
+    id="shippingFields"
+    style="display:none;margin-top:12px;"
+  >
+
+    <input
+      id="shipping_cost"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="Shipping cost (USDT)"
+    >
+
+    <button
+      type="button"
+      onclick="getMerchantLocation()"
+    >
+      📍 Set My Store Location
+    </button>
+
+    <p
+      id="merchantLocationStatus"
+      style="opacity:.7;"
+    >
+      Store location not set.
+    </p>
+
+  </div>
+
+</div>
+
 <button onclick="saveProduct()">
 
 💾 Save Product
@@ -137,6 +188,104 @@ showPage("dashboard");
 function showAddProduct(){
 
 document.getElementById("productForm").style.display="block";
+
+}
+
+let merchantLocation = {
+  lat: null,
+  lng: null,
+  address: ""
+};
+
+function toggleShippingFields(){
+
+  const checkbox =
+    document.getElementById(
+      "shipping_available"
+    );
+
+  const fields =
+    document.getElementById(
+      "shippingFields"
+    );
+
+  if(!checkbox || !fields)
+    return;
+
+  fields.style.display =
+    checkbox.checked
+      ? "block"
+      : "none";
+
+}
+
+function getMerchantLocation(){
+
+  const status =
+    document.getElementById(
+      "merchantLocationStatus"
+    );
+
+  if(!navigator.geolocation){
+
+    if(status)
+      status.innerText =
+        "❌ GPS is not supported.";
+
+    return;
+  }
+
+  if(status)
+    status.innerText =
+      "📍 Getting your location...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    position => {
+
+      merchantLocation.lat =
+        position.coords.latitude;
+
+      merchantLocation.lng =
+        position.coords.longitude;
+
+      merchantLocation.address =
+        "";
+
+      if(status){
+
+        status.innerText =
+          "✅ Store location saved";
+
+      }
+
+      console.log(
+        "MERCHANT LOCATION:",
+        merchantLocation
+      );
+
+    },
+
+    error => {
+
+      console.error(
+        "GPS ERROR:",
+        error
+      );
+
+      if(status)
+        status.innerText =
+          "❌ Unable to get location.";
+
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 15000,
+      maximumAge: 0
+    }
+
+  );
 
 }
 
@@ -635,68 +784,17 @@ async function loadMerchantOrders(){
             }
           </p>
 
-${
-  order.shippingType === "delivery"
-  ?
-  `
-  <div
-    style="
-      margin-top:10px;
-      padding:10px;
-      border:1px solid #333;
-      border-radius:10px;
-    "
-  >
-
-    <p>
-      🚚 Delivery
-    </p>
-
-    ${
-      order.customerLocation &&
-      order.customerLocation.lat !== null &&
-      order.customerLocation.lng !== null
-      ?
-      `
-      <button
-        type="button"
-        onclick="
-          window.open(
-            'https://www.google.com/maps?q=' +
-            ${Number(order.customerLocation.lat)} +
-            ',' +
-            ${Number(order.customerLocation.lng)},
-            '_blank'
-          )
-        "
-        style="
-          width:100%;
-          padding:12px;
-          border:0;
-          border-radius:10px;
-          cursor:pointer;
-        "
-      >
-        📍 Open Customer Location
-      </button>
-      `
-      :
-      `
-      <p style="opacity:.7;">
-        📍 Customer location not available
-      </p>
-      `
-    }
-
-  </div>
-  `
-  :
-  `
-  <p>
-    📍 Pickup from merchant
-  </p>
-  `
-}
+          ${
+            order.shippingType === "delivery"
+            ?
+            `
+            <p>
+              📍 ${order.shippingAddress}
+            </p>
+            `
+            :
+            ""
+          }
 
           <p
           style="

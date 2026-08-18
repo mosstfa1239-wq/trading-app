@@ -4967,44 +4967,77 @@ async function openProductDetails(productId){
 
       <br>
 
-      <h3>
-        Delivery
-      </h3>
 
-      <select
-      id="shippingType"
-      onchange="updateCheckoutPreview()"
-      style="
+<h3>
+  📦 Receiving Method
+</h3>
+
+<select
+  id="shippingType"
+  onchange="updateShippingUI(); updateCheckoutPreview();"
+  style="
+    width:100%;
+    padding:12px;
+  "
+>
+
+  <option value="pickup">
+    📍 Pickup from merchant
+  </option>
+
+  ${
+    product.shippingAvailable
+    ?
+    `
+    <option value="delivery">
+      🚚 Delivery
+    </option>
+    `
+    :
+    ""
+  }
+
+</select>
+
+<div
+  id="shippingAddressBox"
+  style="
+    display:none;
+    margin-top:10px;
+  "
+>
+
+  <button
+    type="button"
+    onclick="getCustomerLocation()"
+    style="
       width:100%;
       padding:12px;
-      "
-      >
+      border:0;
+      border-radius:10px;
+    "
+  >
+    📍 Use My Current Location
+  </button>
 
-        <option value="pickup">
-          📍 Pickup from merchant
-        </option>
+  <p
+    id="customerLocationStatus"
+    style="
+      opacity:.7;
+      font-size:13px;
+      margin-top:8px;
+    "
+  >
+    Location not selected.
+  </p>
 
-        <option value="delivery">
-          🚚 Delivery to my address
-        </option>
+  <input
+    type="hidden"
+    id="shippingAddress"
+    value=""
+  >
 
-      </select>
-
-      <div
-      id="shippingAddressBox"
-      style="display:none;margin-top:10px;"
-      >
-
-        <textarea
-        id="shippingAddress"
-        placeholder="Enter your shipping address"
-        style="
-        width:100%;
-        min-height:90px;
-        "
-        ></textarea>
-
-      </div>
+</div>
 
       <div
       id="checkoutPreview"
@@ -5050,6 +5083,114 @@ async function openProductDetails(productId){
   }
 
 }
+
+function updateShippingUI(){
+
+  const type =
+    document.getElementById(
+      "shippingType"
+    )?.value;
+
+  const box =
+    document.getElementById(
+      "shippingAddressBox"
+    );
+
+  if(!box) return;
+
+  box.style.display =
+    type === "delivery"
+      ? "block"
+      : "none";
+
+}
+let customerLocation = {
+  lat: null,
+  lng: null
+};
+
+function getCustomerLocation(){
+
+  const status =
+    document.getElementById(
+      "customerLocationStatus"
+    );
+
+  const address =
+    document.getElementById(
+      "shippingAddress"
+    );
+
+  if(!navigator.geolocation){
+
+    if(status)
+      status.innerText =
+        "❌ GPS is not supported.";
+
+    return;
+  }
+
+  if(status)
+    status.innerText =
+      "📍 Getting your location...";
+
+  navigator.geolocation.getCurrentPosition(
+
+    position => {
+
+      const lat =
+        position.coords.latitude;
+
+      const lng =
+        position.coords.longitude;
+
+customerLocation = {
+  lat: lat,
+  lng: lng
+};
+
+
+      }
+
+      if(status){
+
+        status.innerText =
+          "✅ Location selected";
+
+      }
+
+      console.log(
+        "CUSTOMER LOCATION:",
+        lat,
+        lng
+      );
+
+    },
+
+    error => {
+
+      console.error(
+        "CUSTOMER GPS ERROR:",
+        error
+      );
+
+      if(status)
+        status.innerText =
+          "❌ Unable to get your location.";
+
+    },
+
+    {
+      enableHighAccuracy:true,
+      timeout:15000,
+      maximumAge:0
+    }
+
+  );
+
+}
+
+
 
 function changeProductQuantity(amount){
 
@@ -5237,63 +5378,118 @@ async function buyProduct(){
       "shippingType"
     ).value;
 
-  const shippingAddress =
-    document.getElementById(
-      "shippingAddress"
-    )?.value || "";
+let shippingAddress = "";
 
-  if(
-    shippingType === "delivery" &&
-    !shippingAddress.trim()
-  ){
+if(shippingType === "delivery"){
+
+  const confirmed =
+    confirm(
+      "📍 سيتم استخدام موقعك الحالي كموقع استلام الطلب.\n\nهل تريد تحديد موقعك؟"
+    );
+
+  if(!confirmed)
+    return;
+
+  try {
+
+    const position =
+      await new Promise((resolve, reject) => {
+
+        if(!navigator.geolocation){
+
+          reject(
+            new Error(
+              "Geolocation is not supported"
+            )
+          );
+
+          return;
+
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 15000,
+            maximumAge: 0
+          }
+        );
+
+      });
+
+    const lat =
+      position.coords.latitude;
+
+    const lng =
+      position.coords.longitude;
+
+    shippingAddress =
+      JSON.stringify({
+        lat,
+        lng
+      });
+
+  } catch(err) {
 
     alert(
-      "Please enter your shipping address"
+      "❌ لم نتمكن من تحديد موقعك.\n" +
+      "يرجى السماح للموقع من الهاتف والمحاولة مرة أخرى."
+    );
+
+    console.error(
+      "GPS ERROR:",
+      err
     );
 
     return;
 
   }
 
-  const ok =
-    confirm(
-      "Confirm this purchase?"
+}
+
+const ok =
+  confirm(
+    "Confirm this purchase?"
+  );
+
+if(!ok)
+  return;
+
+try {
+
+  const res =
+    await fetch(
+      "/orders/create",
+      {
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        body:JSON.stringify({
+
+          customerId,
+
+          productId:
+            product._id,
+
+          quantity,
+
+          shippingType,
+
+          shippingAddress,
+          
+          customerLocation
+
+        })
+
+      }
     );
-
-  if(!ok)
-    return;
-
-  try {
-
-    const res =
-      await fetch(
-        "/orders/create",
-        {
-
-          method:"POST",
-
-          headers:{
-            "Content-Type":
-              "application/json"
-          },
-
-          body:JSON.stringify({
-
-            customerId,
-
-            productId:
-              product._id,
-
-            quantity,
-
-            shippingType,
-
-            shippingAddress
-
-          })
-
-        }
-      );
 
     const data =
       await res.json();

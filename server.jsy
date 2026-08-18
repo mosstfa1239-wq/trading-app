@@ -400,19 +400,6 @@ productImage: {
     default: ""
   },
 
-
-customerLocation: {
-  lat: {
-    type: Number,
-    default: null
-  },
-
-  lng: {
-    type: Number,
-    default: null
-  }
-},
-
   shippingCost: {
     type: Number,
     default: 0
@@ -702,6 +689,8 @@ console.log("LOGIN SUCCESS:", user.email);
 //حفض المنتج
 app.post("/merchant/add-product", async (req,res)=>{
 
+const{
+
 const {
   merchantId,
   merchantName,
@@ -837,14 +826,13 @@ app.post("/orders/create", async (req, res) => {
 
   try {
 
-const {
-  customerId,
-  productId,
-  quantity,
-  shippingType,
-  shippingAddress,
-  customerLocation
-} = req.body;
+    const {
+      customerId,
+      productId,
+      quantity,
+      shippingType,
+      shippingAddress
+    } = req.body;
 
     if (!customerId || !productId) {
 
@@ -894,28 +882,16 @@ const {
     const productsTotal =
       product.price * qty;
 
-/*
-  Shipping:
-  Pickup = 0
-  Delivery = merchant-defined cost
-*/
+    /*
+      Shipping:
+      Pickup = 0
+      Delivery = demo 3 USDT
+    */
 
-if (
-  shippingType === "delivery" &&
-  !product.shippingAvailable
-) {
-
-  return res.json({
-    success: false,
-    error: "Delivery is not available for this product"
-  });
-
-}
-
-const shippingCost =
-  shippingType === "delivery"
-    ? Number(product.shippingCost || 0)
-    : 0;
+    const shippingCost =
+      shippingType === "delivery"
+        ? 3
+        : 0;
 
     /*
       Platform commission.
@@ -1012,21 +988,6 @@ productImage:
           shippingType === "delivery"
             ? shippingAddress || ""
             : "",
-
-
-     customerLocation:
-     shippingType === "delivery"
-     ? {
-        lat:
-          Number(customerLocation?.lat) || null,
-
-        lng:
-          Number(customerLocation?.lng) || null
-      }
-    : {
-        lat: null,
-        lng: null
-      },
 
         shippingCost,
 
