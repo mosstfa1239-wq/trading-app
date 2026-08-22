@@ -60,7 +60,58 @@ placeholder="Image URL (Optional)">
 id="product_description"
 placeholder="Description"></textarea>
 
-<button onclick="saveProduct()">
+<div style="
+  margin-top:15px;
+  padding:15px;
+  border:1px solid #333;
+  border-radius:12px;
+">
+
+  <h3>🚚 Delivery Options</h3>
+
+  <label style="
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+  ">
+
+    <input
+      type="checkbox"
+      id="shipping_available"
+      onchange="
+        document.getElementById('shippingCostBox').style.display =
+          this.checked ? 'block' : 'none';
+      "
+    >
+
+    🚚 Delivery available
+
+  </label>
+
+  <div
+    id="shippingCostBox"
+    style="display:none;"
+  >
+
+    <input
+      id="shipping_cost"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="Delivery Cost (USDT)"
+    >
+
+  </div>
+
+</div>
+
+<button
+  onclick="saveProduct()"
+  style="
+    margin-top:15px;
+  "
+>
 
 💾 Save Product
 
@@ -196,12 +247,15 @@ const body = {
       "product_description"
     ).value,
 
-  shippingAvailable,
+shippingAvailable,
 
-  shippingCost,
+shippingCost,
 
-  merchantLocation
-
+merchantLocation:
+  window.merchantLocation || {
+    lat:null,
+    lng:null
+  }
 };
 
 const res=await fetch(
@@ -235,67 +289,175 @@ alert("❌ Error");
 
 async function loadProducts(){
 
-const merchantId=
-localStorage.getItem("userId");
+  const list =
+    document.getElementById("productsList");
 
-const res=
-await fetch("/merchant/products/"+merchantId);
+  if(!list)
+    return;
 
-const products=
-await res.json();
+  list.innerHTML =
+    "⏳ Loading products...";
 
-let html="";
+  const merchantId =
+    localStorage.getItem("userId");
 
-products.forEach(p=>{
+  if(!merchantId){
 
-html += `
+    list.innerHTML =
+      "❌ Merchant ID not found.";
 
-<div
-  class="card merchant-product"
-  onclick="openProductOptions('${p._id}')"
->
-
-  ${
-    p.image
-    ?
-    `
-    <img
-      src="${p.image}"
-      alt="${p.name}"
-      style="
-        width:100%;
-        height:180px;
-        object-fit:cover;
-        border-radius:14px;
-        margin-bottom:12px;
-      "
-      onerror="
-        this.style.display='none';
-      "
-    >
-    `
-    :
-    ""
+    return;
   }
 
-  <h3>${p.name}</h3>
+  try{
 
-  <p>${p.category || "General"}</p>
+    const res =
+      await fetch(
+        "/merchant/products/" +
+        merchantId
+      );
 
-  <p>
-    ${Number(p.price || 0).toFixed(2)}
-    USDT
-  </p>
+    if(!res.ok){
 
-</div>
+      throw new Error(
+        "HTTP " + res.status
+      );
 
-`;
+    }
 
-});
+    const products =
+      await res.json();
 
-document.getElementById("productsList").innerHTML=html;
+    console.log(
+      "MERCHANT PRODUCTS:",
+      products
+    );
+
+    if(!Array.isArray(products) ||
+       products.length === 0){
+
+      list.innerHTML = `
+        <div class="card">
+          <p>📦 No products yet.</p>
+        </div>
+      `;
+
+      return;
+    }
+
+    let html = "";
+
+    products.forEach(p => {
+
+      html += `
+
+        <div
+          class="card merchant-product"
+          onclick="
+            openProductOptions(
+              '${p._id}'
+            )
+          "
+          style="cursor:pointer;"
+        >
+
+          ${
+            p.image
+            ?
+            `
+            <img
+              src="${p.image}"
+              alt="${p.name || ""}"
+              style="
+                width:100%;
+                height:180px;
+                object-fit:cover;
+                border-radius:14px;
+                margin-bottom:12px;
+              "
+              onerror="
+                this.style.display='none';
+              "
+            >
+            `
+            :
+            ""
+          }
+
+          <h3>
+            ${p.name || "Unnamed Product"}
+          </h3>
+
+          <p>
+            ${p.category || "General"}
+          </p>
+
+          <p>
+            💰
+            ${Number(
+              p.price || 0
+            ).toFixed(2)}
+            USDT
+          </p>
+
+          <p>
+            ${
+              p.shippingAvailable
+              ?
+              "🚚 Delivery available"
+              :
+              "📍 Pickup only"
+            }
+          </p>
+
+          ${
+            p.shippingAvailable
+            ?
+            `
+            <p style="opacity:.7;">
+              Delivery:
+              ${Number(
+                p.shippingCost || 0
+              ).toFixed(2)}
+              USDT
+            </p>
+            `
+            :
+            ""
+          }
+
+        </div>
+
+      `;
+
+    });
+
+    list.innerHTML =
+      html;
+
+  }catch(err){
+
+    console.error(
+      "MERCHANT PRODUCTS ERROR:",
+      err
+    );
+
+    list.innerHTML = `
+      <div class="card">
+        <p>
+          ❌ Unable to load products.
+        </p>
+
+        <p style="opacity:.6;">
+          ${err.message}
+        </p>
+      </div>
+    `;
+
+  }
 
 }
+
 async function uploadProductImage(){
 
   const fileInput =
