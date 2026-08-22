@@ -4712,28 +4712,39 @@ async function openMarket(type){
   // MY ORDERS
   // =========================
 
-  if(type === "orders"){
+if(type === "orders"){
 
-    marketContent.innerHTML = `
+  console.log("ORDERS PAGE: START");
 
-      <div class="card">
+  marketContent.innerHTML = `
 
-        <h2>🧾 My Orders</h2>
+    <div class="card">
 
-        <p id="ordersStatus">
-          Loading orders...
-        </p>
+      <h2>🧾 My Orders</h2>
 
-      </div>
+      <p id="ordersStatus">
+        Loading orders...
+      </p>
 
-      <div id="myOrdersList"></div>
+    </div>
 
-    `;
+    <div id="myOrdersList"></div>
 
-    await loadMyOrders();
+  `;
 
-    return;
-  }
+  console.log("ORDERS PAGE: HTML DONE");
+
+  console.log(
+    "ORDERS PAGE: loadMyOrders =",
+    typeof loadMyOrders
+  );
+
+  await loadMyOrders();
+
+  console.log("ORDERS PAGE: LOAD DONE");
+
+  return;
+}
 
 // =========================
 // MY PURCHASES
