@@ -7,8 +7,31 @@
 
 <style>
 
+/* Rating Stars */
+
+.rating-star{
+  background:transparent;
+  border:none;
+  outline:none;
+  box-shadow:none;
+  font-size:32px;
+  cursor:pointer;
+  padding:2px 5px;
+  color:#888;
+  transition:all .15s ease;
+}
+
+.rating-star:hover{
+  transform:scale(1.15);
+}
+
+.rating-star.selected{
+  color:#FFD54F;
+  text-shadow:0 0 10px #FFD54F;
+}
+
 /*==================================================
-            PREMIUM UI V2 - PART 1
+            PREMIUM UI V2 - 
 ==================================================*/
 
 *{
@@ -6353,8 +6376,11 @@ function selectRating(orderId, rating){
   window.selectedRatings =
     window.selectedRatings || {};
 
-  window.selectedRatings[orderId] =
+  const selected =
     Number(rating);
+
+  window.selectedRatings[orderId] =
+    selected;
 
   const box =
     document.getElementById(
@@ -6372,17 +6398,31 @@ function selectRating(orderId, rating){
 
     const value =
       Number(
-        button.dataset.rating
+        button.getAttribute("data-rating")
       );
 
-    button.innerText =
-      value <= rating
-        ? "★"
-        : "☆";
+    if(value <= selected){
+
+      button.textContent = "★";
+
+      button.classList.add(
+        "selected"
+      );
+
+    }else{
+
+      button.textContent = "☆";
+
+      button.classList.remove(
+        "selected"
+      );
+
+    }
 
   });
 
 }
+
 
 async function submitRating(
   orderId
