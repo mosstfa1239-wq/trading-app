@@ -43,6 +43,13 @@ type="number"
 placeholder="Price">
 
 <input
+id="product_stock"
+type="number"
+min="0"
+value="0"
+placeholder="Stock Quantity">
+
+<input
 id="product_category"
 placeholder="Category">
 
@@ -156,10 +163,24 @@ break;
 case "earnings":
 
 content.innerHTML = `
-<h2>💰 Earnings</h2>
 
-<p>Your earnings statistics will appear here.</p>
+<div class="card">
+
+  <h2>💰 Earnings & Statistics</h2>
+
+  <p id="merchantStatsStatus">
+    Loading statistics...
+  </p>
+
+</div>
+
+<div id="merchantStats">
+
+</div>
+
 `;
+
+loadMerchantStats();
 
 break;
 
@@ -231,6 +252,13 @@ const body = {
         "product_price"
       ).value
     ),
+
+stock:
+  Number(
+    document.getElementById(
+      "product_stock"
+    ).value || 0
+  ),
 
   category:
     document.getElementById(
@@ -400,6 +428,72 @@ async function loadProducts(){
             USDT
           </p>
 
+${(() => {
+
+  const stock =
+    Number(p.stock || 0);
+
+  let statusText = "";
+  let statusIcon = "";
+
+  if(stock <= 0){
+
+    statusText = "Out of Stock";
+    statusIcon = "🔴";
+
+  }else if(stock <= 5){
+
+    statusText = "Low Stock";
+    statusIcon = "🟡";
+
+  }else{
+
+    statusText = "Available";
+    statusIcon = "🟢";
+
+  }
+
+  return `
+
+    <p>
+      📦 Stock:
+      <strong>
+        ${stock}
+      </strong>
+    </p>
+
+    <p>
+      ${statusIcon}
+      <strong>
+        ${statusText}
+      </strong>
+    </p>
+
+  `;
+
+})()}
+
+  <p>
+    🛍️ Status:
+    <strong>
+      ${
+        p.active === false
+        ? "🔴 Inactive"
+        : "🟢 Active"
+      }
+    </strong>
+  </p>
+
+  <p>
+    ${
+      p.shippingAvailable
+      ?
+      "🚚 Delivery available"
+      :
+      "📍 Pickup only"
+    }
+  </p>
+
           <p>
             ${
               p.shippingAvailable
@@ -544,6 +638,22 @@ box.innerHTML=`
 <h3>Product Options</h3>
 
 <button
+onclick="toggleProduct('${productId}')"
+style="
+background:#2563eb;
+color:white;
+border:0;
+padding:12px;
+border-radius:10px;
+width:100%;
+margin-top:10px;
+">
+
+🔄 Activate / Deactivate
+
+</button>
+
+<button
 onclick="deleteProduct('${productId}')"
 style="
 background:#dc2626;
@@ -593,6 +703,82 @@ if(box){
 }
 
 }
+
+async function toggleProduct(productId){
+
+  const merchantId =
+    localStorage.getItem("userId");
+
+  if(!merchantId){
+
+    alert("❌ Merchant ID not found");
+
+    return;
+
+  }
+
+  try{
+
+    const res =
+      await fetch(
+        "/merchant/toggle-product",
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+            productId,
+            merchantId
+          })
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if(!data.success){
+
+      alert(
+        "❌ " +
+        (
+          data.error ||
+          "Unable to change product status"
+        )
+      );
+
+      return;
+
+    }
+
+    alert(
+      data.active
+        ? "🟢 Product activated"
+        : "🔴 Product deactivated"
+    );
+
+    closeProductOptions();
+
+    loadProducts();
+
+  }catch(err){
+
+    console.error(
+      "TOGGLE PRODUCT ERROR:",
+      err
+    );
+
+    alert(
+      "❌ " + err.message
+    );
+
+  }
+
+}
+
 async function deleteProduct(productId){
 
   const ok = confirm(
@@ -1090,6 +1276,233 @@ async function updateMerchantOrderStatus(
       "❌ " +
       err.message
     );
+
+  }
+
+}
+
+async function loadMerchantStats(){
+
+  const merchantId =
+    localStorage.getItem("userId");
+
+  const status =
+    document.getElementById(
+      "merchantStatsStatus"
+    );
+
+  const container =
+    document.getElementById(
+      "merchantStats"
+    );
+
+  if(!merchantId){
+
+    if(status)
+      status.innerText =
+        "Please login first";
+
+    return;
+
+  }
+
+  try {
+
+    const res =
+      await fetch(
+        "/merchant/stats/" +
+        merchantId
+      );
+
+    const data =
+      await res.json();
+
+    if(!data.success){
+
+      if(status)
+        status.innerText =
+          data.error ||
+          "Unable to load statistics";
+
+      return;
+
+    }
+
+    const s =
+      data.statistics || {};
+
+    if(status)
+      status.innerText = "";
+
+    if(!container)
+      return;
+
+    container.innerHTML = `
+
+      <div class="card">
+
+        <h3>💰 Total Sales</h3>
+
+        <h2>
+          ${Number(
+            s.totalSales || 0
+          ).toFixed(2)}
+          USDT
+        </h2>
+
+      </div>
+
+      <div class="card">
+
+        <h3>🏦 Platform Fees (2%)</h3>
+
+        <h2>
+          ${Number(
+            s.totalPlatformFees || 0
+          ).toFixed(2)}
+          USDT
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>💵 Merchant Earnings</h3>
+
+        <h2>
+          ${Number(
+            s.merchantEarnings || 0
+          ).toFixed(2)}
+          USDT
+        </h2>
+
+      </div>
+
+      <div class="card">
+
+        <h3>✅ Completed Sales</h3>
+
+        <h2>
+          ${Number(
+            s.completedSales || 0
+          ).toFixed(2)}
+          USDT
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>🧾 Total Orders</h3>
+
+        <h2>
+          ${s.totalOrders || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>📦 Products</h3>
+
+        <h2>
+          ${s.totalProducts || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>⏳ Pending</h3>
+
+        <h2>
+          ${s.pendingOrders || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>🔵 Confirmed</h3>
+
+        <h2>
+          ${s.confirmedOrders || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>🔧 Preparing</h3>
+
+        <h2>
+          ${s.preparingOrders || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>📦 Ready</h3>
+
+        <h2>
+          ${s.readyOrders || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>🚚 Shipped</h3>
+
+        <h2>
+          ${s.shippedOrders || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>✅ Completed</h3>
+
+        <h2>
+          ${s.completedOrders || 0}
+        </h2>
+
+      </div>
+
+
+      <div class="card">
+
+        <h3>❌ Cancelled</h3>
+
+        <h2>
+          ${s.cancelledOrders || 0}
+        </h2>
+
+      </div>
+
+    `;
+
+  } catch(err) {
+
+    console.error(
+      "MERCHANT STATS ERROR:",
+      err
+    );
+
+    if(status)
+      status.innerText =
+        "Unable to load statistics.";
 
   }
 

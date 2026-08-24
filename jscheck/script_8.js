@@ -207,6 +207,37 @@ async function openMarket(type){
       const products =
         await res.json();
 
+const ratingsRes =
+  await fetch("/products/ratings");
+
+const ratingsData =
+  await ratingsRes.json();
+
+const ratingsMap = {};
+
+if(
+  ratingsData.success &&
+  Array.isArray(ratingsData.ratings)
+){
+
+  ratingsData.ratings.forEach(r => {
+
+    ratingsMap[r._id] = {
+      average:
+        Number(
+          r.averageRating || 0
+        ).toFixed(1),
+
+      count:
+        Number(
+          r.ratingCount || 0
+        )
+    };
+
+  });
+
+}
+
       if(!products.length){
 
         marketContent.innerHTML = `
@@ -227,6 +258,28 @@ async function openMarket(type){
 
 
       products.forEach(product => {
+
+const rating =
+  ratingsMap[product._id];
+
+const ratingHTML =
+  rating
+  ?
+  `
+    ⭐ ${rating.average}
+    ${"★".repeat(
+      Math.round(
+        Number(rating.average)
+      )
+    )}
+    <span style="opacity:.6;">
+      (${rating.count})
+    </span>
+  `
+  :
+  `
+    ⭐ No ratings yet
+  `;
 
         html += `
 
@@ -267,6 +320,10 @@ async function openMarket(type){
               ${Number(product.price || 0).toFixed(2)}
               USDT
             </h3>
+
+<p>
+  ${ratingHTML}
+</p>
 
             <p style="opacity:.7;">
               👤 ${product.merchantName || "Merchant"}

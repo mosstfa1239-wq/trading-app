@@ -26,6 +26,64 @@ async function openProductDetails(productId){
     window.selectedProduct =
       product;
 
+let ratingHTML = `
+  ⭐ No ratings yet
+`;
+
+try {
+
+  const ratingRes =
+    await fetch(
+      "/products/" +
+      product._id +
+      "/rating"
+    );
+
+  const ratingData =
+    await ratingRes.json();
+
+  if(
+    ratingData.success &&
+    Number(ratingData.ratingCount || 0) > 0
+  ){
+
+    const average =
+      Number(
+        ratingData.averageRating || 0
+      ).toFixed(1);
+
+    const count =
+      Number(
+        ratingData.ratingCount || 0
+      );
+
+    const rounded =
+      Math.round(
+        Number(
+          ratingData.averageRating || 0
+        )
+      );
+
+    ratingHTML = `
+      ⭐ ${average} / 5
+      ${"★".repeat(rounded)}
+      ${"☆".repeat(5 - rounded)}
+      <span style="opacity:.7;">
+        (${count} ratings)
+      </span>
+    `;
+
+  }
+
+}catch(err){
+
+  console.error(
+    "PRODUCT RATING ERROR:",
+    err
+  );
+
+}
+
     document.getElementById(
       "productDetailsContent"
     ).innerHTML = `
@@ -63,7 +121,7 @@ async function openProductDetails(productId){
       </h3>
 
       <p>
-        ⭐ No ratings yet
+       ${ratingHTML}
       </p>
 
       <hr>
@@ -858,73 +916,76 @@ async function loadMyOrders(){
                   How would you rate this product?
                 </p>
 
-                <div style="
-                  display:flex;
-                  gap:5px;
-                  font-size:28px;
-                ">
+<div
+  style="
+    display:flex;
+    gap:5px;
+    font-size:28px;
+    margin:10px 0;
+  "
+>
 
-                  <button
-                    type="button"
-                    onclick="
-                      selectRating(
-                        '${order.orderId}',
-                        1
-                      )
-                    "
-                  >
-                    ☆
-                  </button>
+  <button
+    type="button"
+    class="rating-star"
+    data-rating="1"
+    onclick="
+      selectRating(
+        '${order.orderId}',
+        1
+      )
+    "
+  >☆</button>
 
-                  <button
-                    type="button"
-                    onclick="
-                      selectRating(
-                        '${order.orderId}',
-                        2
-                      )
-                    "
-                  >
-                    ☆
-                  </button>
+  <button
+    type="button"
+    class="rating-star"
+    data-rating="2"
+    onclick="
+      selectRating(
+        '${order.orderId}',
+        2
+      )
+    "
+  >☆</button>
 
-                  <button
-                    type="button"
-                    onclick="
-                      selectRating(
-                        '${order.orderId}',
-                        3
-                      )
-                    "
-                  >
-                    ☆
-                  </button>
+  <button
+    type="button"
+    class="rating-star"
+    data-rating="3"
+    onclick="
+      selectRating(
+        '${order.orderId}',
+        3
+      )
+    "
+  >☆</button>
 
-                  <button
-                    type="button"
-                    onclick="
-                      selectRating(
-                        '${order.orderId}',
-                        4
-                      )
-                    "
-                  >
-                    ☆
-                  </button>
+  <button
+    type="button"
+    class="rating-star"
+    data-rating="4"
+    onclick="
+      selectRating(
+        '${order.orderId}',
+        4
+      )
+    "
+  >☆</button>
 
-                  <button
-                    type="button"
-                    onclick="
-                      selectRating(
-                        '${order.orderId}',
-                        5
-                      )
-                    "
-                  >
-                    ☆
-                  </button>
+  <button
+    type="button"
+    class="rating-star"
+    data-rating="5"
+    onclick="
+      selectRating(
+        '${order.orderId}',
+        5
+      )
+    "
+  >☆</button>
 
-                </div>
+</div>
 
                 <input
                   id="
@@ -1355,19 +1416,13 @@ function openRatingBox(orderId){
 
 }
 
-
-function selectRating(
-  orderId,
-  rating
-){
+function selectRating(orderId, rating){
 
   window.selectedRatings =
     window.selectedRatings || {};
 
-  window.selectedRatings[
-    orderId
-  ] = Number(rating);
-
+  window.selectedRatings[orderId] =
+    Number(rating);
 
   const box =
     document.getElementById(
@@ -1376,26 +1431,26 @@ function selectRating(
 
   if(!box) return;
 
-
   const buttons =
     box.querySelectorAll(
-      "button[type='button']"
+      ".rating-star"
     );
 
+  buttons.forEach(button => {
 
-  buttons.forEach(
-    (button, index) => {
+    const value =
+      Number(
+        button.dataset.rating
+      );
 
-      button.innerText =
-        index < rating
+    button.innerText =
+      value <= rating
         ? "★"
         : "☆";
 
-    }
-  );
+  });
 
 }
-
 
 async function submitRating(
   orderId

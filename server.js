@@ -348,6 +348,12 @@ merchantLocation: {
     default: true
   },
 
+stock: {
+  type: Number,
+  default: 0,
+  min: 0
+},
+
   createdAt: {
     type: Date,
     default: Date.now
@@ -435,10 +441,21 @@ customerLocation: {
     default: "pending"
   },
 
-  orderStatus: {
-    type: String,
-    default: "pending"
-  },
+orderStatus: {
+  type: String,
+
+  enum: [
+    "pending",
+    "confirmed",
+    "preparing",
+    "ready",
+    "shipped",
+    "completed",
+    "cancelled"
+  ],
+
+  default: "pending"
+},
 
   rating: {
     type: Number,
@@ -710,6 +727,7 @@ const {
   category,
   image,
   description,
+  stock,
   shippingAvailable,
   shippingCost,
   merchantLocation
@@ -725,6 +743,12 @@ const product = await Product.create({
   category,
   image,
   description,
+
+stock:
+  Math.max(
+    0,
+    Number(stock) || 0
+  ),
 
   shippingAvailable:
     Boolean(shippingAvailable),
@@ -785,7 +809,7 @@ active:true
 res.json(products);
 
 });
-
+//حذف المنتج
 app.post("/merchant/delete-product", async (req, res) => {
 
   try {
@@ -832,6 +856,68 @@ app.post("/merchant/delete-product", async (req, res) => {
   }
 
 });
+
+app.post("/merchant/toggle-product", async (req, res) => {
+
+  try {
+
+    const {
+      productId,
+      merchantId
+    } = req.body;
+
+    if(!productId || !merchantId){
+
+      return res.json({
+        success:false,
+        error:"Missing product information"
+      });
+
+    }
+
+    const product =
+      await Product.findOne({
+        _id:productId,
+        merchantId:merchantId
+      });
+
+    if(!product){
+
+      return res.json({
+        success:false,
+        error:"Product not found"
+      });
+
+    }
+
+    product.active =
+      product.active === false
+        ? true
+        : false;
+
+    await product.save();
+
+    res.json({
+      success:true,
+      active:product.active
+    });
+
+  }catch(err){
+
+    console.error(
+      "TOGGLE PRODUCT ERROR:",
+      err
+    );
+
+    res.json({
+      success:false,
+      error:err.message
+    });
+
+  }
+
+});
+
 // فاتورة المنتجات
 app.post("/orders/create", async (req, res) => {
 
@@ -891,6 +977,15 @@ const {
     const qty =
       Math.max(1, Number(quantity) || 1);
 
+if (Number(product.stock || 0) < qty) {
+
+  return res.json({
+    success: false,
+    error: "Insufficient stock"
+  });
+
+}
+
     const productsTotal =
       product.price * qty;
 
@@ -917,172 +1012,187 @@ const shippingCost =
     ? Number(product.shippingCost || 0)
     : 0;
 
-    /*
-      Platform commission.
-      We start with 2%.
-      Later we can make it configurable
-      from Admin Settings.
-    */
+/*
+  Platform commission.
+  Current commission: 2%
+*/
 
-    const platformFee =
-      Number(
-        (productsTotal * 0.02)
-        .toFixed(2)
-      );
+const platformFee =
+  Number(
+    (productsTotal * 0.02)
+      .toFixed(2)
+  );
 
-    const total =
-      Number(
-        (
-          productsTotal +
-          shippingCost +
-          platformFee
-        ).toFixed(2)
-      );
+const total =
+  Number(
+    (
+      productsTotal +
+      shippingCost +
+      platformFee
+    ).toFixed(2)
+  );
 
-    /*
-      Check customer balance
-    */
+/*
+  Check customer balance
+*/
 
-    if (customer.balance < total) {
+if (customer.balance < total) {
 
-      return res.json({
-        success: false,
-        error: "Insufficient USDT balance"
-      });
+  return res.json({
+    success: false,
+    error: "Insufficient USDT balance"
+  });
 
-    }
+}
 
-    const orderId =
-      "ORD-" +
-      Date.now() +
-      "-" +
-      Math.floor(
-        1000 + Math.random() * 9000
-      );
+const orderId =
+  "ORD-" +
+  Date.now() +
+  "-" +
+  Math.floor(
+    1000 + Math.random() * 9000
+  );
 
-    /*
-      Create order
-    */
+/*
+  Create order
+*/
 
-    const order =
-      await Order.create({
+const order =
+  await Order.create({
 
-        orderId,
+    orderId,
 
-        customerId:
-          customer._id.toString(),
+    customerId:
+      customer._id.toString(),
 
-        customerName:
-          (
-            customer.firstName || ""
-          ) +
-          " " +
-          (
-            customer.lastName || ""
-          ),
+    customerName:
+      (
+        customer.firstName || ""
+      ) +
+      " " +
+      (
+        customer.lastName || ""
+      ),
 
-        customerEmail:
-          customer.email,
+    customerEmail:
+      customer.email,
 
-        merchantId:
-          product.merchantId,
+    merchantId:
+      product.merchantId,
 
-        merchantName:
-          product.merchantName,
+    merchantName:
+      product.merchantName,
 
-        productId:
-          product._id.toString(),
+    productId:
+      product._id.toString(),
 
-        productName:
-          product.name,
+    productName:
+      product.name,
 
-productImage:
-  product.image || "",
+    productImage:
+      product.image || "",
 
-        quantity: qty,
+    quantity:
+      qty,
 
-        unitPrice:
-          product.price,
+    unitPrice:
+      product.price,
 
-        productsTotal,
+    productsTotal,
 
-        shippingType,
+    shippingType,
 
-        shippingAddress:
-          shippingType === "delivery"
-            ? shippingAddress || ""
-            : "",
+    shippingAddress:
+      shippingType === "delivery"
+        ? shippingAddress || ""
+        : "",
+
+    customerLocation:
+      shippingType === "delivery"
+        ? {
+            lat:
+              Number(
+                customerLocation?.lat
+              ) || null,
+
+            lng:
+              Number(
+                customerLocation?.lng
+              ) || null
+          }
+        : {
+            lat: null,
+            lng: null
+          },
+
+    shippingCost,
+
+    platformFee,
+
+    total,
+
+    paymentMethod:
+      "balance",
+
+    paymentStatus:
+      "paid",
+
+    orderStatus:
+      "pending"
+
+  });
+
+/*
+  Deduct product stock
+*/
+
+product.stock =
+  Math.max(
+    0,
+    Number(product.stock || 0) - qty
+  );
+
+await product.save();
+
+/*
+  Deduct customer balance
+*/
+
+customer.balance =
+  Number(
+    (
+      customer.balance - total
+    ).toFixed(2)
+  );
+
+await customer.save();
+
+res.json({
+
+  success: true,
+
+  order
+
+});
 
 
-     customerLocation:
-     shippingType === "delivery"
-     ? {
-        lat:
-          Number(customerLocation?.lat) || null,
+} catch (err) {
 
-        lng:
-          Number(customerLocation?.lng) || null
-      }
-    : {
-        lat: null,
-        lng: null
-      },
+  console.log(
+    "CREATE ORDER ERROR:",
+    err
+  );
 
-        shippingCost,
+  res.json({
 
-        platformFee,
+    success: false,
 
-        total,
+    error:
+      err.message
 
-        paymentMethod:
-          "balance",
+  });
 
-        paymentStatus:
-          "paid",
-
-        orderStatus:
-          "pending"
-
-      });
-
-    /*
-      Deduct customer balance
-    */
-
-    customer.balance =
-      Number(
-        (
-          customer.balance - total
-        ).toFixed(2)
-      );
-
-    await customer.save();
-
-    res.json({
-
-      success: true,
-
-      order
-
-    });
-
-  } catch (err) {
-
-    console.log(
-      "CREATE ORDER ERROR:",
-      err
-    );
-
-    res.json({
-
-      success: false,
-
-      error:
-        err.message
-
-    });
-
-  }
+}
 
 });
 
@@ -1127,10 +1237,242 @@ app.get("/orders/merchant/:id", async (req, res) => {
   }
 
 });
+// ================================
+// MERCHANT STATISTICS
+// ================================
+app.get("/merchant/stats/:merchantId", async (req, res) => {
+
+  try {
+
+    const merchantId =
+      req.params.merchantId;
+
+    if (!merchantId) {
+
+      return res.json({
+        success: false,
+        error: "Merchant ID required"
+      });
+
+    }
+
+    const orders =
+      await Order.find({
+        merchantId: merchantId
+      });
+
+    const products =
+      await Product.find({
+        merchantId: merchantId
+      });
+
+    let totalSales = 0;
+    let completedSales = 0;
+
+let totalPlatformFees = 0;
+let merchantEarnings = 0;
+
+    let pendingOrders = 0;
+    let confirmedOrders = 0;
+    let preparingOrders = 0;
+    let readyOrders = 0;
+    let shippedOrders = 0;
+    let completedOrders = 0;
+    let cancelledOrders = 0;
+
+    orders.forEach(order => {
+
+      const total =
+        Number(order.total || 0);
+
+      const status =
+        order.orderStatus || "pending";
+
+      /*
+        =========================
+        ORDER STATUS COUNTS
+        =========================
+      */
+
+      if (status === "pending") {
+
+        pendingOrders++;
+
+      }
+
+      if (status === "confirmed") {
+
+        confirmedOrders++;
+
+      }
+
+      if (status === "preparing") {
+
+        preparingOrders++;
+
+      }
+
+      if (status === "ready") {
+
+        readyOrders++;
+
+      }
+
+      if (status === "shipped") {
+
+        shippedOrders++;
+
+      }
+
+      if (status === "completed") {
+
+        completedOrders++;
+
+      }
+
+      if (status === "cancelled") {
+
+        cancelledOrders++;
+
+      }
+
+
+      /*
+        =========================
+        SALES
+        =========================
+      */
+
+if (
+  order.paymentStatus === "paid" &&
+  status !== "cancelled"
+) {
+
+  totalSales += total;
+
+  totalPlatformFees +=
+    Number(order.platformFee || 0);
+
+}
+
+      /*
+        =========================
+        COMPLETED SALES
+        =========================
+      */
+
+      if (
+        order.paymentStatus === "paid" &&
+        status === "completed"
+      ) {
+
+        completedSales += total;
+
+      }
+
+    });
+
+merchantEarnings =
+  totalSales -
+  totalPlatformFees;
+
+    /*
+      =========================
+      AVERAGE ORDER VALUE
+      =========================
+    */
+
+    const averageOrderValue =
+      orders.length > 0
+        ? totalSales / orders.length
+        : 0;
+
+    res.json({
+
+      success: true,
+
+      statistics: {
+
+        totalOrders:
+          orders.length,
+
+        totalProducts:
+          products.length,
+
+        totalSales:
+          Number(
+            totalSales.toFixed(2)
+          ),
+
+completedSales:
+  Number(
+    completedSales.toFixed(2)
+  ),
+
+totalPlatformFees:
+  Number(
+    totalPlatformFees.toFixed(2)
+  ),
+
+merchantEarnings:
+  Number(
+    merchantEarnings.toFixed(2)
+  ),
+
+averageOrderValue:
+  Number(
+    averageOrderValue.toFixed(2)
+  ),
+
+        pendingOrders:
+          pendingOrders,
+
+        confirmedOrders:
+          confirmedOrders,
+
+        preparingOrders:
+          preparingOrders,
+
+        readyOrders:
+          readyOrders,
+
+        shippedOrders:
+          shippedOrders,
+
+        completedOrders:
+          completedOrders,
+
+        cancelledOrders:
+          cancelledOrders
+
+      }
+
+    });
+
+  } catch (err) {
+
+    console.log(
+      "MERCHANT STATS ERROR:",
+      err
+    );
+
+    res.json({
+
+      success: false,
+
+      error:
+        err.message
+
+    });
+
+  }
+
+});
 
 app.post("/orders/merchant/status", async (req, res) => {
 
-  const session = await mongoose.startSession();
+  const session =
+    await mongoose.startSession();
 
   try {
 
@@ -1150,8 +1492,8 @@ app.post("/orders/merchant/status", async (req, res) => {
     }
 
     const allowedStatuses = [
-      "accepted",
-      "rejected",
+      "confirmed",
+      "cancelled",
       "preparing",
       "ready",
       "shipped",
@@ -1169,10 +1511,11 @@ app.post("/orders/merchant/status", async (req, res) => {
 
     session.startTransaction();
 
-    const order = await Order.findOne({
-      orderId: orderId,
-      merchantId: merchantId
-    }).session(session);
+    const order =
+      await Order.findOne({
+        orderId,
+        merchantId
+      }).session(session);
 
     if (!order) {
 
@@ -1192,21 +1535,24 @@ app.post("/orders/merchant/status", async (req, res) => {
     const allowedTransitions = {
 
       pending: [
-        "accepted",
-        "rejected"
+        "confirmed",
+        "cancelled"
       ],
 
-      accepted: [
-        "preparing"
+      confirmed: [
+        "preparing",
+        "cancelled"
       ],
 
       preparing: [
-        "ready"
+        "ready",
+        "cancelled"
       ],
 
       ready: [
         "shipped",
-        "completed"
+        "completed",
+        "cancelled"
       ],
 
       shipped: [
@@ -1215,7 +1561,7 @@ app.post("/orders/merchant/status", async (req, res) => {
 
       completed: [],
 
-      rejected: []
+      cancelled: []
 
     };
 
@@ -1237,14 +1583,9 @@ app.post("/orders/merchant/status", async (req, res) => {
     }
 
 
-    // =================================
-    // REJECT + FULL REFUND
-    // =================================
-
-    if (status === "rejected") {
+    if (status === "cancelled") {
 
       if (order.paymentStatus !== "paid") {
-
         await session.abortTransaction();
 
         return res.json({
@@ -1270,7 +1611,6 @@ app.post("/orders/merchant/status", async (req, res) => {
 
       }
 
-
       const customer =
         await User.findOne({
           _id: order.customerId
@@ -1288,7 +1628,6 @@ app.post("/orders/merchant/status", async (req, res) => {
 
       }
 
-
       customer.balance =
         Number(customer.balance || 0)
         + refundAmount;
@@ -1297,25 +1636,32 @@ app.post("/orders/merchant/status", async (req, res) => {
         session
       });
 
-
       order.orderStatus =
-        "rejected";
+        "cancelled";
 
       order.paymentStatus =
         "refunded";
 
+await Notification.create({
+
+  userId: order.customerId,
+
+  text:
+    `❌ Order ${order.orderId} has been cancelled and your payment has been refunded.`
+
+});
+
       await order.save({
         session
       });
-
 
       await session.commitTransaction();
 
       return res.json({
         success: true,
         refunded: true,
-        refundAmount: refundAmount,
-        order: order
+        refundAmount,
+        order
       });
 
     }
@@ -1328,17 +1674,25 @@ app.post("/orders/merchant/status", async (req, res) => {
     order.orderStatus =
       status;
 
+await Notification.create({
+
+  userId: order.customerId,
+
+  text:
+    `📦 Order ${order.orderId} status updated to: ${status}`
+
+});
+
     await order.save({
       session
     });
-
 
     await session.commitTransaction();
 
     res.json({
       success: true,
       refunded: false,
-      order: order
+      order
     });
 
   } catch (err) {
@@ -1364,6 +1718,7 @@ app.post("/orders/merchant/status", async (req, res) => {
   }
 
 });
+
 
 app.get("/orders/customer/:id", async (req, res) => {
 
@@ -2845,6 +3200,58 @@ error:err.message
 });
 
 }
+
+});
+
+app.get("/products/ratings", async (req, res) => {
+
+  try {
+
+    const ratings = await Order.aggregate([
+
+      {
+        $match: {
+          orderStatus: "completed",
+          rating: {
+            $gte: 1
+          }
+        }
+      },
+
+      {
+        $group: {
+          _id: "$productId",
+
+          averageRating: {
+            $avg: "$rating"
+          },
+
+          ratingCount: {
+            $sum: 1
+          }
+        }
+      }
+
+    ]);
+
+    res.json({
+      success: true,
+      ratings
+    });
+
+  } catch(err) {
+
+    console.error(
+      "PRODUCT RATINGS ERROR:",
+      err
+    );
+
+    res.json({
+      success: false,
+      ratings: []
+    });
+
+  }
 
 });
 
