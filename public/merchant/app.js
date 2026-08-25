@@ -1065,7 +1065,7 @@ ${
             <button
               onclick="updateMerchantOrderStatus(
                 '${order.orderId}',
-                'accepted'
+                'confirmed'
               )"
             >
               ✅ Accept
@@ -1074,7 +1074,7 @@ ${
             <button
               onclick="updateMerchantOrderStatus(
                 '${order.orderId}',
-                'rejected'
+                'cancelled'
               )"
             >
               ❌ Reject
@@ -1086,7 +1086,7 @@ ${
           }
 
           ${
-            order.orderStatus === "accepted"
+            order.orderStatus === "confirmed"
             ?
             `
             <button
