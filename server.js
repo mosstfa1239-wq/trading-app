@@ -441,6 +441,174 @@ customerLocation: {
     default: "pending"
   },
 
+  // ================================
+  // PAYMENT HOLD / ESCROW
+  // ================================
+
+  paymentHold: {
+    type: Boolean,
+    default: true
+  },
+
+  merchantPaymentStatus: {
+    type: String,
+    enum: [
+      "held",
+      "ready",
+      "released",
+      "refunded",
+      "partial"
+    ],
+    default: "held"
+  },
+
+  merchantAmount: {
+    type: Number,
+    default: 0
+  },
+
+  releasedAmount: {
+    type: Number,
+    default: 0
+  },
+
+  releasedAt: {
+    type: Date,
+    default: null
+  },
+
+  releasedBy: {
+    type: String,
+    default: ""
+  },
+
+  releaseEligibleAt: {
+    type: Date,
+    default: null
+  },
+
+  payoutReleasedAt: {
+    type: Date,
+    default: null
+  },
+
+  // ================================
+  // DELIVERY / RECEIPT
+  // ================================
+
+  trackingNumber: {
+    type: String,
+    default: ""
+  },
+
+  shippingCompany: {
+    type: String,
+    default: ""
+  },
+
+  shippedAt: {
+    type: Date,
+    default: null
+  },
+
+  deliveredAt: {
+    type: Date,
+    default: null
+  },
+
+  customerReceivedAt: {
+    type: Date,
+    default: null
+  },
+
+  customerReceived: {
+    type: Boolean,
+    default: false
+  },
+
+  // ================================
+  // SHIPPING EVIDENCE
+  // ================================
+
+  shippingEvidence: {
+    packageImage: {
+      type: String,
+      default: ""
+    },
+
+    contractImage: {
+      type: String,
+      default: ""
+    },
+
+    trackingImage: {
+      type: String,
+      default: ""
+    },
+
+    submittedAt: {
+      type: Date,
+      default: null
+    }
+  },
+
+  // ================================
+  // DISPUTE
+  // ================================
+
+  disputeStatus: {
+    type: String,
+    enum: [
+      "none",
+      "open",
+      "under_review",
+      "waiting_evidence",
+      "resolved"
+    ],
+    default: "none"
+  },
+
+  disputeReason: {
+    type: String,
+    default: ""
+  },
+
+  disputeOpenedBy: {
+    type: String,
+    default: ""
+  },
+
+  disputeOpenedAt: {
+    type: Date,
+    default: null
+  },
+
+  disputeDecision: {
+    type: String,
+    enum: [
+      "",
+      "customer",
+      "merchant",
+      "partial"
+    ],
+    default: ""
+  },
+
+  disputeDecisionNote: {
+    type: String,
+    default: ""
+  },
+
+  disputeResolvedAt: {
+    type: Date,
+    default: null
+  },
+
+  disputeResolvedBy: {
+    type: String,
+    default: ""
+  },
+
 orderStatus: {
   type: String,
 
@@ -1023,6 +1191,14 @@ const platformFee =
       .toFixed(2)
   );
 
+const merchantAmount =
+  Number(
+    (
+      productsTotal -
+      platformFee
+    ).toFixed(2)
+  );
+
 const total =
   Number(
     (
@@ -1129,7 +1305,26 @@ const order =
 
     platformFee,
 
+merchantAmount,
+
+paymentHold:
+  true,
+
+merchantPaymentStatus:
+  "held",
+
+releasedAmount:
+  0,
+
     total,
+
+merchantAmount:
+  Number(
+    (
+      total -
+      platformFee
+    ).toFixed(2)
+  ),
 
     paymentMethod:
       "balance",
@@ -1549,15 +1744,14 @@ app.post("/orders/merchant/status", async (req, res) => {
         "cancelled"
       ],
 
-      ready: [
-        "shipped",
-        "completed",
-        "cancelled"
-      ],
+ready: [
+  "shipped",
+  "cancelled"
+],
 
-      shipped: [
-        "completed"
-      ],
+shipped: [
+  // العميل هو من يؤكد الاستلام
+],
 
       completed: [],
 
@@ -1719,6 +1913,492 @@ await Notification.create({
 
 });
 
+// =================================
+// CUSTOMER CONFIRMS ORDER RECEIVED
+// =================================
+
+app.post("/orders/customer/received", async (req, res) => {
+
+  try {
+
+    const {
+      orderId,
+      customerId
+    } = req.body;
+
+    if (!orderId || !customerId) {
+
+      return res.json({
+        success: false,
+        error: "Missing order information"
+      });
+
+    }
+
+    const order =
+      await Order.findOne({
+        orderId,
+        customerId
+      });
+
+    if (!order) {
+
+      return res.json({
+        success: false,
+        error: "Order not found"
+      });
+
+    }
+
+    // لا يمكن تأكيد الاستلام إذا كان هناك نزاع
+    if (
+      order.disputeStatus &&
+      order.disputeStatus !== "none"
+    ) {
+
+      return res.json({
+        success: false,
+        error:
+          "Order is under dispute"
+      });
+
+    }
+
+    // الطلب مستلم مسبقاً
+    if (order.customerReceived) {
+
+      return res.json({
+        success: false,
+        error:
+          "Order has already been received"
+      });
+
+    }
+
+    // التحقق من مرحلة الطلب
+    const validForReceipt =
+      order.orderStatus === "shipped" ||
+      (
+        order.shippingType === "pickup" &&
+        order.orderStatus === "ready"
+      );
+
+    if (!validForReceipt) {
+
+      return res.json({
+        success: false,
+        error:
+          "Order is not ready for receipt"
+      });
+
+    }
+
+    // =================================
+    // CONFIRM CUSTOMER RECEIPT
+    // =================================
+
+    order.customerReceived =
+      true;
+
+    order.customerReceivedAt =
+      new Date();
+
+    order.deliveredAt =
+      new Date();
+
+const releaseTime =
+  new Date(
+    Date.now() +
+    24 * 60 * 60 * 1000
+  );
+
+order.releaseEligibleAt =
+  releaseTime;
+
+    order.orderStatus =
+      "completed";
+
+    // المال يصبح جاهزاً للإدارة فقط
+    order.paymentHold =
+      true;
+
+    order.merchantPaymentStatus =
+      "ready";
+
+    order.releasedAmount =
+      0;
+
+    order.releasedAt =
+      null;
+
+    order.releasedBy =
+      "";
+
+    await order.save();
+
+    // إشعار العميل
+    await Notification.create({
+
+      userId:
+        order.customerId,
+
+      text:
+        `✅ Order ${order.orderId} has been marked as received. Payment is now awaiting administrative release.`
+
+    });
+
+    // إشعار التاجر
+    await Notification.create({
+
+      userId:
+        order.merchantId,
+
+      text:
+        `📦 Order ${order.orderId} has been received by the customer. Payment is ready for administrative release.`
+
+    });
+
+    res.json({
+
+      success: true,
+
+      message:
+        "Order received successfully",
+
+      order
+
+    });
+
+  } catch (err) {
+
+    console.log(
+      "CUSTOMER RECEIVED ERROR:",
+      err
+    );
+
+    res.json({
+
+      success: false,
+
+      error:
+        err.message
+
+    });
+
+  }
+
+});
+
+
+// =====================================
+// ADMIN RELEASE MERCHANT PAYMENT
+// =====================================
+
+app.post("/admin/orders/release", checkAdmin, async (req, res) => {
+
+  const session =
+    await mongoose.startSession();
+
+  try {
+
+    const {
+      orderId,
+      userId
+    } = req.body;
+
+    if (!orderId || !userId) {
+
+      return res.json({
+        success: false,
+        error: "Order ID and admin ID are required"
+      });
+
+    }
+
+    session.startTransaction();
+
+    const order =
+      await Order.findOne({
+        orderId
+      }).session(session);
+
+    if (!order) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error: "Order not found"
+      });
+
+    }
+
+    // =================================
+    // MUST BE RECEIVED
+    // =================================
+
+    if (!order.customerReceived) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          "Customer has not confirmed receipt"
+      });
+
+    }
+
+    // =================================
+    // DISPUTE PROTECTION
+    // =================================
+
+    if (
+      order.disputeStatus &&
+      order.disputeStatus !== "none"
+    ) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          "Cannot release payment while order is under dispute"
+      });
+
+    }
+
+    // =================================
+    // ALREADY RELEASED
+    // =================================
+
+    if (
+      order.merchantPaymentStatus ===
+      "released"
+    ) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          "Payment has already been released"
+      });
+
+    }
+
+    // =================================
+    // CHECK 24 HOURS
+    // =================================
+
+    if (!order.releaseEligibleAt) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          "Payment release time is not available"
+      });
+
+    }
+
+    const now =
+      new Date();
+
+    if (
+      now <
+      new Date(order.releaseEligibleAt)
+    ) {
+
+      const remaining =
+        new Date(
+          order.releaseEligibleAt
+        ).getTime() -
+        now.getTime();
+
+      const hours =
+        Math.ceil(
+          remaining /
+          (1000 * 60 * 60)
+        );
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          `Payment cannot be released yet. ${hours} hour(s) remaining.`
+      });
+
+    }
+
+    // =================================
+    // MERCHANT
+    // =================================
+
+    const merchant =
+      await User.findById(
+        order.merchantId
+      ).session(session);
+
+    if (!merchant) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          "Merchant not found"
+      });
+
+    }
+
+    // =================================
+    // PAYMENT AMOUNT
+    // =================================
+
+    const merchantAmount =
+      Number(
+        order.merchantAmount ||
+        (
+          Number(order.total || 0) -
+          Number(order.platformFee || 0)
+        )
+      );
+
+    if (
+      !Number.isFinite(merchantAmount) ||
+      merchantAmount <= 0
+    ) {
+
+      await session.abortTransaction();
+
+      return res.json({
+        success: false,
+        error:
+          "Invalid merchant payment amount"
+      });
+
+    }
+
+    // =================================
+    // RELEASE MONEY
+    // =================================
+
+    merchant.balance =
+      Number(
+        (
+          Number(merchant.balance || 0) +
+          merchantAmount
+        ).toFixed(2)
+      );
+
+    await merchant.save({
+      session
+    });
+
+    // =================================
+    // UPDATE ORDER
+    // =================================
+
+    order.paymentHold =
+      false;
+
+    order.merchantPaymentStatus =
+      "released";
+
+    order.releasedAmount =
+      merchantAmount;
+
+    order.releasedAt =
+      new Date();
+
+    order.payoutReleasedAt =
+      new Date();
+
+    order.releasedBy =
+      userId;
+
+    await order.save({
+      session
+    });
+
+    // =================================
+    // NOTIFY MERCHANT
+    // =================================
+
+    await Notification.create(
+      [{
+        userId:
+          order.merchantId,
+
+        text:
+          `💰 Payment for order ${order.orderId} has been released. Amount: ${merchantAmount.toFixed(2)} USDT`
+      }],
+      {
+        session
+      }
+    );
+
+    // =================================
+    // NOTIFY CUSTOMER
+    // =================================
+
+    await Notification.create(
+      [{
+        userId:
+          order.customerId,
+
+        text:
+          `✅ Order ${order.orderId} payment process has been completed.`
+      }],
+      {
+        session
+      }
+    );
+
+    await session.commitTransaction();
+
+    res.json({
+
+      success: true,
+
+      message:
+        "Merchant payment released successfully",
+
+      order,
+
+      releasedAmount:
+        merchantAmount
+
+    });
+
+  } catch (err) {
+
+    await session.abortTransaction();
+
+    console.error(
+      "ADMIN RELEASE PAYMENT ERROR:",
+      err
+    );
+
+    res.json({
+
+      success: false,
+
+      error:
+        err.message
+
+    });
+
+  } finally {
+
+    session.endSession();
+
+  }
+
+});
 
 app.get("/orders/customer/:id", async (req, res) => {
 
@@ -1756,6 +2436,171 @@ app.get("/orders/customer/:id", async (req, res) => {
     res.json({
       success: false,
       error: err.message
+    });
+
+  }
+
+});
+
+// =============================================
+// CUSTOMER - OPEN ORDER DISPUTE
+// =============================================
+
+app.post("/orders/dispute/open", async (req, res) => {
+
+  try {
+
+    const {
+      orderId,
+      customerId,
+      reason
+    } = req.body;
+
+    if (
+      !orderId ||
+      !customerId ||
+      !reason ||
+      !String(reason).trim()
+    ) {
+
+      return res.json({
+        success: false,
+        error: "Order ID, customer ID and dispute reason are required"
+      });
+
+    }
+
+    const order =
+      await Order.findOne({
+        orderId,
+        customerId
+      });
+
+    if (!order) {
+
+      return res.json({
+        success: false,
+        error: "Order not found"
+      });
+
+    }
+
+    // لا يمكن فتح نزاع بعد تحرير المال
+    if (
+      order.merchantPaymentStatus ===
+      "released"
+    ) {
+
+      return res.json({
+        success: false,
+        error:
+          "Payment has already been released"
+      });
+
+    }
+
+    // منع فتح نزاع مكرر
+    if (
+      order.disputeStatus &&
+      order.disputeStatus !== "none"
+    ) {
+
+      return res.json({
+        success: false,
+        error:
+          "This order already has an active or resolved dispute"
+      });
+
+    }
+
+    // الطلب يجب أن يكون في مرحلة شحن/استلام
+    const validStatus = [
+      "shipped",
+      "completed"
+    ];
+
+    if (
+      !validStatus.includes(
+        order.orderStatus
+      )
+    ) {
+
+      return res.json({
+        success: false,
+        error:
+          "This order is not eligible for a dispute"
+      });
+
+    }
+
+    order.disputeStatus =
+      "open";
+
+    order.disputeReason =
+      String(reason).trim();
+
+    order.disputeOpenedBy =
+      "customer";
+
+    order.disputeOpenedAt =
+      new Date();
+
+    // إيقاف تحرير الأموال
+    order.paymentHold =
+      true;
+
+    order.merchantPaymentStatus =
+      "held";
+
+    await order.save();
+
+    // إشعار التاجر
+    await Notification.create({
+
+      userId:
+        order.merchantId,
+
+      text:
+        `⚠️ A dispute has been opened for Order ${order.orderId}. Payment is currently on hold pending review.`
+
+    });
+
+    // إشعار العميل
+    await Notification.create({
+
+      userId:
+        order.customerId,
+
+      text:
+        `⚠️ Dispute opened for Order ${order.orderId}. The payment has been placed on hold pending review.`
+
+    });
+
+    res.json({
+
+      success: true,
+
+      message:
+        "Dispute opened successfully",
+
+      order
+
+    });
+
+  } catch (err) {
+
+    console.log(
+      "OPEN DISPUTE ERROR:",
+      err
+    );
+
+    res.json({
+
+      success: false,
+
+      error:
+        err.message
+
     });
 
   }
@@ -3255,11 +4100,597 @@ app.get("/products/ratings", async (req, res) => {
 
 });
 
+// =========================================
+// AUTOMATIC MERCHANT PAYOUT AFTER 24 HOURS
+// =========================================
+
+async function releaseEligibleMerchantPayments() {
+
+  const session =
+    await mongoose.startSession();
+
+  try {
+
+    session.startTransaction();
+
+    const now =
+      new Date();
+
+    const order =
+      await Order.findOne({
+
+        customerReceived:
+          true,
+
+        disputeStatus:
+          "none",
+
+        merchantPaymentStatus:
+          "ready",
+
+        paymentHold:
+          true,
+
+        releaseEligibleAt:
+          {
+            $lte: now
+          }
+
+      }).session(session);
+
+    if (!order) {
+
+      await session.abortTransaction();
+
+      return;
+
+    }
+
+    const merchant =
+      await User.findById(
+        order.merchantId
+      ).session(session);
+
+    if (!merchant) {
+
+      await session.abortTransaction();
+
+      console.log(
+        "MERCHANT PAYOUT ERROR: Merchant not found",
+        order.merchantId
+      );
+
+      return;
+
+    }
+
+    const amount =
+      Number(
+        order.merchantAmount || 0
+      );
+
+    if (amount <= 0) {
+
+      await session.abortTransaction();
+
+      console.log(
+        "MERCHANT PAYOUT ERROR: Invalid merchant amount",
+        order.orderId
+      );
+
+      return;
+
+    }
+
+    merchant.balance =
+      Number(
+        (
+          Number(merchant.balance || 0) +
+          amount
+        ).toFixed(2)
+      );
+
+    await merchant.save({
+      session
+    });
+
+    order.paymentHold =
+      false;
+
+    order.merchantPaymentStatus =
+      "released";
+
+    order.releasedAmount =
+      amount;
+
+    order.releasedAt =
+      now;
+
+    order.payoutReleasedAt =
+      now;
+
+    order.releasedBy =
+      "system_24h";
+
+    await order.save({
+      session
+    });
+
+    await session.commitTransaction();
+
+    await Notification.create({
+
+      userId:
+        order.merchantId,
+
+      text:
+        `💰 Payment released for order ${order.orderId}. Amount: ${amount.toFixed(2)} USDT.`
+
+    });
+
+    await Notification.create({
+
+      userId:
+        order.customerId,
+
+      text:
+        `✅ Order ${order.orderId} has completed its 24-hour protection period.`
+
+    });
+
+    console.log(
+      "MERCHANT PAYMENT RELEASED:",
+      order.orderId,
+      amount
+    );
+
+  } catch (err) {
+
+    try {
+      await session.abortTransaction();
+    } catch (e) {}
+
+    console.log(
+      "AUTOMATIC MERCHANT PAYOUT ERROR:",
+      err
+    );
+
+  } finally {
+
+    session.endSession();
+
+  }
+
+}
+
+// =============================================
+// ADMIN - HELD MERCHANT PAYMENTS
+// =============================================
+
+app.get("/admin/orders/payouts", async (req, res) => {
+
+  try {
+
+    const orders =
+      await Order.find({
+
+        paymentStatus: "paid",
+
+        customerReceived: true,
+
+        merchantPaymentStatus: "ready"
+
+      }).sort({
+        customerReceivedAt: -1
+      });
+
+    const now = Date.now();
+
+    const result =
+      orders.map(order => {
+
+        const releaseTime =
+          order.releaseEligibleAt
+            ? new Date(
+                order.releaseEligibleAt
+              ).getTime()
+            : 0;
+
+        const hasDispute =
+          order.disputeStatus &&
+          order.disputeStatus !== "none";
+
+        let payoutStatus;
+
+        if (hasDispute) {
+
+          payoutStatus =
+            "dispute";
+
+        } else if (
+          releaseTime &&
+          now >= releaseTime
+        ) {
+
+          payoutStatus =
+            "ready";
+
+        } else {
+
+          payoutStatus =
+            "waiting";
+
+        }
+
+        return {
+
+          _id:
+            order._id,
+
+          orderId:
+            order.orderId,
+
+          customerName:
+            order.customerName,
+
+          customerEmail:
+            order.customerEmail,
+
+          merchantId:
+            order.merchantId,
+
+          merchantName:
+            order.merchantName,
+
+          productName:
+            order.productName,
+
+          total:
+            order.total,
+
+          merchantAmount:
+            Number(
+              order.merchantAmount ||
+              (
+                Number(order.productsTotal || 0) +
+                Number(order.shippingCost || 0)
+              )
+            ),
+
+          platformFee:
+            order.platformFee,
+
+          customerReceivedAt:
+            order.customerReceivedAt,
+
+          releaseEligibleAt:
+            order.releaseEligibleAt,
+
+          disputeStatus:
+            order.disputeStatus,
+
+          disputeReason:
+            order.disputeReason,
+
+          payoutStatus
+
+        };
+
+      });
+
+    res.json({
+
+      success: true,
+
+      orders: result
+
+    });
+
+  } catch (err) {
+
+    console.log(
+      "ADMIN PAYOUTS ERROR:",
+      err
+    );
+
+    res.json({
+
+      success: false,
+
+      error: err.message
+
+    });
+
+  }
+
+});
+
+// =============================================
+// ADMIN - RELEASE MERCHANT PAYMENT
+// =============================================
+
+app.post(
+  "/admin/orders/release-payment",
+  async (req, res) => {
+
+    const session =
+      await mongoose.startSession();
+
+    try {
+
+      const {
+        orderId
+      } = req.body;
+
+      if (!orderId) {
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Order ID required"
+
+        });
+
+      }
+
+      session.startTransaction();
+
+      const order =
+        await Order.findOne({
+          orderId
+        }).session(session);
+
+      if (!order) {
+
+        await session.abortTransaction();
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Order not found"
+
+        });
+
+      }
+
+      // يجب أن يكون العميل قد أكد الاستلام
+      if (!order.customerReceived) {
+
+        await session.abortTransaction();
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Customer has not confirmed receipt"
+
+        });
+
+      }
+
+      // لا نحرر أي مبلغ أثناء النزاع
+      if (
+        order.disputeStatus &&
+        order.disputeStatus !== "none"
+      ) {
+
+        await session.abortTransaction();
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Payment cannot be released while the order is under dispute"
+
+        });
+
+      }
+
+      // منع تحرير المبلغ مرتين
+      if (
+        order.merchantPaymentStatus ===
+        "released"
+      ) {
+
+        await session.abortTransaction();
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Payment has already been released"
+
+        });
+
+      }
+
+      // التأكد من انتهاء 24 ساعة
+      if (
+        !order.releaseEligibleAt ||
+        Date.now() <
+        new Date(
+          order.releaseEligibleAt
+        ).getTime()
+      ) {
+
+        await session.abortTransaction();
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Payment is still within the 24-hour holding period"
+
+        });
+
+      }
+
+      const merchant =
+        await User.findOne({
+          _id: order.merchantId
+        }).session(session);
+
+      if (!merchant) {
+
+        await session.abortTransaction();
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Merchant not found"
+
+        });
+
+      }
+
+      const merchantAmount =
+        Number(
+          order.merchantAmount ||
+          (
+            Number(order.productsTotal || 0) +
+            Number(order.shippingCost || 0)
+          )
+        );
+
+      if (
+        merchantAmount <= 0
+      ) {
+
+        await session.abortTransaction();
+
+        return res.json({
+
+          success: false,
+
+          error:
+            "Invalid merchant payment amount"
+
+        });
+
+      }
+
+      // إضافة المبلغ لرصيد التاجر
+      merchant.balance =
+        Number(
+          merchant.balance || 0
+        ) +
+        merchantAmount;
+
+      await merchant.save({
+        session
+      });
+
+      // تحديث الطلب
+      order.merchantPaymentStatus =
+        "released";
+
+      order.paymentHold =
+        false;
+
+      order.releasedAmount =
+        merchantAmount;
+
+      order.releasedAt =
+        new Date();
+
+      order.payoutReleasedAt =
+        new Date();
+
+      order.releasedBy =
+        "admin";
+
+      await order.save({
+        session
+      });
+
+      await session.commitTransaction();
+
+      // إشعار التاجر
+      await Notification.create({
+
+        userId:
+          order.merchantId,
+
+        text:
+          `💰 Payment released for Order ${order.orderId}. ${merchantAmount.toFixed(2)} USDT has been added to your balance.`
+
+      });
+
+      // إشعار العميل
+      await Notification.create({
+
+        userId:
+          order.customerId,
+
+        text:
+          `✅ Payment for Order ${order.orderId} has been released to the merchant.`
+
+      });
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Merchant payment released successfully",
+
+        amount:
+          merchantAmount,
+
+        order
+
+      });
+
+    } catch (err) {
+
+      try {
+        await session.abortTransaction();
+      } catch (e) {}
+
+      console.log(
+        "RELEASE PAYMENT ERROR:",
+        err
+      );
+
+      res.json({
+
+        success: false,
+
+        error:
+          err.message
+
+      });
+
+    } finally {
+
+      session.endSession();
+
+    }
+
+  }
+);
+
+
 // 🚀 تشغ
 mongoose.connect("mongodb+srv://admin:123123123@cluster0.esh32ir.mongodb.net/trading")
 .then(() => {
 
   console.log("DB Connected 🔥");
+
+  setInterval(
+    releaseEligibleMerchantPayments,
+    60 * 1000
+  );
 
   const PORT = process.env.PORT || 3000;
 

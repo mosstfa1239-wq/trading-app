@@ -5941,7 +5941,7 @@ async function loadMyOrders(){
 </div>
 
                 <input
-                  id=" review_${order.orderId}"
+                  id="review_${order.orderId}"
                   placeholder="
                     Write a review (optional)
                   "
@@ -5965,6 +5965,133 @@ async function loadMyOrders(){
                 </button>
 
 <p id="ratingStatus_${order.orderId}"></p>
+              </div>
+
+            </div>
+
+          `;
+
+        }
+
+      }
+
+      // =========================
+      // DISPUTE SECTION
+      // =========================
+
+      let disputeHTML = "";
+
+      if (
+        order.merchantPaymentStatus !== "released" &&
+        (
+          order.orderStatus === "shipped" ||
+          order.orderStatus === "completed"
+        )
+      ) {
+
+        if (
+          order.disputeStatus &&
+          order.disputeStatus !== "none"
+        ) {
+
+          disputeHTML = `
+
+            <div style="
+              margin-top:15px;
+              padding-top:10px;
+              border-top:1px solid #333;
+            ">
+
+              <strong>
+                ⚠️ Dispute Status
+              </strong>
+
+              <p>
+                ${
+                  order.disputeStatus === "open"
+                  ? "⏳ Dispute opened — waiting for review"
+                  :
+                  order.disputeStatus === "under_review"
+                  ? "🔎 Dispute is under review"
+                  :
+                  order.disputeStatus === "waiting_evidence"
+                  ? "📄 Waiting for evidence"
+                  :
+                  order.disputeStatus === "resolved"
+                  ? "✅ Dispute resolved"
+                  :
+                  order.disputeStatus
+                }
+              </p>
+
+            </div>
+
+          `;
+
+        } else {
+
+          disputeHTML = `
+
+            <div style="
+              margin-top:15px;
+              padding-top:10px;
+              border-top:1px solid #333;
+            ">
+
+              <button
+                onclick="
+                  openDisputeBox(
+                    '${order.orderId}'
+                  )
+                "
+              >
+                ⚠️ Report a Problem / Open Dispute
+              </button>
+
+              <div
+                id="disputeBox_${order.orderId}"
+                style="
+                  display:none;
+                  margin-top:10px;
+                "
+              >
+
+                <p>
+                  Please explain the problem with this order:
+                </p>
+
+                <textarea
+                  id="disputeReason_${order.orderId}"
+                  placeholder="
+                    Example: I did not receive the order,
+                    the product arrived damaged,
+                    or the order is different from what I purchased.
+                  "
+                  style="
+                    width:100%;
+                    min-height:100px;
+                    padding:10px;
+                    border-radius:8px;
+                  "
+                ></textarea>
+
+                <button
+                  onclick="
+                    submitDispute(
+                      '${order.orderId}'
+                    )
+                  "
+                  style="
+                    margin-top:10px;
+                  "
+                >
+                  ⚠️ Submit Dispute
+                </button>
+
+                <p
+                  id="disputeStatus_${order.orderId}"
+                ></p>
+
               </div>
 
             </div>
@@ -6080,6 +6207,8 @@ async function loadMyOrders(){
           </p>
 
           ${ratingHTML}
+
+          ${disputeHTML}
 
         </div>
 
@@ -6359,6 +6488,150 @@ function openRatingBox(orderId){
     box.style.display === "none"
     ? "block"
     : "none";
+
+}
+
+// =================================
+// DISPUTE FUNCTIONS
+// =================================
+
+function openDisputeBox(orderId){
+
+  const box =
+    document.getElementById(
+      "disputeBox_" + orderId
+    );
+
+  if(!box) return;
+
+  box.style.display =
+    box.style.display === "none"
+    ? "block"
+    : "none";
+
+}
+
+
+async function submitDispute(orderId){
+
+  const customerId =
+    localStorage.getItem("userId");
+
+  const reasonBox =
+    document.getElementById(
+      "disputeReason_" + orderId
+    );
+
+  const status =
+    document.getElementById(
+      "disputeStatus_" + orderId
+    );
+
+  if(!customerId){
+
+    if(status)
+      status.innerText =
+        "Please login first";
+
+    return;
+
+  }
+
+  if(!reasonBox){
+
+    return;
+
+  }
+
+  const reason =
+    reasonBox.value.trim();
+
+  if(!reason){
+
+    if(status)
+      status.innerText =
+        "Please explain the problem first.";
+
+    return;
+
+  }
+
+  if(status)
+    status.innerText =
+      "Submitting dispute...";
+
+  try{
+
+    const res =
+      await fetch(
+        "/orders/dispute/open",
+        {
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+
+            orderId:
+              orderId,
+
+            customerId:
+              customerId,
+
+            reason:
+              reason
+
+          })
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if(!data.success){
+
+      if(status)
+        status.innerText =
+          data.error ||
+          "Unable to open dispute.";
+
+      return;
+
+    }
+
+    if(status)
+      status.innerText =
+        "✅ Dispute opened successfully.";
+
+    // إعادة تحميل الطلبات حتى تظهر حالة النزاع
+    if(
+      typeof loadMyOrders ===
+      "function"
+    ){
+
+      setTimeout(() => {
+
+        loadMyOrders();
+
+      }, 700);
+
+    }
+
+  }catch(err){
+
+    console.error(
+      "SUBMIT DISPUTE ERROR:",
+      err
+    );
+
+    if(status)
+      status.innerText =
+        "Unable to submit dispute.";
+
+  }
 
 }
 

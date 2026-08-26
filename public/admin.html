@@ -158,6 +158,27 @@ Add Balance
 
 </div>
 
+<div class="card">
+
+  <h2>💰 Merchant Payments</h2>
+
+  <p>
+    الأموال المحجوزة للتجار بعد استلام العملاء للطلبات
+  </p>
+
+  <button
+    onclick="loadMerchantPayouts()"
+  >
+    🔄 Load Merchant Payments
+  </button>
+
+  <div
+    id="merchantPayoutsBox"
+    style="margin-top:15px;"
+  ></div>
+
+</div>
+
 <h2>💰 السجل المالي</h2>
 
 <button onclick="loadFinanceHistory()">
@@ -809,6 +830,327 @@ async function blockUser(blocked){
   searchUser();
 
 }
+
+</script>
+
+<script>
+
+async function loadMerchantPayouts(){
+
+  const box =
+    document.getElementById(
+      "merchantPayoutsBox"
+    );
+
+  if(!box) return;
+
+  box.innerHTML =
+    "Loading payments...";
+
+  try {
+
+    const res =
+      await fetch(
+        "/admin/orders/payouts"
+      );
+
+    const data =
+      await res.json();
+
+    if(!data.success){
+
+      box.innerHTML =
+        "❌ " +
+        (
+          data.error ||
+          "Unable to load payments"
+        );
+
+      return;
+
+    }
+
+    const orders =
+      data.orders || [];
+
+    if(!orders.length){
+
+      box.innerHTML =
+        `
+        <p>
+          ✅ No held merchant payments.
+        </p>
+        `;
+
+      return;
+
+    }
+
+    let html = "";
+
+    orders.forEach(order => {
+
+      const received =
+        order.customerReceivedAt
+        ?
+        new Date(
+          order.customerReceivedAt
+        ).toLocaleString()
+        :
+        "-";
+
+      const releaseTime =
+        order.releaseEligibleAt
+        ?
+        new Date(
+          order.releaseEligibleAt
+        ).toLocaleString()
+        :
+        "-";
+
+      let statusHTML = "";
+
+      let buttonHTML = "";
+
+      if(
+        order.payoutStatus ===
+        "ready"
+      ){
+
+        statusHTML = `
+          <p>
+            🟢 <strong>
+            Ready for release
+            </strong>
+          </p>
+        `;
+
+        buttonHTML = `
+
+          <button
+            onclick="
+              releaseMerchantPayment(
+                '${order.orderId}'
+              )
+            "
+          >
+            💰 Release
+            ${Number(
+              order.merchantAmount || 0
+            ).toFixed(2)}
+            USDT
+          </button>
+
+        `;
+
+      }
+      else if(
+        order.payoutStatus ===
+        "dispute"
+      ){
+
+        statusHTML = `
+          <p>
+            🔴 <strong>
+            Under dispute
+            </strong>
+          </p>
+
+          <p>
+            Reason:
+            ${order.disputeReason || "-"}
+          </p>
+        `;
+
+      }
+      else {
+
+        statusHTML = `
+          <p>
+            🟡 <strong>
+            Waiting for 24 hours
+            </strong>
+          </p>
+        `;
+
+      }
+
+      html += `
+
+        <div
+          class="card"
+          style="
+            margin-top:15px;
+          "
+        >
+
+          <h3>
+            📦 ${order.productName}
+          </h3>
+
+          <p>
+            Order:
+            <strong>
+              ${order.orderId}
+            </strong>
+          </p>
+
+          <p>
+            👤 Customer:
+            ${order.customerName || "-"}
+          </p>
+
+          <p>
+            🏪 Merchant:
+            ${order.merchantName || "-"}
+          </p>
+
+          <p>
+            💵 Order Total:
+            ${Number(
+              order.total || 0
+            ).toFixed(2)}
+            USDT
+          </p>
+
+          <p>
+            💰 Merchant Amount:
+            <strong>
+              ${Number(
+                order.merchantAmount || 0
+              ).toFixed(2)}
+              USDT
+            </strong>
+          </p>
+
+          <p>
+            🏦 Platform Fee:
+            ${Number(
+              order.platformFee || 0
+            ).toFixed(2)}
+            USDT
+          </p>
+
+          <p>
+            📥 Customer Received:
+            ${received}
+          </p>
+
+          <p>
+            ⏰ Release Eligible:
+            ${releaseTime}
+          </p>
+
+          ${statusHTML}
+
+          ${buttonHTML}
+
+        </div>
+
+      `;
+
+    });
+
+    box.innerHTML =
+      html;
+
+  } catch(err){
+
+    console.error(
+      "ADMIN PAYOUTS ERROR:",
+      err
+    );
+
+    box.innerHTML =
+      "❌ Unable to load merchant payments.";
+
+  }
+
+}
+
+
+async function releaseMerchantPayment(
+  orderId
+){
+
+  if(
+    !confirm(
+      "Release the merchant payment for Order " +
+      orderId +
+      "?"
+    )
+  ){
+
+    return;
+
+  }
+
+  try {
+
+    const res =
+      await fetch(
+        "/admin/orders/release-payment",
+        {
+
+          method:
+            "POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              orderId
+            })
+
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if(data.success){
+
+      alert(
+        "✅ Payment released: " +
+        Number(
+          data.amount || 0
+        ).toFixed(2) +
+        " USDT"
+      );
+
+      loadMerchantPayouts();
+
+    }else{
+
+      alert(
+        "❌ " +
+        (
+          data.error ||
+          "Unable to release payment"
+        )
+      );
+
+    }
+
+  }catch(err){
+
+    console.error(
+      "RELEASE PAYMENT ERROR:",
+      err
+    );
+
+    alert(
+      "❌ Server error"
+    );
+
+  }
+
+}
+
+loadMerchantPayouts();
 
 </script>
 
