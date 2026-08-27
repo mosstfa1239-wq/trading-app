@@ -949,18 +949,49 @@ async function loadMerchantPayouts(){
         "dispute"
       ){
 
-        statusHTML = `
-          <p>
-            🔴 <strong>
-            Under dispute
-            </strong>
-          </p>
+statusHTML = `
+  <div style="
+    margin-top:12px;
+    padding:14px;
+    border:1px solid #ef4444;
+    border-radius:12px;
+    background:rgba(239,68,68,.08);
+  ">
 
-          <p>
-            Reason:
-            ${order.disputeReason || "-"}
-          </p>
-        `;
+    <p>
+      ⚠️ <strong>
+      Under Dispute
+      </strong>
+    </p>
+
+    <p>
+      📝 Reason:
+      ${order.disputeReason || "-"}
+    </p>
+
+    <button
+      onclick="
+        openAdminDispute(
+          '${order.orderId}',
+          ${Number(order.merchantAmount || 0)},
+          ${Number(order.total || 0)},
+          ${Number(order.platformFee || 0)}
+        )
+      "
+      style="
+        width:100%;
+        margin-top:10px;
+        padding:12px;
+        border:0;
+        border-radius:10px;
+        cursor:pointer;
+      "
+    >
+      ⚖️ Resolve Dispute
+    </button>
+
+  </div>
+`;
 
       }
       else {
@@ -1139,6 +1170,357 @@ async function releaseMerchantPayment(
 
     console.error(
       "RELEASE PAYMENT ERROR:",
+      err
+    );
+
+    alert(
+      "❌ Server error"
+    );
+
+  }
+
+}
+
+function openAdminDispute(
+  orderId,
+  merchantAmount,
+  total,
+  platformFee
+){
+
+  const old =
+    document.getElementById(
+      "adminDisputeBox"
+    );
+
+  if(old){
+    old.remove();
+  }
+
+  const refundable =
+    Math.max(
+      0,
+      Number(total || 0) -
+      Number(platformFee || 0)
+    );
+
+  const box =
+    document.createElement("div");
+
+  box.id =
+    "adminDisputeBox";
+
+  box.className =
+    "card";
+
+  box.style.marginTop =
+    "15px";
+
+  box.innerHTML = `
+
+    <h2>
+      ⚖️ Dispute Resolution
+    </h2>
+
+    <p>
+      Order:
+      <strong>
+        ${orderId}
+      </strong>
+    </p>
+
+    <p>
+      🔒 Held amount:
+      <strong>
+        ${Number(total || 0).toFixed(2)}
+        USDT
+      </strong>
+    </p>
+
+    <p>
+      🏦 Platform fee:
+      <strong>
+        ${Number(platformFee || 0).toFixed(2)}
+        USDT
+      </strong>
+    </p>
+
+    <p>
+      💰 Amount available for resolution:
+      <strong>
+        ${refundable.toFixed(2)}
+        USDT
+      </strong>
+    </p>
+
+    <hr>
+
+    <button
+      onclick="
+        submitAdminDispute(
+          '${orderId}',
+          'merchant'
+        )
+      "
+      style="
+        width:100%;
+        padding:13px;
+        margin-top:10px;
+      "
+    >
+      🏪 Full Amount → Merchant
+    </button>
+
+    <button
+      onclick="
+        submitAdminDispute(
+          '${orderId}',
+          'customer'
+        )
+      "
+      style="
+        width:100%;
+        padding:13px;
+        margin-top:10px;
+      "
+    >
+      👤 Refund Customer
+    </button>
+
+    <div style="
+      margin-top:15px;
+      padding:12px;
+      border:1px solid #333;
+      border-radius:12px;
+    ">
+
+      <h3>
+        ⚖️ Partial / Split
+      </h3>
+
+      <input
+        id="adminMerchantAmount"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="Merchant amount"
+        style="width:100%;"
+      >
+
+      <input
+        id="adminCustomerAmount"
+        type="number"
+        min="0"
+        step="0.01"
+        placeholder="Customer refund"
+        style="
+          width:100%;
+          margin-top:8px;
+        "
+      >
+
+      <button
+        onclick="
+          submitAdminDispute(
+            '${orderId}',
+            'partial'
+          )
+        "
+        style="
+          width:100%;
+          padding:13px;
+          margin-top:10px;
+        "
+      >
+        ⚖️ Apply Split
+      </button>
+
+    </div>
+
+    <textarea
+      id="adminDisputeNote"
+      placeholder="Admin decision note (optional)"
+      style="
+        width:100%;
+        min-height:80px;
+        margin-top:12px;
+        box-sizing:border-box;
+      "
+    ></textarea>
+
+    <button
+      onclick="
+        document
+          .getElementById(
+            'adminDisputeBox'
+          )
+          ?.remove()
+      "
+      style="
+        width:100%;
+        padding:12px;
+        margin-top:10px;
+      "
+    >
+      ✖️ Cancel
+    </button>
+
+  `;
+
+  document
+    .getElementById(
+      "merchantPayoutsBox"
+    )
+    .prepend(box);
+
+}
+
+async function submitAdminDispute(
+  orderId,
+  decision
+){
+
+  let merchantAmount = 0;
+  let customerAmount = 0;
+
+  if(decision === "merchant"){
+
+    if(
+      !confirm(
+        "Release the held payment to the merchant?"
+      )
+    ){
+      return;
+    }
+
+  }
+
+  if(decision === "customer"){
+
+    if(
+      !confirm(
+        "Refund the customer according to the dispute rules?"
+      )
+    ){
+      return;
+    }
+
+  }
+
+  if(decision === "partial"){
+
+    merchantAmount =
+      Number(
+        document.getElementById(
+          "adminMerchantAmount"
+        )?.value || 0
+      );
+
+    customerAmount =
+      Number(
+        document.getElementById(
+          "adminCustomerAmount"
+        )?.value || 0
+      );
+
+    if(
+      merchantAmount < 0 ||
+      customerAmount < 0
+    ){
+
+      alert(
+        "❌ Invalid amounts"
+      );
+
+      return;
+    }
+
+    if(
+      merchantAmount +
+      customerAmount <= 0
+    ){
+
+      alert(
+        "❌ Enter an amount"
+      );
+
+      return;
+    }
+
+  }
+
+  const note =
+    document.getElementById(
+      "adminDisputeNote"
+    )?.value || "";
+
+  try{
+
+    const res =
+      await fetch(
+        "/admin/orders/resolve-dispute",
+        {
+
+          method:"POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:JSON.stringify({
+
+            orderId,
+
+            decision,
+
+            merchantAmount,
+
+            customerAmount,
+
+            note
+
+          })
+
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if(data.success){
+
+      alert(
+        "✅ Dispute resolved successfully"
+      );
+
+      const box =
+        document.getElementById(
+          "adminDisputeBox"
+        );
+
+      if(box){
+        box.remove();
+      }
+
+      loadMerchantPayouts();
+
+    }else{
+
+      alert(
+        "❌ " +
+        (
+          data.error ||
+          "Unable to resolve dispute"
+        )
+      );
+
+    }
+
+  }catch(err){
+
+    console.error(
+      "ADMIN DISPUTE ERROR:",
       err
     );
 

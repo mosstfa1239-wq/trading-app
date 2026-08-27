@@ -1703,8 +1703,14 @@ function openMerchantDispute(orderId){
     return;
   }
 
-  const text =
-    orderCard.innerText;
+  const disputeData =
+    orderCard.querySelector(
+      "#merchantDisputeData_" + orderId
+    );
+
+  const reason =
+    disputeData?.dataset?.reason ||
+    "No reason provided";
 
   const box =
     document.createElement("div");
@@ -1736,16 +1742,48 @@ function openMerchantDispute(orderId){
       padding:12px;
       border:1px solid #ef4444;
       border-radius:12px;
+      background:rgba(239,68,68,.08);
     ">
 
       <strong>
-        ⚠️ Customer reported a delivery problem
+        ⚠️ Customer reported a problem
       </strong>
 
       <p style="
         margin-top:10px;
+        line-height:1.6;
       ">
-        The payment remains reserved while the dispute is being reviewed.
+        <strong>
+          Customer explanation:
+        </strong>
+      </p>
+
+      <p style="
+        margin-top:6px;
+        white-space:pre-wrap;
+      ">
+        ${reason}
+      </p>
+
+    </div>
+
+    <div style="
+      margin-top:12px;
+      padding:12px;
+      border:1px solid #555;
+      border-radius:12px;
+    ">
+
+      🔒
+      <strong>
+        Payment Reserved
+      </strong>
+
+      <p style="
+        margin:6px 0 0;
+        opacity:.75;
+      ">
+        The payment remains reserved while the dispute is being reviewed by the platform.
       </p>
 
     </div>
