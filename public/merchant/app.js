@@ -1681,6 +1681,7 @@ async function loadMerchantStats(){
 
 }
 
+
 function openMerchantDispute(orderId){
 
   const old =
@@ -1703,15 +1704,6 @@ function openMerchantDispute(orderId){
     return;
   }
 
-  const disputeData =
-    orderCard.querySelector(
-      "#merchantDisputeData_" + orderId
-    );
-
-  const reason =
-    disputeData?.dataset?.reason ||
-    "No reason provided";
-
   const box =
     document.createElement("div");
 
@@ -1723,6 +1715,22 @@ function openMerchantDispute(orderId){
 
   box.style.marginTop =
     "15px";
+
+  const disputeData =
+    orderCard.querySelector(
+      "[id^='merchantDisputeData_']"
+    );
+
+  let disputeReason =
+    "No reason provided";
+
+  if(disputeData){
+
+    disputeReason =
+      disputeData.dataset.reason ||
+      "No reason provided";
+
+  }
 
   box.innerHTML = `
 
@@ -1746,24 +1754,82 @@ function openMerchantDispute(orderId){
     ">
 
       <strong>
-        ⚠️ Customer reported a problem
+        ⚠️ Customer's Complaint
       </strong>
 
       <p style="
         margin-top:10px;
-        line-height:1.6;
-      ">
-        <strong>
-          Customer explanation:
-        </strong>
-      </p>
-
-      <p style="
-        margin-top:6px;
         white-space:pre-wrap;
       ">
-        ${reason}
+        ${disputeReason}
       </p>
+
+    </div>
+
+    <div style="
+      margin-top:15px;
+      padding:12px;
+      border:1px solid #555;
+      border-radius:12px;
+    ">
+
+      <strong>
+        🏪 Your Response
+      </strong>
+
+      <p style="
+        margin-top:8px;
+        font-size:13px;
+        opacity:.75;
+      ">
+        Explain your side of the problem clearly.
+        Your response will be sent to the administration
+        for dispute review.
+      </p>
+
+      <textarea
+        id="merchantDisputeResponse"
+        placeholder="
+          Example: The order was delivered successfully,
+          the customer received the correct product,
+          or explain what happened from your side.
+        "
+        style="
+          width:100%;
+          min-height:120px;
+          margin-top:8px;
+          padding:10px;
+          box-sizing:border-box;
+          border-radius:10px;
+          resize:vertical;
+        "
+      ></textarea>
+
+      <button
+        type="button"
+        onclick="
+          submitMerchantDisputeResponse(
+            '${orderId}'
+          )
+        "
+        style="
+          width:100%;
+          margin-top:10px;
+          padding:12px;
+          border:0;
+          border-radius:10px;
+          cursor:pointer;
+        "
+      >
+        📤 Send Response
+      </button>
+
+      <p
+        id="merchantDisputeResponseStatus"
+        style="
+          margin-top:10px;
+        "
+      ></p>
 
     </div>
 
@@ -1772,19 +1838,11 @@ function openMerchantDispute(orderId){
       padding:12px;
       border:1px solid #555;
       border-radius:12px;
+      opacity:.8;
     ">
 
-      🔒
-      <strong>
-        Payment Reserved
-      </strong>
-
-      <p style="
-        margin:6px 0 0;
-        opacity:.75;
-      ">
-        The payment remains reserved while the dispute is being reviewed by the platform.
-      </p>
+      🔒 The payment remains reserved
+      while the dispute is being reviewed.
 
     </div>
 
@@ -1814,5 +1872,148 @@ function openMerchantDispute(orderId){
       "merchantOrdersList"
     )
     .prepend(box);
+
+}
+
+// =================================
+// MERCHANT DISPUTE RESPONSE
+// =================================
+
+async function submitMerchantDisputeResponse(
+  orderId
+){
+
+  const merchantId =
+
+    localStorage.getItem(
+      "userId"
+    );
+
+  const responseBox =
+    document.getElementById(
+      "merchantDisputeResponse"
+    );
+
+  const status =
+    document.getElementById(
+      "merchantDisputeResponseStatus"
+    );
+
+  if(!merchantId){
+
+    if(status)
+      status.innerText =
+        "Please login first.";
+
+    return;
+
+  }
+
+  if(!responseBox){
+
+    return;
+
+  }
+
+  const response =
+    responseBox.value.trim();
+
+  if(!response){
+
+    if(status)
+      status.innerText =
+        "Please explain your side first.";
+
+    return;
+
+  }
+
+  if(status)
+    status.innerText =
+      "Sending response...";
+
+  try {
+
+    const res =
+      await fetch(
+        "/orders/dispute/merchant-response",
+        {
+
+          method:
+            "POST",
+
+          headers:{
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+
+              orderId:
+                orderId,
+
+              merchantId:
+                merchantId,
+
+              response:
+                response
+
+            })
+
+        }
+      );
+
+    const data =
+      await res.json();
+
+    if(!data.success){
+
+      if(status)
+        status.innerText =
+          "❌ " +
+          (
+            data.error ||
+            "Unable to submit response."
+          );
+
+      return;
+
+    }
+
+    if(status)
+      status.innerText =
+        "✅ Response submitted successfully.";
+
+    responseBox.disabled =
+      true;
+
+    const button =
+      document.querySelector(
+        "#merchantDisputeBox button[onclick*='submitMerchantDisputeResponse']"
+      );
+
+    if(button){
+
+      button.disabled =
+        true;
+
+      button.innerText =
+        "✅ Response Submitted";
+
+    }
+
+  } catch(err){
+
+    console.error(
+      "MERCHANT DISPUTE RESPONSE ERROR:",
+      err
+    );
+
+    if(status)
+      status.innerText =
+        "❌ Server error.";
+
+  }
 
 }

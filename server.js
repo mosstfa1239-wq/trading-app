@@ -568,10 +568,20 @@ customerLocation: {
     default: "none"
   },
 
-  disputeReason: {
-    type: String,
-    default: ""
-  },
+disputeReason: {
+  type: String,
+  default: ""
+},
+
+disputeMerchantResponse: {
+  type: String,
+  default: ""
+},
+
+disputeMerchantResponseAt: {
+  type: Date,
+  default: null
+},
 
   disputeOpenedBy: {
     type: String,
@@ -2998,6 +3008,160 @@ app.post("/orders/dispute/open", async (req, res) => {
 
 });
 
+// =============================================
+// MERCHANT - RESPOND TO ORDER DISPUTE
+// =============================================
+
+app.post(
+  "/orders/dispute/merchant-response",
+  async (req, res) => {
+
+    try {
+
+      const {
+        orderId,
+        merchantId,
+        response
+      } = req.body;
+
+      if (
+        !orderId ||
+        !merchantId ||
+        !response ||
+        !String(response).trim()
+      ) {
+
+        return res.json({
+          success: false,
+          error:
+            "Order ID, merchant ID and response are required"
+        });
+
+      }
+
+      const order =
+        await Order.findOne({
+          orderId,
+          merchantId
+        });
+
+      if (!order) {
+
+        return res.json({
+          success: false,
+          error:
+            "Order not found"
+        });
+
+      }
+
+      // يجب أن يكون هناك نزاع
+      if (
+        !order.disputeStatus ||
+        order.disputeStatus === "none"
+      ) {
+
+        return res.json({
+          success: false,
+          error:
+            "This order is not under dispute"
+        });
+
+      }
+
+      // لا يمكن الرد بعد إنهاء النزاع
+      if (
+        order.disputeStatus === "resolved"
+      ) {
+
+        return res.json({
+          success: false,
+          error:
+            "This dispute has already been resolved"
+        });
+
+      }
+
+      const merchantResponse =
+        String(response).trim();
+
+      // منع الرد الفارغ
+      if (!merchantResponse) {
+
+        return res.json({
+          success: false,
+          error:
+            "Merchant response cannot be empty"
+        });
+
+      }
+
+      order.disputeMerchantResponse =
+        merchantResponse;
+
+      order.disputeMerchantResponseAt =
+        new Date();
+
+      // نقل النزاع للمراجعة
+      order.disputeStatus =
+        "under_review";
+
+      await order.save();
+
+      // إشعار الإدارة
+      // نستخدم إشعارًا عامًا للإدارة إذا كان نظام
+      // الإشعارات عندك يعتمد على userId.
+      // لذلك لا ننشئه هنا بشكل عشوائي.
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Merchant response submitted successfully",
+
+        order: {
+
+          orderId:
+            order.orderId,
+
+          disputeStatus:
+            order.disputeStatus,
+
+          disputeReason:
+            order.disputeReason,
+
+          disputeMerchantResponse:
+            order.disputeMerchantResponse,
+
+          disputeMerchantResponseAt:
+            order.disputeMerchantResponseAt
+
+        }
+
+      });
+
+    } catch (err) {
+
+      console.log(
+        "MERCHANT DISPUTE RESPONSE ERROR:",
+        err
+      );
+
+      res.json({
+
+        success: false,
+
+        error:
+          err.message
+
+      });
+
+    }
+
+  }
+);
+
 app.post("/orders/rating", async (req, res) => {
 
   try {
@@ -4669,7 +4833,12 @@ app.get("/admin/orders/payouts", async (req, res) => {
 
         customerReceived: true,
 
-        merchantPaymentStatus: "ready"
+merchantPaymentStatus: {
+  $in: [
+    "ready",
+    "held"
+  ]
+}
 
       }).sort({
         customerReceivedAt: -1
@@ -4762,6 +4931,13 @@ app.get("/admin/orders/payouts", async (req, res) => {
 
           disputeReason:
             order.disputeReason,
+
+disputeMerchantResponse:
+  order.disputeMerchantResponse,
+
+disputeMerchantResponseAt:
+  order.disputeMerchantResponseAt,
+
 
           payoutStatus
 
