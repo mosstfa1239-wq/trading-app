@@ -921,6 +921,27 @@ async function loadMerchantOrders(){
         :
         "";
 
+      const paymentHeld =
+        order.merchantPaymentStatus !== "released" &&
+        Number(order.total || 0) > 0;
+
+      const hasDispute =
+        order.disputeStatus &&
+        order.disputeStatus !== "none";
+
+      const merchantAmount =
+        Number(
+          order.merchantAmount ||
+          (
+            Number(order.total || 0) -
+            Number(order.platformFee || 0)
+          )
+        );
+
+      const disputeReason =
+        order.disputeReason ||
+        "No reason provided";
+
       html += `
 
         <div class="card">
@@ -928,6 +949,21 @@ async function loadMerchantOrders(){
           <h3>
             📦 ${order.productName}
           </h3>
+
+          ${
+            hasDispute
+            ?
+            `
+            <div
+              id="merchantDisputeData_${order.orderId}"
+              data-reason="${String(disputeReason)
+                .replace(/"/g, '&quot;')}"
+              style="display:none;"
+            ></div>
+            `
+            :
+            ""
+          }
 
           <p>
             Order ID:
@@ -960,6 +996,107 @@ async function loadMerchantOrders(){
               USDT
             </strong>
           </p>
+
+          ${
+            paymentHeld
+            ?
+            `
+            <div style="
+              margin-top:12px;
+              padding:12px;
+              border:1px solid #555;
+              border-radius:12px;
+              background:rgba(255,193,7,.08);
+            ">
+
+              <strong>
+                🔒 Payment Reserved
+              </strong>
+
+              <p style="
+                margin:6px 0 0;
+                font-size:18px;
+              ">
+                ${merchantAmount.toFixed(2)} USDT
+              </p>
+
+              <small style="opacity:.7;">
+                Customer payment is securely held for this order.
+              </small>
+
+            </div>
+            `
+            :
+            `
+            <div style="
+              margin-top:12px;
+              padding:12px;
+              border:1px solid #333;
+              border-radius:12px;
+            ">
+              💰 Payment:
+              <strong>
+                ${order.merchantPaymentStatus || "unknown"}
+              </strong>
+            </div>
+            `
+          }
+
+          ${
+            hasDispute
+            ?
+            `
+            <div style="
+              margin-top:12px;
+              padding:12px;
+              border:1px solid #ef4444;
+              border-radius:12px;
+              background:rgba(239,68,68,.08);
+              display:flex;
+              align-items:center;
+              justify-content:space-between;
+              gap:10px;
+            ">
+
+              <div>
+                <strong>
+                  ⚠️ Problem with delivery
+                </strong>
+
+                <div style="
+                  font-size:13px;
+                  opacity:.75;
+                  margin-top:4px;
+                ">
+                  Dispute requires attention
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onclick="
+                  openMerchantDispute(
+                    '${order.orderId}'
+                  )
+                "
+                style="
+                  width:38px;
+                  height:38px;
+                  border-radius:50%;
+                  border:0;
+                  cursor:pointer;
+                  font-size:20px;
+                "
+              >
+                ❓
+              </button>
+
+            </div>
+            `
+            :
+            ""
+          }
+
 
           <p>
             Payment:
@@ -1214,6 +1351,40 @@ async function updateMerchantOrderStatus(
 
   }
 
+  let trackingNumber = "";
+
+  // =================================
+  // SHIPPING
+  // =================================
+
+  if(status === "shipped"){
+
+    trackingNumber =
+      prompt(
+        "Enter the shipping tracking number:"
+      );
+
+    if(trackingNumber === null){
+
+      return;
+
+    }
+
+    trackingNumber =
+      trackingNumber.trim();
+
+    if(!trackingNumber){
+
+      alert(
+        "❌ Tracking number is required"
+      );
+
+      return;
+
+    }
+
+  }
+
   try {
 
     const res =
@@ -1234,7 +1405,9 @@ async function updateMerchantOrderStatus(
 
             merchantId,
 
-            status
+            status,
+
+            trackingNumber
 
           })
 
@@ -1505,5 +1678,103 @@ async function loadMerchantStats(){
         "Unable to load statistics.";
 
   }
+
+}
+
+function openMerchantDispute(orderId){
+
+  const old =
+    document.getElementById(
+      "merchantDisputeBox"
+    );
+
+  if(old){
+    old.remove();
+  }
+
+  const orderCard =
+    [...document.querySelectorAll(
+      "#merchantOrdersList .card"
+    )].find(card =>
+      card.innerText.includes(orderId)
+    );
+
+  if(!orderCard){
+    return;
+  }
+
+  const text =
+    orderCard.innerText;
+
+  const box =
+    document.createElement("div");
+
+  box.id =
+    "merchantDisputeBox";
+
+  box.className =
+    "card";
+
+  box.style.marginTop =
+    "15px";
+
+  box.innerHTML = `
+
+    <h2>
+      ⚖️ Dispute Resolution
+    </h2>
+
+    <p>
+      Order:
+      <strong>
+        ${orderId}
+      </strong>
+    </p>
+
+    <div style="
+      margin-top:12px;
+      padding:12px;
+      border:1px solid #ef4444;
+      border-radius:12px;
+    ">
+
+      <strong>
+        ⚠️ Customer reported a delivery problem
+      </strong>
+
+      <p style="
+        margin-top:10px;
+      ">
+        The payment remains reserved while the dispute is being reviewed.
+      </p>
+
+    </div>
+
+    <button
+      type="button"
+      onclick="
+        document.getElementById(
+          'merchantDisputeBox'
+        )?.remove()
+      "
+      style="
+        width:100%;
+        margin-top:15px;
+        padding:12px;
+        border:0;
+        border-radius:10px;
+        cursor:pointer;
+      "
+    >
+      ✖ Close
+    </button>
+
+  `;
+
+  document
+    .getElementById(
+      "merchantOrdersList"
+    )
+    .prepend(box);
 
 }

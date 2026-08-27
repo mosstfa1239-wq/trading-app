@@ -6175,6 +6175,22 @@ async function loadMyOrders(){
             ${order.orderStatus}
           </p>
 
+          ${
+            order.shippingType === "delivery" &&
+            order.trackingNumber
+            ?
+            `
+            <p>
+              🚚 Tracking Number:
+              <strong>
+                ${order.trackingNumber}
+              </strong>
+            </p>
+            `
+            :
+            ""
+          }
+
           <p>
             ${
               order.shippingType ===

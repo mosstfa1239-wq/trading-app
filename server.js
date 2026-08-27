@@ -1674,7 +1674,8 @@ app.post("/orders/merchant/status", async (req, res) => {
     const {
       orderId,
       merchantId,
-      status
+      status,
+      trackingNumber
     } = req.body;
 
     if (!orderId || !merchantId || !status) {
@@ -1860,6 +1861,66 @@ await Notification.create({
 
     }
 
+// =================================
+// SHIPPING TRACKING
+// =================================
+
+if(status === "shipped"){
+
+  const tracking =
+    String(
+      trackingNumber || ""
+    ).trim();
+
+  if(!tracking){
+
+    await session.abortTransaction();
+
+    return res.json({
+      success: false,
+      error:
+        "Tracking number is required"
+    });
+
+  }
+
+  order.trackingNumber =
+    tracking;
+
+  order.shippedAt =
+    new Date();
+
+}
+
+
+    // =================================
+    // SHIPPING
+    // =================================
+
+    if (status === "shipped") {
+
+      const cleanTrackingNumber =
+        String(trackingNumber || "").trim();
+
+      if (!cleanTrackingNumber) {
+
+        await session.abortTransaction();
+
+        return res.json({
+          success: false,
+          error:
+            "Tracking number is required"
+        });
+
+      }
+
+      order.trackingNumber =
+        cleanTrackingNumber;
+
+      order.shippedAt =
+        new Date();
+
+    }
 
     // =================================
     // NORMAL STATUS UPDATE
@@ -2399,6 +2460,336 @@ app.post("/admin/orders/release", checkAdmin, async (req, res) => {
   }
 
 });
+
+// =============================================
+// ADMIN - RESOLVE DISPUTE
+// =============================================
+
+app.post(
+  "/admin/orders/resolve-dispute",
+  checkAdmin,
+  async (req, res) => {
+
+    const session =
+      await mongoose.startSession();
+
+    try {
+
+      const {
+        orderId,
+        decision,
+        merchantAmount,
+        customerAmount,
+        note
+      } = req.body;
+
+      if (
+        !orderId ||
+        !["merchant", "customer", "partial"].includes(decision)
+      ) {
+
+        return res.json({
+          success: false,
+          error: "Invalid dispute decision"
+        });
+
+      }
+
+      session.startTransaction();
+
+      const order =
+        await Order.findOne({
+          orderId
+        }).session(session);
+
+      if (!order) {
+
+        await session.abortTransaction();
+
+        return res.json({
+          success: false,
+          error: "Order not found"
+        });
+
+      }
+
+      if (
+        !order.disputeStatus ||
+        order.disputeStatus === "none"
+      ) {
+
+        await session.abortTransaction();
+
+        return res.json({
+          success: false,
+          error: "Order is not under dispute"
+        });
+
+      }
+
+      if (
+        order.merchantPaymentStatus === "released"
+      ) {
+
+        await session.abortTransaction();
+
+        return res.json({
+          success: false,
+          error: "Payment has already been released"
+        });
+
+      }
+
+      const platformFee =
+        Number(order.platformFee || 0);
+
+      const refundableAmount =
+        Number(order.total || 0) -
+        platformFee;
+
+      let merchantPayout = 0;
+      let customerRefund = 0;
+
+      if (decision === "merchant") {
+
+        merchantPayout =
+          Number(
+            order.merchantAmount ||
+            refundableAmount
+          );
+
+        customerRefund = 0;
+
+      }
+
+      else if (decision === "customer") {
+
+        merchantPayout = 0;
+
+        customerRefund =
+          Math.max(
+            0,
+            refundableAmount
+          );
+
+      }
+
+      else {
+
+        merchantPayout =
+          Number(merchantAmount || 0);
+
+        customerRefund =
+          Number(customerAmount || 0);
+
+        const totalDistributed =
+          merchantPayout +
+          customerRefund;
+
+        if (
+          totalDistributed >
+          refundableAmount + 0.01
+        ) {
+
+          await session.abortTransaction();
+
+          return res.json({
+            success: false,
+            error:
+              "Merchant and customer amounts exceed the refundable amount"
+          });
+
+        }
+
+      }
+
+      // =========================
+      // PAY MERCHANT
+      // =========================
+
+      if (merchantPayout > 0) {
+
+        const merchant =
+          await User.findOne({
+            _id: order.merchantId
+          }).session(session);
+
+        if (!merchant) {
+
+          await session.abortTransaction();
+
+          return res.json({
+            success: false,
+            error: "Merchant not found"
+          });
+
+        }
+
+        merchant.balance =
+          Number(
+            merchant.balance || 0
+          ) +
+          merchantPayout;
+
+        await merchant.save({
+          session
+        });
+
+      }
+
+      // =========================
+      // REFUND CUSTOMER
+      // =========================
+
+      if (customerRefund > 0) {
+
+        const customer =
+          await User.findOne({
+            _id: order.customerId
+          }).session(session);
+
+        if (!customer) {
+
+          await session.abortTransaction();
+
+          return res.json({
+            success: false,
+            error: "Customer not found"
+          });
+
+        }
+
+        customer.balance =
+          Number(
+            customer.balance || 0
+          ) +
+          customerRefund;
+
+        await customer.save({
+          session
+        });
+
+      }
+
+      // =========================
+      // UPDATE ORDER
+      // =========================
+
+      order.disputeStatus =
+        "resolved";
+
+      order.disputeDecision =
+        decision;
+
+      order.disputeDecisionNote =
+        note || "";
+
+      order.disputeResolvedAt =
+        new Date();
+
+      order.disputeResolvedBy =
+        "admin";
+
+      order.releasedAmount =
+        merchantPayout;
+
+      order.merchantPaymentStatus =
+        merchantPayout > 0
+          ? "released"
+          : "refunded";
+
+      order.paymentHold =
+        false;
+
+      order.releasedAt =
+        new Date();
+
+      order.payoutReleasedAt =
+        merchantPayout > 0
+          ? new Date()
+          : null;
+
+      await order.save({
+        session
+      });
+
+      await session.commitTransaction();
+
+      // =========================
+      // NOTIFICATIONS
+      // =========================
+
+      if (merchantPayout > 0) {
+
+        await Notification.create({
+
+          userId:
+            order.merchantId,
+
+          text:
+            `⚖️ Dispute resolved in your favor for Order ${order.orderId}. ${merchantPayout.toFixed(2)} USDT has been added to your balance.`
+
+        });
+
+      }
+
+      if (customerRefund > 0) {
+
+        await Notification.create({
+
+          userId:
+            order.customerId,
+
+          text:
+            `⚖️ Dispute resolved in your favor for Order ${order.orderId}. ${customerRefund.toFixed(2)} USDT has been refunded to your balance.`
+
+        });
+
+      }
+
+      res.json({
+
+        success: true,
+
+        message:
+          "Dispute resolved successfully",
+
+        decision,
+
+        merchantPayout,
+
+        customerRefund
+
+      });
+
+    } catch (err) {
+
+      try {
+        await session.abortTransaction();
+      } catch (e) {}
+
+      console.log(
+        "RESOLVE DISPUTE ERROR:",
+        err
+      );
+
+      res.json({
+
+        success: false,
+
+        error:
+          err.message
+
+      });
+
+    } finally {
+
+      session.endSession();
+
+    }
+
+  }
+);
 
 app.get("/orders/customer/:id", async (req, res) => {
 
