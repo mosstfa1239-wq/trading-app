@@ -4826,23 +4826,30 @@ app.get("/admin/orders/payouts", async (req, res) => {
 
   try {
 
-    const orders =
-      await Order.find({
+const orders =
+  await Order.find({
 
-        paymentStatus: "paid",
+    paymentStatus: "paid",
 
-        customerReceived: true,
+    merchantPaymentStatus: {
+      $in: [
+        "ready",
+        "held"
+      ]
+    },
 
-merchantPaymentStatus: {
-  $in: [
-    "ready",
-    "held"
-  ]
-}
+    $or: [
+      {
+        customerReceived: true
+      },
+      {
+        disputeStatus: "open"
+      }
+    ]
 
-      }).sort({
-        customerReceivedAt: -1
-      });
+  }).sort({
+    customerReceivedAt: -1
+  });
 
     const now = Date.now();
 
